@@ -22,11 +22,12 @@ import org.jsoup.select.Elements;
 @SuppressWarnings("serial")
 public class ShowEntry implements Serializable
 {
-	String showName, showID, seasonCount, runTime, airTime, status;
+	String showName, showID, seasonCount, runTime, airTime, status, search;
 	ArrayList<Season> seasons = new ArrayList<Season>();
 	
 	ShowEntry(String nameOfShow)
 	{
+		search = nameOfShow;
 		try
 		{
 			getFromTVRage(nameOfShow);
@@ -102,6 +103,7 @@ public class ShowEntry implements Serializable
 								ep.put(((Element)episode.childNode(k)).tagName(),
 										((Element)episode.childNode(k)).text());
 						}
+						ep.put("inseason", aSeason.attr("no"));
 						
 						episodes.add(new Episode(ep, showDescription.get(12).text()));
 					}
@@ -289,6 +291,7 @@ public class ShowEntry implements Serializable
 			
 			if(airDate != null)
 			{
+				//FIXME: punctuation and "and" when printing here.
 				if(airDate.isAfterNow())
 				{
 					Period p = new Period((ReadableInstant)null, airDate, PeriodType.standard());
@@ -333,6 +336,17 @@ public class ShowEntry implements Serializable
 		public String getTitle()
 		{
 			return information.get("title");
+		}
+		
+		public String getTPBTag()
+		{
+			String seasonNum = information.get("inseason"),
+					episodeNum =information.get("seasonnum");
+			if(seasonNum.length()<2)
+				seasonNum = '0'+seasonNum;
+			if(episodeNum.length()<2)
+				episodeNum = '0'+episodeNum;
+			return 'S'+seasonNum+'E'+episodeNum;
 		}
 	}
 }

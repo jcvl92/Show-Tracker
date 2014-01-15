@@ -16,6 +16,11 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import org.joda.time.DateTime;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import showTracker.ShowEntry.Episode;
 import showTracker.ShowEntry.Season;
 
@@ -32,8 +37,6 @@ public class Main
 	{
 		text = t;
 		tree = tr;
-		
-		//text.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 	}
 	
 	private ShowEntry getShowFromFile(String showName)
@@ -79,7 +82,7 @@ public class Main
 		
 		for(int i=0; i<showList.length; ++i)
 		{
-			//TODO: thread this out here
+			//TODO: thread this out here?
 			ShowEntry s = getShowFromFile(showList[i]);
 			if(s == null)
 			{
@@ -109,10 +112,13 @@ public class Main
 			{
 				timeline.append("\tLast episode: "+last.getTitle()+'\n');
 				timeline.append("\t\t"+last.timeDifference()+'\n');
+				
+				//save this upcoming show in the upcoming show list if it isn't too old
+				if(last.airDate.isAfter(new DateTime().minusWeeks(2)))
+						upcoming.add(new UpcomingEpisode(last, myShows.get(i)));
 			}
 			else
 				timeline.append("\t\tNo aired episodes listed.\n");
-			timeline.append('\n');
 			
 			if(next != null)
 			{
@@ -124,6 +130,7 @@ public class Main
 			}
 			else
 				timeline.append("\tNo upcoming episodes listed.\n");
+			timeline.append('\n');
 		}
 		
 		//sort the shows list
@@ -139,7 +146,7 @@ public class Main
 		    }
 		});
 		
-		//set next shows list
+		//set next shows list text
 		StringBuilder upcomingShows = new StringBuilder();
 		for(int i=0; i<upcoming.size(); ++i)
 			upcomingShows.append(upcoming.get(i).toString()+'\n');
@@ -224,7 +231,49 @@ public class Main
 		
 		public String toString()
 		{
-			return episode.timeDifference()+'\t'+show.showName+'\t'+episode.toString();
+			MagnetLink magLink = getMagnetLink();
+			
+			try
+			{
+				if(magLink != null)
+					magLink.link = WebHandler.getPage("http://tinyurl.com/api-create.php?url="+magLink.link, null, null).trim();
+			}
+			catch(Exception e){e.printStackTrace();}
+			
+			return episode.timeDifference()+'\t'+(magLink!=null ? magLink : show.showName);
+		}
+		
+		public MagnetLink getMagnetLink()
+		{
+			Document search = null;
+			try
+			{
+				search = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getTPBTag()+"/0/7/0").timeout(30*1000).get();
+				
+				Element result = search.getElementsByClass("detName").first();
+				
+				return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
+		}
+		
+		class MagnetLink
+		{
+			String name, link;
+			MagnetLink(String text, String magLink)
+			{
+				name = text;
+				link = magLink;
+			}
+			public String toString()
+			{
+				if(name == null || link == null)
+					return "";
+				return name+" - "+link;
+			}
 		}
 	}
 }

@@ -20,7 +20,7 @@ class WebHandler
 	 * @return		A String containing the contents of the page at the specified URL.
 	 * @throws IOException if an I/O exception occurs.
 	 */
-	protected String getPage(String url, Map<String, String> data, Cookies c) throws IOException
+	protected static String getPage(String url, Map<String, String> data, Cookies c) throws IOException
 	{
 		StringBuilder str = new StringBuilder();
 		String line;
@@ -30,7 +30,7 @@ class WebHandler
 		//set cookies if we need to
 		if(c != null)
 			huc.setRequestProperty("Cookie", c.toString());
-		huc.setRequestMethod("POST");
+		//huc.setRequestMethod("POST");
 		huc.setDoInput(true);
 
 		//if form data was supplied
@@ -71,7 +71,7 @@ class WebHandler
 	 * @return		A Map<String, List<String>> that contains the response headers 
 	 * @throws IOException if an I/O exception occurs.
 	 */
-	protected Map<String, List<String>> sendRequest(String url, Map<String, String> data, Cookies c) throws IOException
+	protected static Map<String, List<String>> sendRequest(String url, Map<String, String> data, Cookies c) throws IOException
 	{
 		//set up the URL connection and output stream
 		HttpURLConnection huc = (HttpURLConnection) new URL(url).openConnection();

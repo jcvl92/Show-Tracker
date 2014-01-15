@@ -12,7 +12,7 @@ public class UserInterface {
 
 	private JFrame frame;
 	private static JTree tree;
-	private static JTextArea textArea;
+	private static JTextArea text;
 
 	/**
 	 * Launch the application.
@@ -25,7 +25,7 @@ public class UserInterface {
 					window.frame.setVisible(true);
 					
 					//this needs to happen last
-					new Main(textArea, tree).run();
+					new Main(text, tree).run();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -54,11 +54,11 @@ public class UserInterface {
 		tree = new JTree();
 		horizontalBox.add(tree);
 		
-		textArea = new JTextArea();
-		textArea.setEditable(false);
-		textArea.setLineWrap(true);
-		textArea.setWrapStyleWord(true);
-		horizontalBox.add(textArea);
+		text = new JTextArea();
+		text.setEditable(false);
+		text.setLineWrap(true);
+		text.setWrapStyleWord(true);
+		horizontalBox.add(text);
 	}
 
 }
