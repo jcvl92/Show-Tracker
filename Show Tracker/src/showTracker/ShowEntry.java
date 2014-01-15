@@ -106,7 +106,7 @@ public class ShowEntry
 				}
 			
 				seasons.add(new Season(
-						(aSeason.attr("no")!="" ? "Season "+aSeason.attr("no") : ((Element)aSeason).tagName())
+						(aSeason.attr("no")!="" ? "season "+aSeason.attr("no") : ((Element)aSeason).tagName())
 						, episodes));
 			}
 		}
@@ -122,8 +122,35 @@ public class ShowEntry
 		return "Title: "+showName+"\nNumber of seasons: "+seasonCount+"\nRun time: "+runTime+"\nAir time: "+airTime;
 	}
 	
-	public Episode getUpcomingEpisode()
+	public Episode getNextEpisode()
 	{
+		for(int i=0; i<seasons.size(); ++i)
+		{
+			ArrayList<Episode> episodes = seasons.get(i).episodes;
+			for(int j=0; j<episodes.size(); ++j)
+			{
+				if(episodes.get(j).airDate != null)
+					if(episodes.get(j).airDate.isAfterNow())
+						return episodes.get(j);
+			}
+		}
+		return null;
+	}
+	
+	public Episode getLastEpisode()
+	{
+		for(int i=seasons.size()-1; i>=0; --i)
+		{
+			if(!seasons.get(i).seasonTag.contains("season"))
+				continue;
+			ArrayList<Episode> episodes = seasons.get(i).episodes;
+			for(int j=episodes.size()-1; j>=0; --j)
+			{
+				if(episodes.get(j).airDate != null)
+					if(episodes.get(j).airDate.isBeforeNow())
+						return episodes.get(j);
+			}
+		}
 		return null;
 	}
 	
@@ -198,48 +225,15 @@ public class ShowEntry
 			if(airDate != null)
 			{
 				sb.append("Airdate: "+airDate.toDate().toString()+'\n');
-				if(airDate.isAfterNow())
-				{
-					Period p = new Period((ReadableInstant)null, airDate, PeriodType.standard());
-					
-					if(p.getDays() == 0 && p.getWeeks() == 0 && p.getMonths() == 0 && p.getYears() == 0)
-						sb.append("Airing today at "+airTime+".\n\n");
-					else
-					{
-						sb.append("Airing in ");
-						if(p.getYears()>0)
-							sb.append(p.getYears()+" years, ");
-						if(p.getMonths()>0)
-							sb.append(p.getMonths()+" months, ");
-						if(p.getWeeks()>0)
-							sb.append(p.getWeeks()+" weeks, ");
-						sb.append("and "+p.getDays()+" days.\n\n");
-					}
-				}
-				else
-				{
-					Period p = new Period(airDate, (ReadableInstant)null, PeriodType.standard());
-					
-					if(p.getDays() == 0 && p.getWeeks() == 0 && p.getMonths() == 0 && p.getYears() == 0)
-						sb.append("Aired today at "+airTime+".\n\n");
-					else
-					{
-						sb.append("Aired ");
-						if(p.getYears()>0)
-							sb.append(p.getYears()+" years, ");
-						if(p.getMonths()>0)
-							sb.append(p.getMonths()+" months, ");
-						if(p.getWeeks()>0)
-							sb.append(p.getWeeks()+" weeks, ");
-						sb.append("and "+p.getDays()+" days ago.\n\n");
-					}
-				}
 			}
+			
+			sb.append(timeDifference()+"\n\n");
 			
 			if(description == null)
 			{
 				try
 				{
+					//FIXME: this doesn't always work.
 					Document link = Jsoup.connect(information.get("link")).timeout(30*1000).get();
 					
 					//this grabs the description of the show
@@ -257,9 +251,56 @@ public class ShowEntry
 			return sb.toString();
 		}
 		
-		public DateTime getDate()
+		public String timeDifference()
 		{
-			return airDate;
+			StringBuilder sb = new StringBuilder();
+			
+			if(airDate != null)
+			{
+				if(airDate.isAfterNow())
+				{
+					Period p = new Period((ReadableInstant)null, airDate, PeriodType.standard());
+					
+					if(p.getDays() == 0 && p.getWeeks() == 0 && p.getMonths() == 0 && p.getYears() == 0)
+						sb.append("Airing today at "+airTime+".");
+					else
+					{
+						sb.append("Airing in ");
+						if(p.getYears()>0)
+							sb.append(p.getYears()+" years, ");
+						if(p.getMonths()>0)
+							sb.append(p.getMonths()+" months, ");
+						if(p.getWeeks()>0)
+							sb.append(p.getWeeks()+" weeks, ");
+						sb.append("and "+p.getDays()+" days.");
+					}
+				}
+				else
+				{
+					Period p = new Period(airDate, (ReadableInstant)null, PeriodType.standard());
+					
+					if(p.getDays() == 0 && p.getWeeks() == 0 && p.getMonths() == 0 && p.getYears() == 0)
+						sb.append("Aired today at "+airTime+".");
+					else
+					{
+						sb.append("Aired ");
+						if(p.getYears()>0)
+							sb.append(p.getYears()+" years, ");
+						if(p.getMonths()>0)
+							sb.append(p.getMonths()+" months, ");
+						if(p.getWeeks()>0)
+							sb.append(p.getWeeks()+" weeks, ");
+						sb.append("and "+p.getDays()+" days ago.");
+					}
+				}
+			}
+			
+			return sb.toString();
+		}
+
+		public String getTitle()
+		{
+			return information.get("title");
 		}
 	}
 }
