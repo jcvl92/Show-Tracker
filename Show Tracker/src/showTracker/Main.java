@@ -1,6 +1,10 @@
 package showTracker;
 
-import java.awt.Font;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,6 +19,7 @@ import javax.swing.tree.DefaultTreeModel;
 import showTracker.ShowEntry.Episode;
 import showTracker.ShowEntry.Season;
 
+
 public class Main
 {
 	private JTextArea text;
@@ -28,7 +33,38 @@ public class Main
 		text = t;
 		tree = tr;
 		
-		text.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+		//text.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+	}
+	
+	private ShowEntry getShowFromFile(String showName)
+	{
+		//attempt to get the entry from a file
+		try
+		{
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
+			ShowEntry show = (ShowEntry)ois.readObject();
+			ois.close();
+			
+			return show;
+		}
+		catch(Exception e)
+		{
+			return null;
+		}
+	}
+	
+	private void addShowToFile(ShowEntry show, String showName)
+	{
+		try
+		{
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
+			oos.writeObject(show);
+			oos.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public void run()
@@ -38,10 +74,27 @@ public class Main
 		//load list of shows
 		String[] showList = {"rick and morty", "american dad",
 				"family guy", "south park", "aqua teen hunger force",
-				"squidbillies", "parks and recreation"};
+				"squidbillies", "parks and recreation", "adventure time",
+				"regular show"};
 		
 		for(int i=0; i<showList.length; ++i)
-			myShows.add(new ShowEntry(showList[i]));
+		{
+			//TODO: thread this out here
+			ShowEntry s = getShowFromFile(showList[i]);
+			if(s == null)
+			{
+				s= new ShowEntry(showList[i]);
+				addShowToFile(s, showList[i]);
+			}
+			else
+			{
+				//update this entry? tree drawing needs to be made dynamic so that the
+				//list can be populated as it is created and so updates can run
+			}
+			myShows.add(s);
+		}
+		
+		//wait for all threads to end here.
 		
 		//set the timeline information
 		StringBuilder timeline = new StringBuilder();
@@ -51,25 +104,26 @@ public class Main
 			Episode last = myShows.get(i).getLastEpisode();
 			
 			timeline.append(myShows.get(i).showName+'\n');
+			
+			if(last != null)
+			{
+				timeline.append("\tLast episode: "+last.getTitle()+'\n');
+				timeline.append("\t\t"+last.timeDifference()+'\n');
+			}
+			else
+				timeline.append("\t\tNo aired episodes listed.\n");
+			timeline.append('\n');
+			
 			if(next != null)
 			{
-				timeline.append("\tNext episode: "+next.getTitle()+"\n");
-				timeline.append("\t\t"+next.timeDifference());
+				timeline.append("\tNext episode: "+next.getTitle()+'\n');
+				timeline.append("\t\t"+next.timeDifference()+'\n');
 				
 				//save this upcoming show in the upcoming show list
 				upcoming.add(new UpcomingEpisode(next, myShows.get(i)));
 			}
 			else
 				timeline.append("\tNo upcoming episodes listed.\n");
-			
-			if(last != null)
-			{
-				timeline.append("\tLast episode: "+last.getTitle()+"\n");
-				timeline.append("\t\t"+last.timeDifference());
-			}
-			else
-				timeline.append("\t\tNo aired episodes listed.\n");
-			timeline.append("\n");
 		}
 		
 		//sort the shows list
@@ -82,23 +136,15 @@ public class Main
 		    		return -1;
 		    	else
 		    		return 0;
-		        
 		    }
 		});
-		
-		//remove anything more than 2 weeks from now
 		
 		//set next shows list
 		StringBuilder upcomingShows = new StringBuilder();
 		for(int i=0; i<upcoming.size(); ++i)
-		{
-			//if(within two weeks)
 			upcomingShows.append(upcoming.get(i).toString()+'\n');
-		}
 		if(upcoming.size() < 1)
-		{
 			upcomingShows.append("No upcoming shows at this time.\n");
-		}
 		
 		//set the home screen text
 		homeScreenText = upcomingShows+"\n\n"+timeline;
@@ -178,7 +224,7 @@ public class Main
 		
 		public String toString()
 		{
-			return episode.timeDifference()+" - "+show.showName+episode.toString();
+			return episode.timeDifference()+'\t'+show.showName+'\t'+episode.toString();
 		}
 	}
 }

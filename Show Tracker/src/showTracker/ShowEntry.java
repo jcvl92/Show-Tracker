@@ -1,6 +1,7 @@
 package showTracker;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +19,8 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
-public class ShowEntry
+@SuppressWarnings("serial")
+public class ShowEntry implements Serializable
 {
 	String showName, showID, seasonCount, runTime, airTime, status;
 	ArrayList<Season> seasons = new ArrayList<Season>();
@@ -31,7 +33,7 @@ public class ShowEntry
 		}
 		catch (Exception e)
 		{
-			System.out.println("could not get season data.");
+			System.out.println("could not get show data.");
 			e.printStackTrace();
 		}
 	}
@@ -154,7 +156,7 @@ public class ShowEntry
 		return null;
 	}
 	
-	class Season
+	class Season implements Serializable
 	{
 		ArrayList<Episode> episodes;
 		String seasonTag;
@@ -172,34 +174,31 @@ public class ShowEntry
 		
 		public String getText()
 		{
-			return episodes.toString().replace(", - ", "\n").replace("[- ", "").replace("]", "");
+			StringBuilder sb = new StringBuilder();
+			for(int i=0; i<episodes.size(); ++i)
+			{
+				sb.append(episodes.get(i)+"\t- "+episodes.get(i).getTitle()+'\n');
+			}
+			return sb.toString();
 		}
 	}
 	
-	class Episode
+	class Episode implements Serializable
 	{
 		HashMap<String, String> information;
 		String airTime, description=null;
 		DateTime airDate;
-		DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-		.appendYear(4, 4)
-		.appendLiteral('-')
-		.appendMonthOfYear(2)
-		.appendLiteral('-')
-		.appendDayOfMonth(2)
-		.appendLiteral('-')
-		.appendHourOfDay(2)
-		.appendLiteral(':')
-		.appendMinuteOfHour(2)
-		.toFormatter();
+		transient DateTimeFormatter parseFormatter;
+		transient DateTimeFormatter writeFormatter;
 		
 		Episode(HashMap<String, String> info, String time) throws InterruptedException
 		{
+			setFormatters();
 			information = info;
 			airTime = time;
 			try
 			{
-				airDate = DateTime.parse(info.get("airdate")+'-'+airTime, formatter);
+				airDate = DateTime.parse(info.get("airdate")+'-'+airTime, parseFormatter);
 			}
 			catch(Exception e)
 			{
@@ -207,9 +206,42 @@ public class ShowEntry
 			}
 		}
 		
+		private void setFormatters()
+		{
+			parseFormatter = new DateTimeFormatterBuilder()
+			.appendYear(4, 4)
+			.appendLiteral('-')
+			.appendMonthOfYear(2)
+			.appendLiteral('-')
+			.appendDayOfMonth(2)
+			.appendLiteral('-')
+			.appendHourOfDay(2)
+			.appendLiteral(':')
+			.appendMinuteOfHour(2)
+			.toFormatter();
+			
+			writeFormatter = new DateTimeFormatterBuilder()
+			.appendMonthOfYearShortText()
+			.appendLiteral(", ")
+			.appendDayOfMonth(1)
+			.appendLiteral(' ')
+			.appendYearOfCentury(2, 2)
+			.toFormatter();
+		}
+		
+		private void readObject(java.io.ObjectInputStream in) throws ClassNotFoundException, IOException
+		{
+			in.defaultReadObject();
+			
+			setFormatters();
+		}
+		
 		public String toString()
 		{
-			return "- "+information.get("title");
+			if(airDate != null)
+				return airDate.toString(writeFormatter);
+			else
+				return information.get("title");
 		}
 		
 		public String getText() throws IOException
