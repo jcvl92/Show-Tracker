@@ -63,11 +63,6 @@ public class Main
 					Episode e = s.episodes.get(k);
 					DefaultMutableTreeNode episode = new DefaultMutableTreeNode(e);
 					
-					//set the text of the textArea to the Title, date, and description of the episode on focus
-					//if(i==1&&j==1&&k==1)text.setText(e.getText());
-					//DefaultTreeCellRenderer tcr = new DefaultTreeCellRenderer();
-					
-					//tree.setCellRenderer(tcr);
 					season.add(episode);
 				}
 				
@@ -82,7 +77,7 @@ public class Main
 			public void valueChanged(TreeSelectionEvent e) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 
-				//set the text from the Episode or Season that was selected
+				//set the text from the Episode, Season, or ShowEntry that was selected
 				try
 				{
 					Object obj = node.getUserObject();

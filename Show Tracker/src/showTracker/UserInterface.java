@@ -55,6 +55,8 @@ public class UserInterface {
 		horizontalBox.add(tree);
 		
 		textArea = new JTextArea();
+		textArea.setLineWrap(true);
+		textArea.setWrapStyleWord(true);
 		horizontalBox.add(textArea);
 	}
 

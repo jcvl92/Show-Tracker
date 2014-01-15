@@ -16,6 +16,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 
 public class ShowEntry
 {
@@ -237,9 +238,18 @@ public class ShowEntry
 			
 			if(description == null)
 			{
-				Document link = Jsoup.connect(information.get("link")).timeout(30*1000).get();
-				
-				link.getAllElements();
+				try
+				{
+					Document link = Jsoup.connect(information.get("link")).timeout(30*1000).get();
+					
+					//this grabs the description of the show
+					Elements e = link.getElementsByClass("padding_bottom_10").select("div.left:first-of-type");
+					description = ((TextNode)e.get(0).childNode(0)).text();
+				}
+				catch(Exception e)
+				{
+					description = "";
+				}
 			}
 			
 			sb.append(description);
