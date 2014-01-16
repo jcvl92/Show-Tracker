@@ -9,86 +9,62 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import javax.swing.JTextArea;
-import javax.swing.JTree;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-
 import org.joda.time.DateTime;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import showTracker.ShowEntry.Episode;
-import showTracker.ShowEntry.Season;
-
 
 public class Main
 {
-	private JTextArea text;
-	private JTree tree;
-	String homeScreenText;
-	ArrayList<ShowEntry> myShows = new ArrayList<ShowEntry>();
-	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
+	transient String homeScreenText;
+	transient ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
+	ShowDatabase db;
+	ShowEntry[] userShows;
 	String[] showList = {"rick and morty", "american dad",
 			"family guy", "south park", "aqua teen hunger force",
 			"squidbillies", "parks and recreation", "adventure time",
-			"regular show"};
+			"regular show", "workaholics"};
+	//TODO: complete these tasks and resolve all TODOs before moving to android
 	//TODO: implement graceful page errors
+	//TODO: implement login system for getting and saving of serialized objects into the login database
+	//login table stores the list of show IDs and positions in those shows(seriesnum integer)
+	//show table stores the actual ShowEntry objects
+	//the show entries are updated every day by the users who access them(this happens via a background thread)
 	
-	Main(JTextArea t, JTree tr)
+	//after all the database stuff and caching is done, the GUI work can start.
+	//we need a rich interface that is capable of drawing timelines, load images, cleanly paint custom objects, etc.
+	//maybe we should move to an android app before we start working on the GUI.
+	//an android GUI will be much easier to manipulate, it will be better documented, and it is the end result we want anyway
+	
+	public static void main(String[] args) throws Exception
 	{
-		text = t;
-		tree = tr;
+		new Main().run();
 	}
 	
-	private ShowEntry getShowFromFile(String showName)
+	public void run() throws Exception
 	{
-		//attempt to get the entry from a file
-		try
-		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
-			ShowEntry show = (ShowEntry)ois.readObject();
-			ois.close();
-			
-			return show;
-		}
-		catch(Exception e)
-		{
-			return null;
-		}
-	}
-	
-	private void addShowToFile(ShowEntry show, String showName)
-	{
-		try
-		{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
-			oos.writeObject(show);
-			oos.close();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	public void run()
-	{
+		//establish connection to database
+		db = new ShowDatabase("", "", "");
+		
 		//enter account information
+		String username = "joe", password = "password";
 		
-		//load list of shows
-		
-		for(int i=0; i<showList.length; ++i)
+		//get user object from server or create a new user object
+		User thisUser = db.getUser(username, password);
+		if(thisUser == null)
 		{
-			//TODO: thread this out here?
+			thisUser = new User(username, password);
+		}
+		
+		//manage your list:
+		//would you like to add any shows to your list?
+		//get create and insert any new shows from here, into the database
+		/*for(int i=0; i<showList.length; ++i)
+		{
+			//thread this out here? - don't bother, we are moving to android before we thread anything or mess with the GUI.
 			ShowEntry s = getShowFromFile(showList[i]);
 			if(s == null)
 			{
-				s= new ShowEntry(showList[i]);
-				addShowToFile(s, showList[i]);
+				s = new ShowEntry(showList[i]);
+				if(s != null)
+					addShowToFile(s, showList[i]);
 			}
 			else
 			{
@@ -96,44 +72,24 @@ public class Main
 				//list can be populated as it is created and so updates can run
 			}
 			myShows.add(s);
-		}
+		}*/
 		
-		//wait for all threads to end here.
+		//update the user in the database
+		db.updateUser(thisUser);
 		
-		//set the timeline information
-		StringBuilder timeline = new StringBuilder();
-		for(int i=0; i<myShows.size(); ++i)
-		{
-			Episode next = myShows.get(i).getNextEpisode();
-			Episode last = myShows.get(i).getLastEpisode();
-			
-			timeline.append(myShows.get(i).showName+'\n');
-			
-			if(last != null)
-			{
-				timeline.append("\tLast episode: "+last.getTitle()+'\n');
-				timeline.append("\t\t"+last.timeDifference()+'\n');
-				
-				//save this upcoming show in the upcoming show list if it isn't too old
-				if(last.airDate.isAfter(new DateTime().minusWeeks(2)))
-						upcoming.add(new UpcomingEpisode(last, myShows.get(i)));
-			}
-			else
-				timeline.append("\t\tNo aired episodes listed.\n");
-			
-			if(next != null)
-			{
-				timeline.append("\tNext episode: "+next.getTitle()+'\n');
-				timeline.append("\t\t"+next.timeDifference()+'\n');
-				
-				//save this upcoming show in the upcoming show list
-				upcoming.add(new UpcomingEpisode(next, myShows.get(i)));
-			}
-			else
-				timeline.append("\tNo upcoming episodes listed.\n");
-			timeline.append('\n');
-		}
+		//get show entry objects from server
+		ShowStatus[] userShowStatuses = thisUser.getShowList();
+		userShows = new ShowEntry[userShowStatuses.length];
+		for(int i=0; i< userShows.length; ++i)
+			userShows[i] = db.getShow(userShowStatuses[i].showID);
 		
+		//print out our text junk
+		timeline();//so that upcomingShows are computed
+		System.out.println(upcomingShows());
+	}
+	
+	public String upcomingShows()
+	{
 		//sort the shows list
 		Collections.sort(upcoming, new Comparator<UpcomingEpisode>() {
 		    public int compare(UpcomingEpisode a, UpcomingEpisode b)
@@ -154,132 +110,77 @@ public class Main
 		if(upcoming.size() < 1)
 			upcomingShows.append("No upcoming shows at this time.\n");
 		
-		//set the home screen text
-		homeScreenText = upcomingShows+"\n\n"+timeline;
-		
-		//set the initial text to the homeScreenText
-		text.setText(homeScreenText);
-		text.setCaretPosition(0);
-		
-		//set the contents of the JTree
-		//set the root node
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode("My Shows");
-		
-		//add each show to the root node
-		for(int i=0; i<myShows.size(); ++i)
+		return upcomingShows.toString();
+	}
+	
+	public String timeline()
+	{
+		StringBuilder timeline = new StringBuilder();
+		for(int i=0; i<userShows.length; ++i)
 		{
-			ShowEntry se = myShows.get(i);
-			DefaultMutableTreeNode show = new DefaultMutableTreeNode(se);
+			Episode next = userShows[i].getNextEpisode();
+			Episode last = userShows[i].getLastEpisode();
 			
-			//add each season to the show nodes
-			for(int j=0; j<se.seasons.size(); ++j)
+			timeline.append(userShows[i].showName+'\n');
+			
+			if(last != null)
 			{
-				Season s = se.seasons.get(j);
-				DefaultMutableTreeNode season = new DefaultMutableTreeNode(s);
+				timeline.append("\tLast episode: "+last.getTitle()+'\n');
+				timeline.append("\t\t"+last.timeDifference()+'\n');
 				
-				//add each episode to the season nodes
-				for(int k=0; k<s.episodes.size(); ++k)
-				{
-					Episode e = s.episodes.get(k);
-					DefaultMutableTreeNode episode = new DefaultMutableTreeNode(e);
-					
-					season.add(episode);
-				}
-				
-				show.add(season);
+				//save this upcoming show in the upcoming show list if it isn't too old
+				if(last.airDate.isAfter(new DateTime().minusWeeks(2)))
+						upcoming.add(new UpcomingEpisode(last, userShows[i]));
 			}
+			else
+				timeline.append("\t\tNo aired episodes listed.\n");
 			
-			root.add(show);
+			if(next != null)
+			{
+				timeline.append("\tNext episode: "+next.getTitle()+'\n');
+				timeline.append("\t\t"+next.timeDifference()+'\n');
+				
+				//save this upcoming show in the upcoming show list
+				upcoming.add(new UpcomingEpisode(next, userShows[i]));
+			}
+			else
+				timeline.append("\tNo upcoming episodes listed.\n");
+			timeline.append('\n');
 		}
 		
-		//build the listener for the node selection event and set the tree
-		TreeSelectionListener tsl = new TreeSelectionListener() {
-			public void valueChanged(TreeSelectionEvent e) {
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-
-				//set the text from the Episode, Season, or ShowEntry that was selected
-				try
-				{
-					Object obj = node.getUserObject();
-					if(obj.getClass() == Episode.class)
-						text.setText(((Episode)obj).getText());
-					else if(obj.getClass() == Season.class)
-						text.setText(((Season)obj).getText());
-					else if(obj.getClass() == ShowEntry.class)
-						text.setText(((ShowEntry)obj).getText());
-					else
-						text.setText(homeScreenText);
-				}
-				catch(Exception _e)
-				{
-					text.setText(homeScreenText);
-				}
-				finally
-				{
-					text.setCaretPosition(0);
-				}
-			}
-		};
-		tree.addTreeSelectionListener(tsl);
-		tree.setModel(new DefaultTreeModel(root));
+		return timeline.toString(); 
 	}
 
-	private class UpcomingEpisode
+	@SuppressWarnings("unused")
+	private ShowEntry getShowFromFile(String showName)
 	{
-		Episode episode;
-		ShowEntry show;
-		
-		UpcomingEpisode(Episode e, ShowEntry se)
+		//attempt to get the entry from a file
+		try
 		{
-			episode = e;
-			show = se;
-		}
-		
-		public String toString()
-		{
-			MagnetLink magLink = getMagnetLink();
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
+			ShowEntry show = (ShowEntry)ois.readObject();
+			ois.close();
 			
-			try
-			{
-				if(magLink != null)
-					magLink.link = WebHandler.getPage("http://tinyurl.com/api-create.php?url="+magLink.link, null, null).trim();
-			}
-			catch(Exception e){e.printStackTrace();}
-			
-			return episode.timeDifference()+'\t'+(magLink!=null ? magLink : show.showName);
+			return show;
 		}
-		
-		public MagnetLink getMagnetLink()
+		catch(Exception e)
 		{
-			Document search = null;
-			try
-			{
-				search = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getTPBTag()+"/0/7/0").timeout(30*1000).get();
-				
-				Element result = search.getElementsByClass("detName").first();
-				
-				return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
-			}
-			catch (Exception e)
-			{
-				return null;
-			}
+			return null;
 		}
-		
-		class MagnetLink
+	}
+	
+	@SuppressWarnings("unused")
+	private void addShowToFile(ShowEntry show, String showName)
+	{
+		try
 		{
-			String name, link;
-			MagnetLink(String text, String magLink)
-			{
-				name = text;
-				link = magLink;
-			}
-			public String toString()
-			{
-				if(name == null || link == null)
-					return "";
-				return name+" - "+link;
-			}
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
+			oos.writeObject(show);
+			oos.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 }
