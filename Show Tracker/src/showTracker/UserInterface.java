@@ -7,12 +7,14 @@ import javax.swing.Box;
 import java.awt.BorderLayout;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.JScrollPane;
 
 public class UserInterface {
 
 	private JFrame frame;
 	private static JTree tree;
 	private static JTextArea text;
+	private JScrollPane scrollPane;
 
 	/**
 	 * Launch the application.
@@ -24,7 +26,6 @@ public class UserInterface {
 					UserInterface window = new UserInterface();
 					window.frame.setVisible(true);
 					
-					//this needs to happen last
 					new Main(text, tree).run();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -58,7 +59,11 @@ public class UserInterface {
 		text.setEditable(false);
 		text.setLineWrap(true);
 		text.setWrapStyleWord(true);
-		horizontalBox.add(text);
+		text.setCaretPosition(0);
+		
+		scrollPane = new JScrollPane();
+		horizontalBox.add(scrollPane);
+		scrollPane.setViewportView(text);
 	}
 
 }

@@ -32,6 +32,11 @@ public class Main
 	String homeScreenText;
 	ArrayList<ShowEntry> myShows = new ArrayList<ShowEntry>();
 	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
+	String[] showList = {"rick and morty", "american dad",
+			"family guy", "south park", "aqua teen hunger force",
+			"squidbillies", "parks and recreation", "adventure time",
+			"regular show"};
+	//TODO: implement graceful page errors
 	
 	Main(JTextArea t, JTree tr)
 	{
@@ -75,10 +80,6 @@ public class Main
 		//enter account information
 		
 		//load list of shows
-		String[] showList = {"rick and morty", "american dad",
-				"family guy", "south park", "aqua teen hunger force",
-				"squidbillies", "parks and recreation", "adventure time",
-				"regular show"};
 		
 		for(int i=0; i<showList.length; ++i)
 		{
@@ -158,6 +159,7 @@ public class Main
 		
 		//set the initial text to the homeScreenText
 		text.setText(homeScreenText);
+		text.setCaretPosition(0);
 		
 		//set the contents of the JTree
 		//set the root node
@@ -211,6 +213,10 @@ public class Main
 				catch(Exception _e)
 				{
 					text.setText(homeScreenText);
+				}
+				finally
+				{
+					text.setCaretPosition(0);
 				}
 			}
 		};
