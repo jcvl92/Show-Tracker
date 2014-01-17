@@ -43,9 +43,9 @@ public class Main
 		//enter account information
 		Scanner s = new Scanner(System.in);
 		System.out.print("Enter your username: ");
-		String username = s.next();
+		String username = s.nextLine();
 		System.out.print("Enter your password: ");
-		String password = s.next();
+		String password = s.nextLine();
 		
 		//get user object from server or create a new user object
 		User thisUser = db.getUser(username, password);
@@ -57,25 +57,31 @@ public class Main
 		else
 			System.out.println("Profile loaded.");
 		
-		//manage your list:
+		//manage their list:
 		System.out.println("Would you like to add any shows to your profile?(y/n)");
-		String response = s.next();
+		String response = s.nextLine();
 		if(response.equals("y"))
 			for(int i=0; i<showList.length; ++i)
 			{
 				System.out.println("Enter the name of a show to add.(q to quit)");
-				response = s.next();
 				
+				response = s.nextLine();
+				
+				//allow the user to quit
 				if(response.equals("q"))
 					break;
 				
+				//try and get the show from the database
 				ShowEntry show = db.getShow(ShowEntry.getID(response));
+				
+				//if that was unsuccessful, create a new entry and add it to the database
 				if(show == null)
 				{
 					show = new ShowEntry(response);
 					db.updateShow(show);
 				}
 				
+				//add the show to this user's account
 				thisUser.addShow(new ShowStatus(show.showID, show.seasons.get(0).episodes.get(0).information.get("epnum")));
 				
 				System.out.println(show.showName+" added.");
@@ -92,13 +98,17 @@ public class Main
 		
 		//print out our text junk
 		timeline();//so that upcomingShows are computed
-		System.out.println(upcomingShows());
+		System.out.println('\n'+upcomingShows());
+		
 		//close the scanner
 		s.close();
 	}
 	
 	public String upcomingShows()
 	{
+		if(upcoming.size() < 1)
+			return "No upcoming shows at this time.\n";
+		
 		//sort the shows list
 		Collections.sort(upcoming, new Comparator<UpcomingEpisode>() {
 		    public int compare(UpcomingEpisode a, UpcomingEpisode b)
@@ -116,9 +126,8 @@ public class Main
 		StringBuilder upcomingShows = new StringBuilder();
 		for(int i=0; i<upcoming.size(); ++i)
 			upcomingShows.append(upcoming.get(i).toString()+'\n');
-		if(upcoming.size() < 1)
-			upcomingShows.append("No upcoming shows at this time.\n");
 		
+		//return the text
 		return upcomingShows.toString();
 	}
 	

@@ -53,9 +53,9 @@ public class ShowDatabase
 	 * Inserts or updates a user entry into the database
 	 * @param user	the user object to insert into the database
 	 * @return		true if the update/insert was successful, false otherwise
-	 * @throws SQLException	if there was an error processing the request
+	 * @throws Exception 
 	 */
-	public boolean updateUser(User user) throws SQLException
+	public boolean updateUser(User user) throws Exception
 	{
 		//try to update
 		//build the statement
@@ -65,8 +65,14 @@ public class ShowDatabase
 		update.setString(3, user.getPassword());
 		
 		//execute the statement
-		if(update.execute())
+		update.execute();
+		
+		if(update.getUpdateCount()>0)
 		{
+			//jesus fuck, explode if this is true
+			if(update.getUpdateCount()>1)
+				throw new Exception("updated multiple rows!");
+			
 			//free the resources of the prepared statement
 			update.close();
 			
@@ -97,9 +103,9 @@ public class ShowDatabase
 	 * Inserts or updates a show entry into the database
 	 * @param show	the show entry object to insert into the database
 	 * @return		true if the update/insert was successful, false otherwise
-	 * @throws SQLException	if there was an error processing the request
+	 * @throws Exception 
 	 */
-	public boolean updateShow(ShowEntry show) throws SQLException
+	public boolean updateShow(ShowEntry show) throws Exception
 	{
 		//try to update
 		//build the statement
@@ -108,8 +114,14 @@ public class ShowDatabase
 		update.setString(2, show.showID);
 		
 		//execute the statement
-		if(update.execute())
+		update.execute();
+		
+		if(update.getUpdateCount()>0)
 		{
+			//jesus fuck, explode if this is true
+			if(update.getUpdateCount()>1)
+				throw new Exception("updated multiple rows!");
+			
 			//free the resources of the prepared statement
 			update.close();
 			
@@ -154,17 +166,15 @@ public class ShowDatabase
 	    //execute the query
 	    ResultSet rs = pstmt.executeQuery();
 	    
-	    //close the prepared statement
-	    pstmt.close();
-	    
 	    //convert the blob contents to a user object and return that
 	    if(rs.first())
 	    {
 	    	//get the result object
 	    	User result = (User)new ObjectInputStream(new ByteArrayInputStream(rs.getBytes(1))).readObject();
 	    	
-	    	//close the result set
+	    	//close the result set and prepared statment
 	    	rs.close();
+		    pstmt.close();
 	    	
 	    	//return the result
 	    	return result;
@@ -196,17 +206,15 @@ public class ShowDatabase
 	    //execute the query
 	    ResultSet rs = pstmt.executeQuery();
 	    
-	    //close the prepared statement
-	    pstmt.close();
-	    
 	    //convert the blob contents to a show entry object and return that
 	    if(rs.first())
 	    {
 	    	//get the result object
 	    	ShowEntry result = (ShowEntry)new ObjectInputStream(new ByteArrayInputStream(rs.getBytes(1))).readObject();
 	    	
-	    	//close the result set
+	    	//close the result set and prepared statement
 	    	rs.close();
+		    pstmt.close();
 	    	
 	    	//return the result
 	    	return result;

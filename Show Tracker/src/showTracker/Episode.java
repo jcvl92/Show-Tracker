@@ -122,42 +122,47 @@ class Episode implements Serializable
 		
 		if(airDate != null)
 		{
-			//FIXME: punctuation and "and" when printing here.
 			if(airDate.isAfterNow())
 			{
 				Period p = new Period((ReadableInstant)null, airDate, PeriodType.standard());
-				
-				if(p.getDays() == 0 && p.getWeeks() == 0 && p.getMonths() == 0 && p.getYears() == 0)
-					sb.append("Airing today at "+airTime+".");
-				else
-				{
-					sb.append("Airing in ");
-					if(p.getYears()>0)
-						sb.append(p.getYears()+" years, ");
-					if(p.getMonths()>0)
-						sb.append(p.getMonths()+" months, ");
-					if(p.getWeeks()>0)
-						sb.append(p.getWeeks()+" weeks, ");
-					sb.append("and "+p.getDays()+" days.");
-				}
+			
+				sb.append("Airing in");
+				if(p.getYears()>0)
+					sb.append(" "+p.getYears()+" years");
+				if(p.getMonths()>0)
+					sb.append(" "+p.getMonths()+" months");
+				if(p.getWeeks()>0)
+					sb.append(" "+p.getWeeks()+" weeks");
+				if(p.getDays()>0)
+					sb.append(" "+p.getDays()+" days");
+				if(p.getHours()>0)
+					sb.append(" "+p.getHours()+" hours");
+				if(p.getMinutes()>0)
+					sb.append(" "+p.getMinutes()+" minutes");
+				if(p.getSeconds()>0)
+					sb.append(" "+p.getSeconds()+" seconds");
+				sb.append('.');
 			}
 			else
 			{
 				Period p = new Period(airDate, (ReadableInstant)null, PeriodType.standard());
 				
-				if(p.getDays() == 0 && p.getWeeks() == 0 && p.getMonths() == 0 && p.getYears() == 0)
-					sb.append("Aired today at "+airTime+".");
-				else
-				{
-					sb.append("Aired ");
-					if(p.getYears()>0)
-						sb.append(p.getYears()+" years, ");
-					if(p.getMonths()>0)
-						sb.append(p.getMonths()+" months, ");
-					if(p.getWeeks()>0)
-						sb.append(p.getWeeks()+" weeks, ");
-					sb.append("and "+p.getDays()+" days ago.");
-				}
+				sb.append("Aired");
+				if(p.getYears()>0)
+					sb.append(" "+p.getYears()+" years");
+				if(p.getMonths()>0)
+					sb.append(" "+p.getMonths()+" months");
+				if(p.getWeeks()>0)
+					sb.append(" "+p.getWeeks()+" weeks");
+				if(p.getDays()>0)
+					sb.append(" "+p.getDays()+" days");
+				if(p.getHours()>0)
+					sb.append(" "+p.getHours()+" hours");
+				if(p.getMinutes()>0)
+					sb.append(" "+p.getMinutes()+" minutes");
+				if(p.getSeconds()>0)
+					sb.append(" "+p.getSeconds()+" seconds");
+				sb.append(" ago.");
 			}
 		}
 		

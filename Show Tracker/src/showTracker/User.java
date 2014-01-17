@@ -22,7 +22,7 @@ public class User implements Serializable
 	
 	public ShowStatus[] getShowList()
 	{
-		return (ShowStatus[]) showList.toArray();
+		return showList.toArray(new ShowStatus[0]);
 	}
 	
 	public String getUsername()
