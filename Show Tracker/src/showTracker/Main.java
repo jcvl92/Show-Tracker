@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Scanner;
 
 import org.joda.time.DateTime;
 
@@ -22,16 +23,12 @@ public class Main
 			"squidbillies", "parks and recreation", "adventure time",
 			"regular show", "workaholics"};
 	//TODO: complete these tasks and resolve all TODOs before moving to android
-	//TODO: implement graceful page errors
-	//TODO: implement login system for getting and saving of serialized objects into the login database
-	//login table stores the list of show IDs and positions in those shows(seriesnum integer)
+	//TODO: implement graceful page errors(description not being gathered some of the time)
+	//TODO: serialize episodes? - maybe we should find a more robust api(our own?) before implementing this. nah, we can just serialize an interface!
 	//show table stores the actual ShowEntry objects
 	//the show entries are updated every day by the users who access them(this happens via a background thread)
-	
-	//after all the database stuff and caching is done, the GUI work can start.
-	//we need a rich interface that is capable of drawing timelines, load images, cleanly paint custom objects, etc.
-	//maybe we should move to an android app before we start working on the GUI.
-	//an android GUI will be much easier to manipulate, it will be better documented, and it is the end result we want anyway
+	//make the users do the legwork in background processes
+	//if a show in a user's list needs to be updated, a process is spawned that starts gathering that information and it sends to to the database
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -41,38 +38,48 @@ public class Main
 	public void run() throws Exception
 	{
 		//establish connection to database
-		db = new ShowDatabase("", "", "");
+		db = new ShowDatabase("localhost/program_test", "user", "pass");
 		
 		//enter account information
-		String username = "joe", password = "password";
+		Scanner s = new Scanner(System.in);
+		System.out.print("Enter your username: ");
+		String username = s.next();
+		System.out.print("Enter your password: ");
+		String password = s.next();
 		
 		//get user object from server or create a new user object
 		User thisUser = db.getUser(username, password);
 		if(thisUser == null)
 		{
 			thisUser = new User(username, password);
+			System.out.println("Profile created.");
 		}
+		else
+			System.out.println("Profile loaded.");
 		
 		//manage your list:
-		//would you like to add any shows to your list?
-		//get create and insert any new shows from here, into the database
-		/*for(int i=0; i<showList.length; ++i)
-		{
-			//thread this out here? - don't bother, we are moving to android before we thread anything or mess with the GUI.
-			ShowEntry s = getShowFromFile(showList[i]);
-			if(s == null)
+		System.out.println("Would you like to add any shows to your profile?(y/n)");
+		String response = s.next();
+		if(response.equals("y"))
+			for(int i=0; i<showList.length; ++i)
 			{
-				s = new ShowEntry(showList[i]);
-				if(s != null)
-					addShowToFile(s, showList[i]);
+				System.out.println("Enter the name of a show to add.(q to quit)");
+				response = s.next();
+				
+				if(response.equals("q"))
+					break;
+				
+				ShowEntry show = db.getShow(ShowEntry.getID(response));
+				if(show == null)
+				{
+					show = new ShowEntry(response);
+					db.updateShow(show);
+				}
+				
+				thisUser.addShow(new ShowStatus(show.showID, show.seasons.get(0).episodes.get(0).information.get("epnum")));
+				
+				System.out.println(show.showName+" added.");
 			}
-			else
-			{
-				//update this entry? tree drawing needs to be made dynamic so that the
-				//list can be populated as it is created and so updates can run
-			}
-			myShows.add(s);
-		}*/
 		
 		//update the user in the database
 		db.updateUser(thisUser);
@@ -86,6 +93,8 @@ public class Main
 		//print out our text junk
 		timeline();//so that upcomingShows are computed
 		System.out.println(upcomingShows());
+		//close the scanner
+		s.close();
 	}
 	
 	public String upcomingShows()
