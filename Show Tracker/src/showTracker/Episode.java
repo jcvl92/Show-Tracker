@@ -139,8 +139,6 @@ class Episode implements Serializable
 					sb.append(" "+p.getHours()+" hours");
 				if(p.getMinutes()>0)
 					sb.append(" "+p.getMinutes()+" minutes");
-				if(p.getSeconds()>0)
-					sb.append(" "+p.getSeconds()+" seconds");
 				sb.append('.');
 			}
 			else
@@ -160,8 +158,6 @@ class Episode implements Serializable
 					sb.append(" "+p.getHours()+" hours");
 				if(p.getMinutes()>0)
 					sb.append(" "+p.getMinutes()+" minutes");
-				if(p.getSeconds()>0)
-					sb.append(" "+p.getSeconds()+" seconds");
 				sb.append(" ago.");
 			}
 		}

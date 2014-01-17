@@ -14,21 +14,12 @@ import org.joda.time.DateTime;
 
 public class Main
 {
-	transient String homeScreenText;
-	transient ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
+	String homeScreenText;
+	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
 	ShowDatabase db;
 	ShowEntry[] userShows;
-	String[] showList = {"rick and morty", "american dad",
-			"family guy", "south park", "aqua teen hunger force",
-			"squidbillies", "parks and recreation", "adventure time",
-			"regular show", "workaholics"};
-	//TODO: complete these tasks and resolve all TODOs before moving to android
-	//TODO: implement graceful page errors(description not being gathered some of the time)
-	//TODO: serialize episodes? - maybe we should find a more robust api(our own?) before implementing this. nah, we can just serialize an interface!
-	//show table stores the actual ShowEntry objects
-	//the show entries are updated every day by the users who access them(this happens via a background thread)
-	//make the users do the legwork in background processes
-	//if a show in a user's list needs to be updated, a process is spawned that starts gathering that information and it sends to to the database
+	//TODO: deligate everything out to functions instead of jamming it all into run()
+	//TODO: add show updating(thread it out perhaps?)
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -61,7 +52,7 @@ public class Main
 		System.out.println("Would you like to add any shows to your profile?(y/n)");
 		String response = s.nextLine();
 		if(response.equals("y"))
-			for(int i=0; i<showList.length; ++i)
+			while(true)
 			{
 				System.out.println("Enter the name of a show to add.(q to quit)");
 				
@@ -96,7 +87,7 @@ public class Main
 		for(int i=0; i< userShows.length; ++i)
 			userShows[i] = db.getShow(userShowStatuses[i].showID);
 		
-		//print out our text junk
+		//print out our text stuff
 		timeline();//so that upcomingShows are computed
 		System.out.println('\n'+upcomingShows());
 		
