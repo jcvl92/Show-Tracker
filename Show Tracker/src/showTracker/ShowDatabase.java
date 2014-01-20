@@ -109,7 +109,7 @@ public class ShowDatabase
 	{
 		//try to update
 		//build the statement
-		PreparedStatement update = CONN.prepareStatement("UPDATE SHOWS SET object = ? WHERE showid = ?");
+		PreparedStatement update = CONN.prepareStatement("UPDATE shows SET object = ? WHERE showid = ?");
 		update.setObject(1, show);
 		update.setString(2, show.showID);
 		
@@ -132,9 +132,10 @@ public class ShowDatabase
 		else
 		{
 			//build the statement
-			PreparedStatement insert = CONN.prepareStatement("INSERT INTO SHOWS (object, showid) VALUES (?, ?)");
+			PreparedStatement insert = CONN.prepareStatement("INSERT INTO shows (object, showid, showname) VALUES (?, ?, ?)");
 			insert.setObject(1, show);
 			insert.setString(2, show.showID);
+			insert.setString(3, show.showName);
 			
 			//execute the statement
 			boolean res = insert.execute();
@@ -197,11 +198,52 @@ public class ShowDatabase
 	 * @throws IOException 
 	 * @throws ClassNotFoundException 
 	 */
-	public ShowEntry getShow(String showID) throws SQLException, IOException, ClassNotFoundException
+	public ShowEntry getShow(int showID) throws SQLException, IOException, ClassNotFoundException
 	{
 		//prepare the statement
-		PreparedStatement pstmt = CONN.prepareStatement("SELECT object FROM SHOWS WHERE showid = ?");
-	    pstmt.setString(1, showID);
+		PreparedStatement pstmt = CONN.prepareStatement("SELECT object FROM shows WHERE showid = ?");
+	    pstmt.setInt(1, showID);
+	    
+	    //execute the query
+	    ResultSet rs = pstmt.executeQuery();
+	    
+	    //convert the blob contents to a show entry object and return that
+	    if(rs.first())
+	    {
+	    	//get the result object
+	    	ShowEntry result = (ShowEntry)new ObjectInputStream(new ByteArrayInputStream(rs.getBytes(1))).readObject();
+	    	
+	    	//close the result set and prepared statement
+	    	rs.close();
+		    pstmt.close();
+	    	
+	    	//return the result
+	    	return result;
+	    }
+	    //or return null if the user entry was not found
+	    else
+	    {
+	    	//close the result set
+	    	rs.close();
+	    	
+	    	return null;
+	    }
+	}
+	
+	/**
+	 * Gets a show entry object from the database by searching for it
+	 * @param showName	the name of the requested show
+	 * @return			the requested ShowEntry object or null if not found
+	 * @throws SQLException 
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
+	 */
+	public ShowEntry getShow(String showName) throws SQLException, IOException, ClassNotFoundException
+	{
+		//TODO: fix this to be more sensitive(parks and recreation returns rick and morty!)
+		//prepare the statement
+		PreparedStatement pstmt = CONN.prepareStatement("SELECT object FROM shows WHERE MATCH(showname) AGAINST(?)");
+	    pstmt.setString(1, showName);
 	    
 	    //execute the query
 	    ResultSet rs = pstmt.executeQuery();

@@ -150,13 +150,4 @@ public class ShowEntry implements Serializable
 		}
 		return null;
 	}
-	
-	public static String getID(String nameOfShow) throws IOException
-	{
-		//get the search xml document
-		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+nameOfShow).timeout(30*1000).get();
-		
-		//pick the first entry of the search, this is our show
-		return ((Element)search.childNode(1).childNode(1).childNode(0).childNode(1)).getElementsByTag("showid").text();
-	}
 }

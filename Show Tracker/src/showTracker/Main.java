@@ -16,10 +16,13 @@ public class Main
 {
 	String homeScreenText;
 	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
+	public static boolean linksOn = false;
+	Scanner scanner = new Scanner(System.in);
+	User thisUser;
 	ShowDatabase db;
 	ShowEntry[] userShows;
-	//TODO: deligate everything out to functions instead of jamming it all into run()
-	//TODO: add show updating(thread it out perhaps?)
+	//TODO: move scraping to use wikipedia(that is probably free, we can't afford to populate a giant database)
+	//TODO: read from local files before reading from the DB(updating system is required for this)
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -29,62 +32,32 @@ public class Main
 	public void run() throws Exception
 	{
 		//establish connection to database
-		db = new ShowDatabase("localhost/program_test", "user", "pass");
+		db = new ShowDatabase("localhost/test", "root", "password");
 		
-		//enter account information
-		Scanner s = new Scanner(System.in);
-		System.out.print("Enter your username: ");
-		String username = s.nextLine();
-		System.out.print("Enter your password: ");
-		String password = s.nextLine();
+		//ask the user if we need to turn on linking
+		System.out.println("Turn on magnet link gatherer?(y/n) - (longer load time and NSFW traffic)");
+		linksOn = scanner.nextLine().equals("y");
 		
-		//get user object from server or create a new user object
-		User thisUser = db.getUser(username, password);
-		if(thisUser == null)
-		{
-			thisUser = new User(username, password);
-			System.out.println("Profile created.");
-		}
-		else
-			System.out.println("Profile loaded.");
+		//attempt to log in/register
+		if((thisUser = login()) == null)
+			return;
 		
 		//manage their list:
 		System.out.println("Would you like to add any shows to your profile?(y/n)");
-		String response = s.nextLine();
+		String response = scanner.nextLine();
 		if(response.equals("y"))
-			while(true)
-			{
-				System.out.println("Enter the name of a show to add.(q to quit)");
-				
-				response = s.nextLine();
-				
-				//allow the user to quit
-				if(response.equals("q"))
-					break;
-				
-				//try and get the show from the database
-				ShowEntry show = db.getShow(ShowEntry.getID(response));
-				
-				//if that was unsuccessful, create a new entry and add it to the database
-				if(show == null)
-				{
-					show = new ShowEntry(response);
-					db.updateShow(show);
-				}
-				
-				//add the show to this user's account
-				thisUser.addShow(new ShowStatus(show.showID, show.seasons.get(0).episodes.get(0).information.get("epnum")));
-				
-				System.out.println(show.showName+" added.");
-			}
-		
-		//update the user in the database
-		db.updateUser(thisUser);
+		{
+			manageShows();
+			
+			//update the user in the database
+			db.updateUser(thisUser);
+		}
 		
 		//get show entry objects from server
 		ShowStatus[] userShowStatuses = thisUser.getShowList();
 		userShows = new ShowEntry[userShowStatuses.length];
 		for(int i=0; i< userShows.length; ++i)
+			//note: if a showid is in a user's list, it is guaranteed to be in the show database
 			userShows[i] = db.getShow(userShowStatuses[i].showID);
 		
 		//print out our text stuff
@@ -92,7 +65,94 @@ public class Main
 		System.out.println('\n'+upcomingShows());
 		
 		//close the scanner
-		s.close();
+		scanner.close();
+	}
+	
+	public void manageShows()
+	{
+		String response;
+		
+		for(int i=0; i<thisUser.getShowList().length; ++i)
+			System.out.println(thisUser.getShowList()[i].showName);
+		try
+		{
+			while(true)
+			{
+				System.out.println("Enter the name of a show to add.(q to quit)");
+				
+				response = scanner.nextLine();
+				
+				//allow the user to quit
+				if(response.equals("q"))
+					break;
+				
+				//try and get the show entry from the database
+				ShowEntry show = db.getShow(response);
+				
+				//if that was unsuccessful, create a new entry and add it to the database
+				if(show == null)
+				{
+					//get the show
+					show = new ShowEntry(response);
+					db.updateShow(show);
+					
+					//add the show to this user's account
+					thisUser.addShow(new ShowStatus(show));
+					
+					System.out.println(show.showName+" entry created.");
+				}
+				else
+				{
+					//skip this if it is in the list already
+					if(thisUser.isInList(show.showID))
+					{
+						System.out.println("That show is already in your preferences!");
+					}
+					//or add it into their account 
+					else
+					{
+						//add the show to this user's account
+						thisUser.addShow(new ShowStatus(show));
+						
+						System.out.println(show.showName+" added.");
+					}
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error managing shows.");
+			return;
+		}
+	}
+	
+	public User login()
+	{
+		try
+		{
+			System.out.print("Enter your username: ");
+			String username = scanner.nextLine();
+			System.out.print("Enter your password: ");
+			String password = scanner.nextLine();
+			
+			//get user object from server or create a new user object
+			User thisUser = db.getUser(username, password);
+			if(thisUser == null)
+			{
+				thisUser = new User(username, password);
+				System.out.println("Profile created.");
+			}
+			else
+				System.out.println("Profile loaded.");
+			
+			return thisUser;
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error logging in.");
+			
+			return null;
+		}
 	}
 	
 	public String upcomingShows()

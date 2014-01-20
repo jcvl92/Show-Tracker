@@ -1,5 +1,6 @@
 package showTracker;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -16,7 +17,10 @@ class UpcomingEpisode
 	
 	public String toString()
 	{
-		MagnetLink magLink = getMagnetLink();
+		MagnetLink magLink = null;
+		
+		if(Main.linksOn)
+			magLink = getMagnetLink();
 		
 		try
 		{
@@ -33,7 +37,7 @@ class UpcomingEpisode
 		Document search = null;
 		try
 		{
-			//search = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getTPBTag()+"/0/7/0").timeout(30*1000).get();
+			search = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getTPBTag()+"/0/7/0").timeout(30*1000).get();
 			
 			Element result = search.getElementsByClass("detName").first();
 			
