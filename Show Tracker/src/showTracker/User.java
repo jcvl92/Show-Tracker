@@ -35,12 +35,11 @@ public class User implements Serializable
 		return password;
 	}
 	
-
-	public boolean isInList(String showID)
+	public boolean isInList(int showID)
 	{
 		for(int i=0; i<showList.size(); ++i)
 		{
-			if(showList.get(i).showID.equals(showID))
+			if(showList.get(i).showID == showID)
 				return true;
 		}
 		return false;

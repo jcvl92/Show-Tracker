@@ -5,9 +5,10 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class ShowStatus implements Serializable
 {
-	public String showID, showName, epPosition;
+	public int showID;
+	public String showName, epPosition;
 	
-	ShowStatus(String sid, String sn, String dp)
+	ShowStatus(int sid, String sn, String dp)
 	{
 		showID = sid;
 		showName = sn;

@@ -111,7 +111,7 @@ public class ShowDatabase
 		//build the statement
 		PreparedStatement update = CONN.prepareStatement("UPDATE shows SET object = ? WHERE showid = ?");
 		update.setObject(1, show);
-		update.setString(2, show.showID);
+		update.setInt(2, show.showID);
 		
 		//execute the statement
 		update.execute();
@@ -134,7 +134,7 @@ public class ShowDatabase
 			//build the statement
 			PreparedStatement insert = CONN.prepareStatement("INSERT INTO shows (object, showid, showname) VALUES (?, ?, ?)");
 			insert.setObject(1, show);
-			insert.setString(2, show.showID);
+			insert.setInt(2, show.showID);
 			insert.setString(3, show.showName);
 			
 			//execute the statement
@@ -242,7 +242,7 @@ public class ShowDatabase
 	{
 		//TODO: fix this to be more sensitive(parks and recreation returns rick and morty!)
 		//prepare the statement
-		PreparedStatement pstmt = CONN.prepareStatement("SELECT object FROM shows WHERE MATCH(showname) AGAINST(?)");
+		PreparedStatement pstmt = CONN.prepareStatement("SELECT object FROM shows WHERE MATCH(showname) AGAINST(?)>0.8");
 	    pstmt.setString(1, showName);
 	    
 	    //execute the query

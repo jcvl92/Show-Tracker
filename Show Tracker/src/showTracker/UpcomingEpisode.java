@@ -29,7 +29,11 @@ class UpcomingEpisode
 		}
 		catch(Exception e){e.printStackTrace();}
 		
-		return episode.timeDifference()+'\t'+(magLink!=null ? magLink : show.showName);
+		String time = episode.timeDifference();
+		for(int i=time.length(); i<40; ++i)
+			time += ' ';
+		
+		return time+(magLink!=null ? magLink : show.showName);
 	}
 	
 	public MagnetLink getMagnetLink()

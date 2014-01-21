@@ -15,7 +15,8 @@ import org.jsoup.nodes.TextNode;
 @SuppressWarnings("serial")
 public class ShowEntry implements Serializable
 {
-	String showName, showID, seasonCount, runTime, airTime, status, search;
+	String showName, seasonCount, runTime, airTime, status, search;
+	int showID;
 	ArrayList<Season> seasons = new ArrayList<Season>();
 	
 	ShowEntry(String nameOfShow)
@@ -46,7 +47,7 @@ public class ShowEntry implements Serializable
 			switch(showDescription.get(i).tagName())
 			{
 			case "showid":
-				showID = showDescription.get(i).text();
+				showID = Integer.parseInt(showDescription.get(i).text());
 				break;
 			case "name":
 				showName = showDescription.get(i).text();

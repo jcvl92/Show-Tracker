@@ -88,6 +88,9 @@ public class Main
 				
 				//try and get the show entry from the database
 				ShowEntry show = db.getShow(response);
+				//this should probably prompt the user, asking them if the show find was what they were searching for
+				//it should, again, ask them after it scrapes for it too.
+				//with this implemented, we need to change the search to return the top results and prompt for a choice
 				
 				//if that was unsuccessful, create a new entry and add it to the database
 				if(show == null)
@@ -139,6 +142,7 @@ public class Main
 			User thisUser = db.getUser(username, password);
 			if(thisUser == null)
 			{
+				//TODO: check if the username already exists
 				thisUser = new User(username, password);
 				System.out.println("Profile created.");
 			}
