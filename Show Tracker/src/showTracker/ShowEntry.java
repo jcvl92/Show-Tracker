@@ -19,18 +19,11 @@ public class ShowEntry implements Serializable
 	int showID;
 	ArrayList<Season> seasons = new ArrayList<Season>();
 	
-	ShowEntry(String nameOfShow)
+	ShowEntry(String nameOfShow) throws IOException, InterruptedException
 	{
 		search = nameOfShow;
-		try
-		{
-			getFromTVRage(nameOfShow);
-		}
-		catch (Exception e)
-		{
-			System.out.println("could not get show data.");
-			e.printStackTrace();
-		}
+		
+		getFromTVRage(nameOfShow);
 	}
 	
 	private void getFromTVRage(String nameOfShow) throws IOException, InterruptedException

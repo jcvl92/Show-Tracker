@@ -2,7 +2,9 @@ package showTracker;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -14,112 +16,131 @@ import org.joda.time.DateTime;
 
 public class Main
 {
-	String homeScreenText;
-	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
-	public static boolean linksOn = false;
-	Scanner scanner = new Scanner(System.in);
-	User thisUser;
-	ShowDatabase db;
-	ShowEntry[] userShows;
-	//TODO: move scraping to use wikipedia(that is probably free, we can't afford to populate a giant database)
-	//TODO: read from local files before reading from the DB(updating system is required for this)
+	static ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
+	static final Scanner scanner = new Scanner(System.in);
+	static ArrayList<ShowEntry> shows;
 	
-	public static void main(String[] args) throws Exception
+	public static void main(String[] args)
 	{
-		new Main().run();
-	}
-	
-	public void run() throws Exception
-	{
-		//establish connection to database
-		db = new ShowDatabase("localhost/test", "root", "password");
+		//load the shows from the data file
+		shows = readShowsFromFile();
 		
-		//ask the user if we need to turn on linking
-		System.out.println("Turn on magnet link gatherer?(y/n) - (longer load time and NSFW traffic)");
-		linksOn = scanner.nextLine().equals("y");
+		//if there are no shows, initialize the array list
+		if(shows == null)
+			shows = new ArrayList<ShowEntry>();
 		
-		//attempt to log in/register
-		if((thisUser = login()) == null)
-			return;
-		
-		//manage their list:
-		System.out.println("Would you like to add any shows to your profile?(y/n)");
-		String response = scanner.nextLine();
-		if(response.equals("y"))
+		//command loop
+		command:while(true)
 		{
-			manageShows();
+			System.out.println("1 - manage show catalog\n"
+					+ "2 - download unseen episodes\n"
+					+ "3 - print upcoming episodes\n"
+					+ "4 - print show timelines\n"
+					+ "5 - update show catalog\n"
+					+ "6 - exit");
 			
-			//update the user in the database
-			db.updateUser(thisUser);
+			//TODO: add update function
+			
+			//TODO: add users(just prepends the data file with the username for ID, so multiple people can use the same program)
+			
+							//TODO: add description gathering(have something like the timeline but that prints out the last two watched shows(with descriptions)
+							//maybe make this some sort of episode browser? where you can request links and descriptions
+							//ok, in the upcoming shows thing, there should be the option to view descriptions(and request a link?)
+			//fuck all of this^, just add to the timeline two more things(last watched and next to watch) and each thing will have a number
+			//the number will be entered if the user wants to get the description or update the watch position or check for a link
+			//or download the link(it should ask)
+			
+			
+			//TODO: add watch position to shows(set when adding a show and when downloading it - upcoming shows will use it)
+			//when looking at upcoming shows, it will tell you if you have watched them or not(only applies to aired shows)
+			
+			//TODO: add episode names to the upcoming episodes
+			
+			switch(scanner.nextLine())
+			{
+			case "1":
+				manageShows();
+				break;
+			case "2":
+				System.out.println("\nnothing here yet.\n");
+				break;
+			case "3":
+				System.out.println('\n'+upcomingShows());
+				break;
+			case "4":
+				System.out.println('\n'+timeline());
+				break;
+			case "5":
+				System.out.println("\nnothing here yet.\n");
+				break;
+			case "6":
+				break command;
+			default:
+				System.out.println("\nInvalid input, try again.");
+				break;
+			}
 		}
-		
-		//get show entry objects from server
-		ShowStatus[] userShowStatuses = thisUser.getShowList();
-		userShows = new ShowEntry[userShowStatuses.length];
-		for(int i=0; i< userShows.length; ++i)
-			//note: if a showid is in a user's list, it is guaranteed to be in the show database
-			userShows[i] = db.getShow(userShowStatuses[i].showID);
-		
-		//print out our text stuff
-		timeline();//so that upcomingShows are computed
-		System.out.println('\n'+upcomingShows());
 		
 		//close the scanner
 		scanner.close();
 	}
 	
-	public void manageShows()
+	public static void manageShows()
 	{
 		String response;
 		
-		for(int i=0; i<thisUser.getShowList().length; ++i)
-			System.out.println(thisUser.getShowList()[i].showName);
 		try
 		{
 			while(true)
 			{
-				System.out.println("Enter the name of a show to add.(q to quit)");
+				System.out.println("\nCurrent shows:");
+				for(int i=0;i<shows.size();++i)
+					System.out.println(i+". "+shows.get(i).showName);
 				
+				System.out.println("\nEnter \"add\", \"remove\", or \"quit\".");
 				response = scanner.nextLine();
 				
 				//allow the user to quit
-				if(response.equals("q"))
+				if(response.equals("quit"))
+				{
+					System.out.println();
 					break;
-				
-				//try and get the show entry from the database
-				ShowEntry show = db.getShow(response);
-				//this should probably prompt the user, asking them if the show find was what they were searching for
-				//it should, again, ask them after it scrapes for it too.
-				//with this implemented, we need to change the search to return the top results and prompt for a choice
-				
-				//if that was unsuccessful, create a new entry and add it to the database
-				if(show == null)
-				{
-					//get the show
-					show = new ShowEntry(response);
-					db.updateShow(show);
-					
-					//add the show to this user's account
-					thisUser.addShow(new ShowStatus(show));
-					
-					System.out.println(show.showName+" entry created.");
 				}
+				
+				//add a show
+				else if(response.equals("add"))
+				{
+					System.out.println("Enter a show name(note: the text entered now will be used when searching for magnet links so make sure it is accurate).");
+					response = scanner.nextLine();
+
+					try
+					{
+						ShowEntry show = new ShowEntry(response);
+						addShowToFile(show);
+						System.out.println("\""+show.showName+"\" added.");
+					}
+					catch(Exception e)
+					{
+						System.out.println("\""+response+"\" was not added because "+e);
+					}
+				}
+				
+				//remove a show
+				else if(response.equals("remove"))
+				{
+					try
+					{
+						System.out.print("Select a show(0-"+(shows.size()-1)+"): ");
+						removeShowFromFile(Integer.parseInt(scanner.nextLine()));
+					}
+					catch(Exception e)
+					{
+						System.out.println("Could not remove entry because "+e);
+					}
+				}
+				
 				else
-				{
-					//skip this if it is in the list already
-					if(thisUser.isInList(show.showID))
-					{
-						System.out.println("That show is already in your preferences!");
-					}
-					//or add it into their account 
-					else
-					{
-						//add the show to this user's account
-						thisUser.addShow(new ShowStatus(show));
-						
-						System.out.println(show.showName+" added.");
-					}
-				}
+					System.out.println("\nInvalid input, try again.");
 			}
 		}
 		catch(Exception e)
@@ -129,40 +150,15 @@ public class Main
 		}
 	}
 	
-	public User login()
+	public static String upcomingShows()
 	{
-		try
-		{
-			System.out.print("Enter your username: ");
-			String username = scanner.nextLine();
-			System.out.print("Enter your password: ");
-			String password = scanner.nextLine();
-			
-			//get user object from server or create a new user object
-			User thisUser = db.getUser(username, password);
-			if(thisUser == null)
-			{
-				//TODO: check if the username already exists
-				thisUser = new User(username, password);
-				System.out.println("Profile created.");
-			}
-			else
-				System.out.println("Profile loaded.");
-			
-			return thisUser;
-		}
-		catch(Exception e)
-		{
-			System.out.println("Error logging in.");
-			
-			return null;
-		}
-	}
-	
-	public String upcomingShows()
-	{
+		//reset the list
+		upcoming.clear();
+		timeline();
 		if(upcoming.size() < 1)
+		{
 			return "No upcoming shows at this time.\n";
+		}
 		
 		//sort the shows list
 		Collections.sort(upcoming, new Comparator<UpcomingEpisode>() {
@@ -186,15 +182,16 @@ public class Main
 		return upcomingShows.toString();
 	}
 	
-	public String timeline()
+	public static String timeline()
 	{
+		boolean populate = upcoming.isEmpty();
 		StringBuilder timeline = new StringBuilder();
-		for(int i=0; i<userShows.length; ++i)
+		for(int i=0; i<shows.size(); ++i)
 		{
-			Episode next = userShows[i].getNextEpisode();
-			Episode last = userShows[i].getLastEpisode();
+			Episode next = shows.get(i).getNextEpisode();
+			Episode last = shows.get(i).getLastEpisode();
 			
-			timeline.append(userShows[i].showName+'\n');
+			timeline.append(shows.get(i).showName+'\n');
 			
 			if(last != null)
 			{
@@ -202,8 +199,8 @@ public class Main
 				timeline.append("\t\t"+last.timeDifference()+'\n');
 				
 				//save this upcoming show in the upcoming show list if it isn't too old
-				if(last.airDate.isAfter(new DateTime().minusWeeks(2)))
-						upcoming.add(new UpcomingEpisode(last, userShows[i]));
+				if(populate && last.airDate.isAfter(new DateTime().minusWeeks(2)))
+						upcoming.add(new UpcomingEpisode(last, shows.get(i)));
 			}
 			else
 				timeline.append("\t\tNo aired episodes listed.\n");
@@ -214,7 +211,8 @@ public class Main
 				timeline.append("\t\t"+next.timeDifference()+'\n');
 				
 				//save this upcoming show in the upcoming show list
-				upcoming.add(new UpcomingEpisode(next, userShows[i]));
+				if(populate && next.airDate.isBefore(new DateTime().plusWeeks(2)))
+					upcoming.add(new UpcomingEpisode(next, shows.get(i)));
 			}
 			else
 				timeline.append("\tNo upcoming episodes listed.\n");
@@ -223,18 +221,16 @@ public class Main
 		
 		return timeline.toString(); 
 	}
-
-	@SuppressWarnings("unused")
-	private ShowEntry getShowFromFile(String showName)
+	
+	private static ArrayList<ShowEntry> readShowsFromFile()
 	{
-		//attempt to get the entry from a file
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
-			ShowEntry show = (ShowEntry)ois.readObject();
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("data")));
+			ArrayList<ShowEntry> shows = (ArrayList<ShowEntry>)ois.readObject();
 			ois.close();
 			
-			return show;
+			return shows;
 		}
 		catch(Exception e)
 		{
@@ -242,18 +238,26 @@ public class Main
 		}
 	}
 	
-	@SuppressWarnings("unused")
-	private void addShowToFile(ShowEntry show, String showName)
+	private static void addShowToFile(ShowEntry show)
 	{
 		try
 		{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(".\\data\\"+showName.replaceAll("\\W+", "_"))));   
-			oos.writeObject(show);
+			shows.add(show);
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("data")));   
+			oos.writeObject(shows);
 			oos.close();
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	private static void removeShowFromFile(int index) throws FileNotFoundException, IOException
+	{
+		shows.remove(index);
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("data")));   
+		oos.writeObject(shows);
+		oos.close();
 	}
 }

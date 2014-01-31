@@ -1,7 +1,10 @@
 package showTracker;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 class UpcomingEpisode
@@ -15,39 +18,25 @@ class UpcomingEpisode
 		show = se;
 	}
 	
+	@Override
 	public String toString()
 	{
-		MagnetLink magLink = null;
-		
-		if(Main.linksOn)
-			magLink = getMagnetLink();
-		
-		try
-		{
-			if(magLink != null)
-				magLink.link = WebHandler.getBarePage("http://tinyurl.com/api-create.php?url="+magLink.link).trim();
-		}
-		catch(Exception e){e.printStackTrace();}
-		
 		String time = episode.timeDifference();
-		for(int i=time.length(); i<40; ++i)
+		for(int i=time.length(); i<47; ++i)
 			time += ' ';
 		
-		return time+(magLink!=null ? magLink : show.showName);
+		return time+show.showName;
 	}
 	
 	public MagnetLink getMagnetLink()
 	{
-		Document search = null;
 		try
 		{
-			search = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getTPBTag()+"/0/7/0").timeout(30*1000).get();
-			
-			Element result = search.getElementsByClass("detName").first();
+			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getTPBTag()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 			
 			return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
 			return null;
 		}
@@ -56,11 +45,21 @@ class UpcomingEpisode
 	class MagnetLink
 	{
 		String name, link;
+		
 		MagnetLink(String text, String magLink)
 		{
 			name = text;
-			link = magLink;
+			try
+			{
+				link = new java.util.Scanner((Readable) ((HttpURLConnection) new URL("http://tinyurl.com/api-create.php?url="+magLink).openConnection()).getContent()).useDelimiter("\\A").next();
+			}
+			catch (IOException e)
+			{
+				link = "";
+			}
 		}
+		
+		@Override
 		public String toString()
 		{
 			if(name == null || link == null)
