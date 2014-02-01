@@ -25,7 +25,7 @@ class UpcomingEpisode
 		for(int i=time.length(); i<47; ++i)
 			time += ' ';
 		
-		return time+show.showName;
+		return time+show.showName+" - "+episode.getTitle();
 	}
 	
 	public MagnetLink getMagnetLink()

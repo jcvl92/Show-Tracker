@@ -92,7 +92,7 @@ public class ShowEntry implements Serializable
 						}
 						ep.put("inseason", aSeason.attr("no"));
 						
-						episodes.add(new Episode(ep, showDescription.get(12).text()));
+						episodes.add(new Episode(ep, airTime));
 					}
 				}
 			
@@ -143,5 +143,51 @@ public class ShowEntry implements Serializable
 			}
 		}
 		return null;
+	}
+	
+
+	public void update() throws IOException, InterruptedException
+	{
+		//clear the current episode contents
+		seasons = new ArrayList<Season>();
+		
+		//get the season details xml document
+		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+showID).timeout(30*1000).get();
+		
+		//pick the episode list
+		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);
+		
+		for(int i=0; i<episodeList.childNodeSize(); ++i)
+		{
+			if(episodeList.childNode(i).getClass() == Element.class)
+			{
+				ArrayList<Episode> episodes = new ArrayList<Episode>();
+				Node aSeason = episodeList.childNode(i);
+				for(int j=0; j<aSeason.childNodeSize(); ++j)
+				{
+					if(aSeason.childNode(j).getClass() == Element.class)
+					{
+						HashMap<String, String> ep = new HashMap<String, String>();
+						Node episode = aSeason.childNode(j);
+						
+						for(int k=0; k<episode.childNodeSize(); ++k)
+						{
+							if(episode.childNode(k).getClass() != Element.class)
+								ep.put("link", ((TextNode)episode.childNode(k)).text());
+							else
+								ep.put(((Element)episode.childNode(k)).tagName(),
+										((Element)episode.childNode(k)).text());
+						}
+						ep.put("inseason", aSeason.attr("no"));
+						
+						episodes.add(new Episode(ep, airTime));
+					}
+				}
+			
+				seasons.add(new Season(
+						(aSeason.attr("no")!="" ? "season "+aSeason.attr("no") : ((Element)aSeason).tagName())
+						, episodes));
+			}
+		}
 	}
 }

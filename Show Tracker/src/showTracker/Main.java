@@ -39,7 +39,7 @@ public class Main
 					+ "5 - update show catalog\n"
 					+ "6 - exit");
 			
-			//TODO: add update function
+			//FIXME: no episodes are detected even though the showentry class is fine
 			
 			//TODO: add users(just prepends the data file with the username for ID, so multiple people can use the same program)
 			
@@ -53,8 +53,6 @@ public class Main
 			
 			//TODO: add watch position to shows(set when adding a show and when downloading it - upcoming shows will use it)
 			//when looking at upcoming shows, it will tell you if you have watched them or not(only applies to aired shows)
-			
-			//TODO: add episode names to the upcoming episodes
 			
 			switch(scanner.nextLine())
 			{
@@ -71,7 +69,9 @@ public class Main
 				System.out.println('\n'+timeline());
 				break;
 			case "5":
-				System.out.println("\nnothing here yet.\n");
+				System.out.println();
+				updateShows();
+				System.out.println();
 				break;
 			case "6":
 				break command;
@@ -85,7 +85,7 @@ public class Main
 		scanner.close();
 	}
 	
-	public static void manageShows()
+	private static void manageShows()
 	{
 		String response;
 		
@@ -150,7 +150,7 @@ public class Main
 		}
 	}
 	
-	public static String upcomingShows()
+	private static String upcomingShows()
 	{
 		//reset the list
 		upcoming.clear();
@@ -175,14 +175,22 @@ public class Main
 		
 		//set next shows list text
 		StringBuilder upcomingShows = new StringBuilder();
+		boolean marker=true;
 		for(int i=0; i<upcoming.size(); ++i)
+		{
+			if(upcoming.get(i).episode.airDate.isAfterNow() && marker)
+			{
+				upcomingShows.append("-------------------------------------\n");
+				marker = false;
+			}
 			upcomingShows.append(upcoming.get(i).toString()+'\n');
+		}
 		
 		//return the text
 		return upcomingShows.toString();
 	}
 	
-	public static String timeline()
+	private static String timeline()
 	{
 		boolean populate = upcoming.isEmpty();
 		StringBuilder timeline = new StringBuilder();
@@ -220,6 +228,19 @@ public class Main
 		}
 		
 		return timeline.toString(); 
+	}
+	
+	private static void updateShows()
+	{
+		for(int i=0; i<shows.size(); ++i)
+		{
+			try
+			{
+				shows.get(i).update();
+				System.out.println(shows.get(i).showName+" updated.");
+			}
+			catch (IOException | InterruptedException ie){}
+		}
 	}
 	
 	private static ArrayList<ShowEntry> readShowsFromFile()
