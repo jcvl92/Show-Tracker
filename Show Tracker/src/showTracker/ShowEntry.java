@@ -145,7 +145,6 @@ public class ShowEntry implements Serializable
 		return null;
 	}
 	
-
 	public void update() throws IOException, InterruptedException
 	{
 		//clear the current episode contents

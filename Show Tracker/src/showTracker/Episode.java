@@ -31,7 +31,7 @@ class Episode implements Serializable
 		airTime = time;
 		try
 		{
-			airDate = DateTime.parse(info.get("airdate")+'-'+airTime, parseFormatter);
+			airDate = DateTime.parse(info.get("airdate")+'-'+airTime.substring(time.lastIndexOf(' ')+1), parseFormatter);
 		}
 		catch(Exception e)
 		{

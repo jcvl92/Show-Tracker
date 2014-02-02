@@ -19,10 +19,15 @@ public class Main
 	static ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
 	static final Scanner scanner = new Scanner(System.in);
 	static ArrayList<ShowEntry> shows;
+	static String username;
 	
 	public static void main(String[] args)
 	{
-		//load the shows from the data file
+		//get the username
+		System.out.println("Enter your username: ");
+		username = scanner.nextLine();
+		
+		//load the shows for this user from their data file
 		shows = readShowsFromFile();
 		
 		//if there are no shows, initialize the array list
@@ -39,9 +44,7 @@ public class Main
 					+ "5 - update show catalog\n"
 					+ "6 - exit");
 			
-			//FIXME: no episodes are detected even though the showentry class is fine
-			
-			//TODO: add users(just prepends the data file with the username for ID, so multiple people can use the same program)
+			//TODO: add season and episode information to the timeline and upcoming episodes(like S01E01)
 			
 							//TODO: add description gathering(have something like the timeline but that prints out the last two watched shows(with descriptions)
 							//maybe make this some sort of episode browser? where you can request links and descriptions
@@ -50,9 +53,10 @@ public class Main
 			//the number will be entered if the user wants to get the description or update the watch position or check for a link
 			//or download the link(it should ask)
 			
-			
 			//TODO: add watch position to shows(set when adding a show and when downloading it - upcoming shows will use it)
 			//when looking at upcoming shows, it will tell you if you have watched them or not(only applies to aired shows)
+			
+			//TODO: link opener
 			
 			switch(scanner.nextLine())
 			{
@@ -247,7 +251,7 @@ public class Main
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("data")));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(username+"_data")));
 			ArrayList<ShowEntry> shows = (ArrayList<ShowEntry>)ois.readObject();
 			ois.close();
 			
@@ -264,7 +268,7 @@ public class Main
 		try
 		{
 			shows.add(show);
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("data")));   
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(username+"_data")));   
 			oos.writeObject(shows);
 			oos.close();
 		}
