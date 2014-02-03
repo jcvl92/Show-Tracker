@@ -25,7 +25,7 @@ class Season implements Serializable
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<episodes.size(); ++i)
 		{
-			sb.append(episodes.get(i)+"\t- "+episodes.get(i).getTitle()+'\n');
+			sb.append(episodes.get(i)+"\t- "+episodes.get(i)+'\n');
 		}
 		return sb.toString();
 	}

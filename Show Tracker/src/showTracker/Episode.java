@@ -71,13 +71,10 @@ class Episode implements Serializable
 	
 	public String toString()
 	{
-		if(airDate != null)
-			return airDate.toString(writeFormatter);
-		else
-			return information.get("title");
+		return information.get("title");
 	}
 	
-	public String getText() throws IOException
+	public String getText()
 	{
 		StringBuilder sb = new StringBuilder();
 		
@@ -114,6 +111,25 @@ class Episode implements Serializable
 		sb.append(description);
 		
 		return sb.toString();
+	}
+	
+	public String getDate()
+	{
+		if(airDate != null)
+			return airDate.toString(writeFormatter);
+		else
+			return "";
+	}
+	
+	public String getEpisodeNumber()
+	{
+		String seasonNum = information.get("inseason"),
+				episodeNum = information.get("seasonnum");
+		if(seasonNum.length()<2)
+			seasonNum = '0'+seasonNum;
+		if(episodeNum.length()<2)
+			episodeNum = '0'+episodeNum;
+		return 'S'+seasonNum+'E'+episodeNum;
 	}
 	
 	public String timeDifference()
@@ -163,21 +179,5 @@ class Episode implements Serializable
 		}
 		
 		return sb.toString();
-	}
-
-	public String getTitle()
-	{
-		return information.get("title");
-	}
-	
-	public String getTPBTag()
-	{
-		String seasonNum = information.get("inseason"),
-				episodeNum =information.get("seasonnum");
-		if(seasonNum.length()<2)
-			seasonNum = '0'+seasonNum;
-		if(episodeNum.length()<2)
-			episodeNum = '0'+episodeNum;
-		return 'S'+seasonNum+'E'+episodeNum;
 	}
 }

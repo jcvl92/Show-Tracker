@@ -44,7 +44,9 @@ public class Main
 					+ "5 - update show catalog\n"
 					+ "6 - exit");
 			
-			//TODO: add season and episode information to the timeline and upcoming episodes(like S01E01)
+			//TODO: add function in manage shows to edit the watch position
+			
+			//TODO: link opener(need watch positions first)
 			
 							//TODO: add description gathering(have something like the timeline but that prints out the last two watched shows(with descriptions)
 							//maybe make this some sort of episode browser? where you can request links and descriptions
@@ -52,11 +54,6 @@ public class Main
 			//fuck all of this^, just add to the timeline two more things(last watched and next to watch) and each thing will have a number
 			//the number will be entered if the user wants to get the description or update the watch position or check for a link
 			//or download the link(it should ask)
-			
-			//TODO: add watch position to shows(set when adding a show and when downloading it - upcoming shows will use it)
-			//when looking at upcoming shows, it will tell you if you have watched them or not(only applies to aired shows)
-			
-			//TODO: link opener
 			
 			switch(scanner.nextLine())
 			{
@@ -70,7 +67,7 @@ public class Main
 				System.out.println('\n'+upcomingShows());
 				break;
 			case "4":
-				System.out.println('\n'+timeline());
+				System.out.print('\n'+timeline());
 				break;
 			case "5":
 				System.out.println();
@@ -97,6 +94,7 @@ public class Main
 		{
 			while(true)
 			{
+				//TODO: episode number of watch positions printed here
 				System.out.println("\nCurrent shows:");
 				for(int i=0;i<shows.size();++i)
 					System.out.println(i+". "+shows.get(i).showName);
@@ -202,12 +200,14 @@ public class Main
 		{
 			Episode next = shows.get(i).getNextEpisode();
 			Episode last = shows.get(i).getLastEpisode();
+			Episode nextToWatch = shows.get(i).getNextEpisodeToWatch();
+			Episode lastWatched = shows.get(i).getLastEpisodeWatched();
 			
 			timeline.append(shows.get(i).showName+'\n');
 			
 			if(last != null)
 			{
-				timeline.append("\tLast episode: "+last.getTitle()+'\n');
+				timeline.append("\tLast episode: "+last+" ("+last.getEpisodeNumber()+')'+'\n');
 				timeline.append("\t\t"+last.timeDifference()+'\n');
 				
 				//save this upcoming show in the upcoming show list if it isn't too old
@@ -215,11 +215,11 @@ public class Main
 						upcoming.add(new UpcomingEpisode(last, shows.get(i)));
 			}
 			else
-				timeline.append("\t\tNo aired episodes listed.\n");
+				timeline.append("\tNo aired episodes listed.\n");
 			
 			if(next != null)
 			{
-				timeline.append("\tNext episode: "+next.getTitle()+'\n');
+				timeline.append("\tNext episode: "+next+" ("+next.getEpisodeNumber()+')'+'\n');
 				timeline.append("\t\t"+next.timeDifference()+'\n');
 				
 				//save this upcoming show in the upcoming show list
@@ -228,6 +228,23 @@ public class Main
 			}
 			else
 				timeline.append("\tNo upcoming episodes listed.\n");
+			
+			if(lastWatched != null)
+			{
+				timeline.append("\tLast watched episode: "+lastWatched+" ("+lastWatched.getEpisodeNumber()+')'+'\n');
+				timeline.append("\t\t"+lastWatched.timeDifference()+'\n');
+			}
+			else
+				timeline.append("\tNo aired episodes seen.\n");
+			
+			if(nextToWatch != null)
+			{
+				timeline.append("\tNext episode to watch: "+nextToWatch+" ("+nextToWatch.getEpisodeNumber()+')'+'\n');
+				timeline.append("\t\t"+nextToWatch.timeDifference()+'\n');
+			}
+			else
+				timeline.append("\tNo upcoming episodes to be seen.\n");
+			
 			timeline.append('\n');
 		}
 		

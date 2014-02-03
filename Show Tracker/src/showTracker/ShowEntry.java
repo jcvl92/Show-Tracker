@@ -15,15 +15,24 @@ import org.jsoup.nodes.TextNode;
 @SuppressWarnings("serial")
 public class ShowEntry implements Serializable
 {
+	//TODO: watch position. I want to use a pointer but that isn't possible. what else can we do?
+	//we can store two indexes, season and episode numbers(we will only increment seasons if the
+	//date of the first episode of the next season is greater than the date of the last
+	//episode(current episode) of the current season
 	String showName, seasonCount, runTime, airTime, status, search;
-	int showID;
+	int showID, seasonPos=-1, episodePos=-1;
 	ArrayList<Season> seasons = new ArrayList<Season>();
 	
 	ShowEntry(String nameOfShow) throws IOException, InterruptedException
 	{
+		//save the search string for TPB magnet link searches
 		search = nameOfShow;
 		
+		//get the data
 		getFromTVRage(nameOfShow);
+		
+		//set the last watched episode position
+		manageWatchPosition();
 	}
 	
 	private void getFromTVRage(String nameOfShow) throws IOException, InterruptedException
@@ -145,6 +154,69 @@ public class ShowEntry implements Serializable
 		return null;
 	}
 	
+	public Episode getNextEpisodeToWatch()
+	{
+		if(seasonPos == -1 && episodePos == -1)
+			return seasons.get(0).episodes.get(0);
+		
+		Season s = seasons.get(seasonPos);
+		//if this is the last episode in the season
+		if(episodePos == s.episodes.size()-1)
+		{
+			//if this is the last season
+			if(seasonPos == seasons.size()-1)
+				return null;
+			
+			//get the first episode of the next season
+			return seasons.get(seasonPos+1).episodes.get(0);
+		}
+		return s.episodes.get(episodePos+1);
+	}
+
+	public Episode getLastEpisodeWatched()
+	{
+		if(seasonPos == -1 && episodePos == -1)
+			return null;
+		return seasons.get(seasonPos).episodes.get(episodePos);
+	}
+	
+	public void manageWatchPosition()
+	{
+		System.out.println("Have you seen any episodes of "+showName+"? (y/n)");
+		if(Main.scanner.nextLine().equals("y"))
+		{
+			//print out the season list
+			System.out.println();
+			for(int i=0;i<seasons.size();++i)
+				System.out.println((i+1)+". "+seasons.get(i));
+			System.out.println("\nPlease choose the season of the last episode you have seen. (1-"+seasons.size()+')');
+			
+			//get the season position
+			seasonPos = Integer.parseInt(Main.scanner.nextLine())-1;
+			
+			//print out the episode list
+			System.out.println();
+			for(int i=0;i<seasons.get(seasonPos).episodes.size();++i)
+				System.out.println((i+1)+". "+seasons.get(seasonPos).episodes.get(i)+" ("+seasons.get(seasonPos).episodes.get(i).getDate()+')');
+			System.out.println("\nPlease choose the last episode you have seen. (1-"+seasons.get(seasonPos).episodes.size()+')');
+			
+			//get the episode position
+			episodePos = Integer.parseInt(Main.scanner.nextLine())-1;
+		}
+	}
+	
+	/**
+	 * @param episode	An episode to check.
+	 * @return			true if the air date of the episode is on or before the air date of the watch position episode, false otherwise
+	 */
+	public boolean isSeen(Episode episode)
+	{
+		if(episode==seasons.get(seasonPos).episodes.get(episodePos) ||
+				episode.airDate.isBefore(seasons.get(seasonPos).episodes.get(episodePos).airDate))
+			return true;
+		return false;
+	}
+	
 	public void update() throws IOException, InterruptedException
 	{
 		//clear the current episode contents
@@ -189,4 +261,5 @@ public class ShowEntry implements Serializable
 			}
 		}
 	}
+
 }

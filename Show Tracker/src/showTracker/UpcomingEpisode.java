@@ -25,14 +25,14 @@ class UpcomingEpisode
 		for(int i=time.length(); i<47; ++i)
 			time += ' ';
 		
-		return time+show.showName+" - "+episode.getTitle();
+		return time+show.showName+" - "+episode.getEpisodeNumber()+" - "+episode+(show.isSeen(episode) ? " (seen)" : " (unseen)");
 	}
 	
 	public MagnetLink getMagnetLink()
 	{
 		try
 		{
-			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getTPBTag()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 			
 			return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
 		}
