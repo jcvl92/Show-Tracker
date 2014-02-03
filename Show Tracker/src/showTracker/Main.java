@@ -44,8 +44,6 @@ public class Main
 					+ "5 - update show catalog\n"
 					+ "6 - exit");
 			
-			//TODO: add function in manage shows to edit the watch position
-			
 			//TODO: link opener(need watch positions first)
 			
 							//TODO: add description gathering(have something like the timeline but that prints out the last two watched shows(with descriptions)
@@ -94,12 +92,11 @@ public class Main
 		{
 			while(true)
 			{
-				//TODO: episode number of watch positions printed here
 				System.out.println("\nCurrent shows:");
 				for(int i=0;i<shows.size();++i)
-					System.out.println(i+". "+shows.get(i).showName);
+					System.out.println(i+". "+shows.get(i).showName+" ("+shows.get(i).getLastEpisodeWatched().getEpisodeNumber()+')');
 				
-				System.out.println("\nEnter \"add\", \"remove\", or \"quit\".");
+				System.out.println("\nEnter \"add\", \"remove\", \"edit\", or \"quit\".");
 				response = scanner.nextLine();
 				
 				//allow the user to quit
@@ -138,6 +135,20 @@ public class Main
 					catch(Exception e)
 					{
 						System.out.println("Could not remove entry because "+e);
+					}
+				}
+				
+				//edit a show
+				else if(response.equals("edit"))
+				{
+					try
+					{
+						System.out.print("Select a show(0-"+(shows.size()-1)+"): ");
+						shows.get(Integer.parseInt(scanner.nextLine())).manageWatchPosition();;
+					}
+					catch(Exception e)
+					{
+						System.out.println("Could not edit entry because "+e);
 					}
 				}
 				
