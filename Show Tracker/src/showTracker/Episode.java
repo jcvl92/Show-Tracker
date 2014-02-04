@@ -95,12 +95,10 @@ class Episode implements Serializable
 		{
 			try
 			{
-				//FIXME: this doesn't always work.
-				Document link = Jsoup.connect(information.get("link")).timeout(30*1000).get();
+				Document link = Jsoup.connect(information.get("link")+"/watch_episode").timeout(30*1000).get();
 				
 				//this grabs the description of the show
-				Elements e = link.getElementsByClass("padding_bottom_10").select("div.left:first-of-type");
-				description = ((TextNode)e.get(0).childNode(0)).text();
+				description = link.getElementsByClass("show_synopsis").text();
 			}
 			catch(Exception e)
 			{
