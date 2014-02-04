@@ -8,18 +8,18 @@ class Season implements Serializable
 {
 	ArrayList<Episode> episodes;
 	String seasonTag;
-	
+
 	Season(String tag, ArrayList<Episode> eps)
 	{
 		seasonTag = tag;
 		episodes = eps;
 	}
-	
+
 	public String toString()
 	{
 		return seasonTag;
 	}
-	
+
 	public String getText()
 	{
 		StringBuilder sb = new StringBuilder();

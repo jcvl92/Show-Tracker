@@ -12,8 +12,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 
 @SuppressWarnings("serial")
 class Episode implements Serializable
@@ -23,7 +21,7 @@ class Episode implements Serializable
 	DateTime airDate;
 	transient DateTimeFormatter parseFormatter;
 	transient DateTimeFormatter writeFormatter;
-	
+
 	Episode(HashMap<String, String> info, String time) throws InterruptedException
 	{
 		setFormatters();
@@ -38,7 +36,7 @@ class Episode implements Serializable
 			airDate = null;
 		}
 	}
-	
+
 	private void setFormatters()
 	{
 		parseFormatter = new DateTimeFormatterBuilder()
@@ -52,7 +50,7 @@ class Episode implements Serializable
 		.appendLiteral(':')
 		.appendMinuteOfHour(2)
 		.toFormatter();
-		
+
 		writeFormatter = new DateTimeFormatterBuilder()
 		.appendMonthOfYearShortText()
 		.appendLiteral(", ")
@@ -61,42 +59,42 @@ class Episode implements Serializable
 		.appendYearOfCentury(2, 2)
 		.toFormatter();
 	}
-	
+
 	private void readObject(java.io.ObjectInputStream in) throws ClassNotFoundException, IOException
 	{
 		in.defaultReadObject();
-		
+
 		setFormatters();
 	}
-	
+
 	public String toString()
 	{
 		return information.get("title");
 	}
-	
+
 	public String getText()
 	{
 		StringBuilder sb = new StringBuilder();
-		
+
 		sb.append(information.get("title")+":\n");
 		if(information.get("epnum")!=null)
 			sb.append("Number in series: "+information.get("epnum")+'\n');
 		if(information.get("seasonnum")!=null)
 			sb.append("Number in season: "+information.get("seasonnum")+"\n\n");
-		
+
 		if(airDate != null)
 		{
 			sb.append("Airdate: "+airDate.toDate().toString()+'\n');
 		}
-		
+
 		sb.append(timeDifference()+"\n\n");
-		
+
 		if(description == null)
 		{
 			try
 			{
 				Document link = Jsoup.connect(information.get("link")+"/watch_episode").timeout(30*1000).get();
-				
+
 				//this grabs the description of the show
 				description = link.getElementsByClass("show_synopsis").text();
 			}
@@ -105,12 +103,12 @@ class Episode implements Serializable
 				description = "";
 			}
 		}
-		
+
 		sb.append(description);
-		
+
 		return sb.toString();
 	}
-	
+
 	public String getDate()
 	{
 		if(airDate != null)
@@ -118,7 +116,7 @@ class Episode implements Serializable
 		else
 			return "";
 	}
-	
+
 	public String getEpisodeNumber()
 	{
 		String seasonNum = information.get("inseason"),
@@ -129,17 +127,17 @@ class Episode implements Serializable
 			episodeNum = '0'+episodeNum;
 		return 'S'+seasonNum+'E'+episodeNum;
 	}
-	
+
 	public String timeDifference()
 	{
 		StringBuilder sb = new StringBuilder();
-		
+
 		if(airDate != null)
 		{
 			if(airDate.isAfterNow())
 			{
 				Period p = new Period((ReadableInstant)null, airDate, PeriodType.standard());
-			
+
 				sb.append("Airing in");
 				if(p.getYears()>0)
 					sb.append(" "+p.getYears()+" years");
@@ -158,7 +156,7 @@ class Episode implements Serializable
 			else
 			{
 				Period p = new Period(airDate, (ReadableInstant)null, PeriodType.standard());
-				
+
 				sb.append("Aired");
 				if(p.getYears()>0)
 					sb.append(" "+p.getYears()+" years");
@@ -175,7 +173,7 @@ class Episode implements Serializable
 				sb.append(" ago.");
 			}
 		}
-		
+
 		return sb.toString();
 	}
 }

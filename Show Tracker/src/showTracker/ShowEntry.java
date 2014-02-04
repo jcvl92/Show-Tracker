@@ -18,27 +18,27 @@ public class ShowEntry implements Serializable
 	String showName, seasonCount, runTime, airTime, status, search;
 	int showID, seasonPos, episodePos;
 	ArrayList<Season> seasons = new ArrayList<Season>();
-	
+
 	ShowEntry(String nameOfShow) throws IOException, InterruptedException
 	{
 		//save the search string for TPB magnet link searches
 		search = nameOfShow;
-		
+
 		//get the data
 		getFromTVRage(nameOfShow);
-		
+
 		//set the last watched episode position
 		manageWatchPosition();
 	}
-	
+
 	private void getFromTVRage(String nameOfShow) throws IOException, InterruptedException
 	{
 		//get the search xml document
 		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+nameOfShow).timeout(30*1000).get();
-		
+
 		//pick the first entry of the search, this is our show
 		List<Element> showDescription = ((Element)search.childNode(1).childNode(1).childNode(0).childNode(1)).children();
-		
+
 		//search all fields for the values we want
 		for(int i=0; i<showDescription.size(); ++i)
 		{
@@ -67,13 +67,13 @@ public class ShowEntry implements Serializable
 				break;
 			}
 		}
-		
+
 		//get the season details xml document
 		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+showID).timeout(30*1000).get();
-		
+
 		//pick the episode list
 		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);
-		
+
 		for(int i=0; i<episodeList.childNodeSize(); ++i)
 		{
 			if(episodeList.childNode(i).getClass() == Element.class)
@@ -86,7 +86,7 @@ public class ShowEntry implements Serializable
 					{
 						HashMap<String, String> ep = new HashMap<String, String>();
 						Node episode = aSeason.childNode(j);
-						
+
 						for(int k=0; k<episode.childNodeSize(); ++k)
 						{
 							if(episode.childNode(k).getClass() != Element.class)
@@ -96,28 +96,28 @@ public class ShowEntry implements Serializable
 										((Element)episode.childNode(k)).text());
 						}
 						ep.put("inseason", aSeason.attr("no"));
-						
+
 						episodes.add(new Episode(ep, airTime));
 					}
 				}
-			
+
 				seasons.add(new Season(
 						(aSeason.attr("no")!="" ? "season "+aSeason.attr("no") : ((Element)aSeason).tagName())
 						, episodes));
 			}
 		}
 	}
-	
+
 	public String toString()
 	{
 		return showName;
 	}
-	
+
 	public String getText()
 	{
 		return "Title: "+showName+"\nNumber of seasons: "+seasonCount+"\nRun time: "+runTime+"\nAir time: "+airTime;
 	}
-	
+
 	public Episode getNextEpisode()
 	{
 		for(int i=0; i<seasons.size(); ++i)
@@ -132,7 +132,7 @@ public class ShowEntry implements Serializable
 		}
 		return null;
 	}
-	
+
 	public Episode getLastEpisode()
 	{
 		for(int i=seasons.size()-1; i>=0; --i)
@@ -149,12 +149,12 @@ public class ShowEntry implements Serializable
 		}
 		return null;
 	}
-	
+
 	public Episode getNextEpisodeToWatch()
 	{
 		if(seasonPos == -1 && episodePos == -1)
 			return seasons.get(0).episodes.get(0);
-		
+
 		Season s = seasons.get(seasonPos);
 		//if this is the last episode in the season
 		if(episodePos == s.episodes.size()-1)
@@ -162,7 +162,7 @@ public class ShowEntry implements Serializable
 			//if this is the last season
 			if(seasonPos == seasons.size()-1)
 				return null;
-			
+
 			//get the first episode of the next season
 			return seasons.get(seasonPos+1).episodes.get(0);
 		}
@@ -175,7 +175,7 @@ public class ShowEntry implements Serializable
 			return null;
 		return seasons.get(seasonPos).episodes.get(episodePos);
 	}
-	
+
 	public void manageWatchPosition()
 	{
 		System.out.println("Have you seen any episodes of "+showName+"? (y/n)");
@@ -186,16 +186,16 @@ public class ShowEntry implements Serializable
 			for(int i=0;i<seasons.size();++i)
 				System.out.println((i+1)+". "+seasons.get(i));
 			System.out.println("\nPlease choose the season of the last episode you have seen. (1-"+seasons.size()+')');
-			
+
 			//get the season position
 			seasonPos = Integer.parseInt(Main.scanner.nextLine())-1;
-			
+
 			//print out the episode list
 			System.out.println();
 			for(int i=0;i<seasons.get(seasonPos).episodes.size();++i)
 				System.out.println((i+1)+". "+seasons.get(seasonPos).episodes.get(i)+" ("+seasons.get(seasonPos).episodes.get(i).getDate()+')');
 			System.out.println("\nPlease choose the last episode you have seen. (1-"+seasons.get(seasonPos).episodes.size()+')');
-			
+
 			//get the episode position
 			episodePos = Integer.parseInt(Main.scanner.nextLine())-1;
 		}
@@ -205,7 +205,7 @@ public class ShowEntry implements Serializable
 			episodePos = -1;
 		}
 	}
-	
+
 	/**
 	 * @param episode	An episode to check.
 	 * @return			true if the air date of the episode is on or before the air date of the watch position episode, false otherwise
@@ -217,18 +217,18 @@ public class ShowEntry implements Serializable
 			return true;
 		return false;
 	}
-	
+
 	public void update() throws IOException, InterruptedException
 	{
 		//clear the current episode contents
 		seasons = new ArrayList<Season>();
-		
+
 		//get the season details xml document
 		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+showID).timeout(30*1000).get();
-		
+
 		//pick the episode list
 		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);
-		
+
 		for(int i=0; i<episodeList.childNodeSize(); ++i)
 		{
 			if(episodeList.childNode(i).getClass() == Element.class)
@@ -241,7 +241,7 @@ public class ShowEntry implements Serializable
 					{
 						HashMap<String, String> ep = new HashMap<String, String>();
 						Node episode = aSeason.childNode(j);
-						
+
 						for(int k=0; k<episode.childNodeSize(); ++k)
 						{
 							if(episode.childNode(k).getClass() != Element.class)
@@ -251,11 +251,11 @@ public class ShowEntry implements Serializable
 										((Element)episode.childNode(k)).text());
 						}
 						ep.put("inseason", aSeason.attr("no"));
-						
+
 						episodes.add(new Episode(ep, airTime));
 					}
 				}
-			
+
 				seasons.add(new Season(
 						(aSeason.attr("no")!="" ? "season "+aSeason.attr("no") : ((Element)aSeason).tagName())
 						, episodes));
