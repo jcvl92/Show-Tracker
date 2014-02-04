@@ -13,6 +13,8 @@ import java.util.Comparator;
 import java.util.Scanner;
 
 import org.joda.time.DateTime;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
 public class Main
 {
@@ -47,6 +49,7 @@ public class Main
 					+ "7 - exit");
 			
 			//TODO: use BeanShell's JConsole to make the .jar an executable and more user friendly(COLORS!!!!)
+			//FIXME: if airdate is null, let that episode be set tot he watch position but say that an update is required or something
 			
 			switch(scanner.nextLine())
 			{
@@ -54,8 +57,9 @@ public class Main
 				manageShows();
 				break;
 			case "2":
-				//TODO: magnet link opener and watched show handler through that
-				System.out.println("\nnothing here yet.\n");
+				System.out.println();
+				openMagnetLinks();
+				System.out.println();
 				break;
 			case "3":
 				System.out.println();
@@ -164,6 +168,57 @@ public class Main
 	{
 		//TODO: getDescription(), setAsLastWatched(), download())
 		System.out.println('\n'+episode.getText());
+	}
+	
+	private static void openMagnetLinks()
+	{
+		//iterate through each show and open magnet links for that show
+		for(int i=0;i<shows.size();++i)
+		{
+			ShowEntry show = shows.get(i);
+			System.out.println(show+":");
+			boolean anyLinks=false;
+			
+			//get the date of the current watch position
+			DateTime date = show.getLastEpisodeWatched().airDate;
+			
+			//iterate through all seasons
+			for(int j=0;j<show.seasons.size();++j)
+			{
+				Season season = show.seasons.get(j);
+				
+				//iterate through all episodes
+				for(int k=0;k<season.episodes.size();++k)
+				{
+					Episode episode = season.episodes.get(k);
+					if(episode.airDate != null && episode.airDate.isAfter(date) && episode.airDate.isBeforeNow())
+					{
+						anyLinks=true;
+						if(getMagnetLink(show, episode).open())
+							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") opened.");
+						else
+							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
+					}
+				}
+			}
+			
+			if(!anyLinks)
+				System.out.println("\tNo upcoming shows available.");
+		}
+	}
+	
+	private static MagnetLink getMagnetLink(ShowEntry show, Episode episode)
+	{
+		try
+		{
+			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+			
+			return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
+		}
+		catch (IOException e)
+		{
+			return null;
+		}
 	}
 	
 	private static void manageShows()
