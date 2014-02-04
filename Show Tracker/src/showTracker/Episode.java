@@ -121,6 +121,10 @@ class Episode implements Serializable
 	{
 		String seasonNum = information.get("inseason"),
 				episodeNum = information.get("seasonnum");
+		if(seasonNum == null)
+			seasonNum = "0";
+		if(episodeNum == null)
+			episodeNum = "0";
 		if(seasonNum.length()<2)
 			seasonNum = '0'+seasonNum;
 		if(episodeNum.length()<2)
