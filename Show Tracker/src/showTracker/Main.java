@@ -25,7 +25,6 @@ public class Main
 	
 	public static void main(String[] args)
 	{
-		//TODO: test functions on an empty new user for fault tolerance
 		System.out.println("Welcome to the Show Tracker!\nWarning: Downloading shows will generate very NSFW traffic, be cautious.\n");
 		
 		//get the username
