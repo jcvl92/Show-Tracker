@@ -35,23 +35,18 @@ public class Main
 			shows = new ArrayList<ShowEntry>();
 		
 		//command loop
+		System.out.println();
 		command:while(true)
 		{
 			System.out.println("1 - manage show catalog\n"
 					+ "2 - download unseen episodes\n"
-					+ "3 - print upcoming episodes\n"
-					+ "4 - print show timelines\n"
-					+ "5 - update show catalog\n"
-					+ "6 - exit");
+					+ "3 - browse episodes\n"
+					+ "4 - print upcoming episodes\n"
+					+ "5 - print show timelines\n"
+					+ "6 - update show catalog\n"
+					+ "7 - exit");
 			
-			//TODO: link opener(need watch positions first)
-			
-							//TODO: add description gathering(have something like the timeline but that prints out the last two watched shows(with descriptions)
-							//maybe make this some sort of episode browser? where you can request links and descriptions
-							//ok, in the upcoming shows thing, there should be the option to view descriptions(and request a link?)
-			//fuck all of this^, just add to the timeline two more things(last watched and next to watch) and each thing will have a number
-			//the number will be entered if the user wants to get the description or update the watch position or check for a link
-			//or download the link(it should ask)
+			//TODO: use BeanShell's JConsole to make the .jar an executable and more user friendly(COLORS!!!!)
 			
 			switch(scanner.nextLine())
 			{
@@ -59,20 +54,26 @@ public class Main
 				manageShows();
 				break;
 			case "2":
+				//TODO: magnet link opener and watched show handler through that
 				System.out.println("\nnothing here yet.\n");
 				break;
 			case "3":
-				System.out.println('\n'+upcomingShows());
+				System.out.println();
+				browse();
+				System.out.println();
 				break;
 			case "4":
-				System.out.print('\n'+timeline());
+				System.out.println('\n'+upcomingEpisodes());
 				break;
 			case "5":
+				System.out.print('\n'+timeline());
+				break;
+			case "6":
 				System.out.println();
 				updateShows();
 				System.out.println();
 				break;
-			case "6":
+			case "7":
 				break command;
 			default:
 				System.out.println("\nInvalid input, try again.");
@@ -82,6 +83,87 @@ public class Main
 		
 		//close the scanner
 		scanner.close();
+	}
+	
+	private static void browse()
+	{
+		while(true)
+		{
+			//print out the shows
+			for(int i=0;i<shows.size();++i)
+			{
+				System.out.println((i+1)+". "+shows.get(i));
+			}
+			System.out.println("\nSelect a show. (1-"+shows.size()+")(0 to backup)");
+			
+			//get the response
+			int response = Integer.parseInt(scanner.nextLine())-1;
+			//back up if 0
+			if(response == -1)
+				return;
+			
+			//browse the selected show
+			try
+			{
+				browseShow(shows.get(response));
+			}
+			catch(Exception e)
+			{
+				return;
+			}
+		}
+	}
+	
+	private static void browseShow(ShowEntry show)
+	{
+		while(true)
+		{
+			//print out the seasons
+			System.out.println();
+			for(int i=0;i<show.seasons.size();++i)
+			{
+				System.out.println((i+1)+". "+show.seasons.get(i));
+			}
+			System.out.println("\nSelect a season. (1-"+show.seasons.size()+")(0 to backup)");
+			
+			//get the response
+			int response = Integer.parseInt(scanner.nextLine())-1;
+			//back up if 0
+			if(response == -1)
+				return;
+			//browse the selected season
+			else
+				browseSeason(show.seasons.get(response));
+		}
+	}
+	
+	private static void browseSeason(Season season)
+	{
+		while(true)
+		{
+			//print out the episodes
+			System.out.println();
+			for(int i=0;i<season.episodes.size();++i)
+			{
+				System.out.println((i+1)+". "+season.episodes.get(i));
+			}
+			System.out.println("\nSelect an episode. (1-"+season.episodes.size()+")(0 to backup)");
+			
+			//get the response
+			int response = Integer.parseInt(scanner.nextLine())-1;
+			//back up if 0
+			if(response == -1)
+				return;
+			//browse the selected episode
+			else
+				browseEpisode(season.episodes.get(response));
+		}
+	}
+	
+	private static void browseEpisode(Episode episode)
+	{
+		//TODO: getDescription(), setAsLastWatched(), download())
+		System.out.println('\n'+episode.getText());
 	}
 	
 	private static void manageShows()
@@ -163,7 +245,7 @@ public class Main
 		}
 	}
 	
-	private static String upcomingShows()
+	private static String upcomingEpisodes()
 	{
 		//reset the list
 		upcoming.clear();
