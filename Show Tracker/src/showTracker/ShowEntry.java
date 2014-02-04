@@ -15,10 +15,6 @@ import org.jsoup.nodes.TextNode;
 @SuppressWarnings("serial")
 public class ShowEntry implements Serializable
 {
-	//TODO: watch position. I want to use a pointer but that isn't possible. what else can we do?
-	//we can store two indexes, season and episode numbers(we will only increment seasons if the
-	//date of the first episode of the next season is greater than the date of the last
-	//episode(current episode) of the current season
 	String showName, seasonCount, runTime, airTime, status, search;
 	int showID, seasonPos, episodePos;
 	ArrayList<Season> seasons = new ArrayList<Season>();

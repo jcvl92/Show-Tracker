@@ -25,6 +25,8 @@ public class Main
 	
 	public static void main(String[] args)
 	{
+		System.out.println("Welcome to the Show Tracker!\nWarning: Downloading shows will generate very NSFW traffic, be cautious.\n");
+		
 		//get the username
 		System.out.println("Enter your username: ");
 		username = scanner.nextLine();
@@ -61,7 +63,6 @@ public class Main
 				System.out.println();
 				break;
 			case "3":
-				System.out.println();
 				browse();
 				System.out.println();
 				break;
@@ -90,12 +91,12 @@ public class Main
 	
 	private static void browse()
 	{
-		//TODO: test this function
 		try
 		{
 			while(true)
 			{
 				//print out the shows
+				System.out.println();
 				for(int i=0;i<shows.size();++i)
 				{
 					System.out.println((i+1)+". "+shows.get(i));
@@ -155,7 +156,7 @@ public class Main
 								{
 									System.out.println("\n************************************************************"+
 											'\n'+episode.getText()+
-											"************************************************************"
+											"\n************************************************************"
 											+ "\nChoose an action(0 - Backup, 1 - Set as last watched, 2 - Download)");
 									
 									int actionResponse = Integer.parseInt(scanner.nextLine());
@@ -166,13 +167,14 @@ public class Main
 									{
 										show.seasonPos = seasonResponse;
 										show.episodePos = episodeResponse;
+										System.out.println("Watch position set to this episode.");
 									}
 									else if(actionResponse == 2)
 										try
 										{
 											//open the link
 											getMagnetLink(show, episode).open();
-											System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") opened.");
+											System.out.println(episode+"("+episode.getEpisodeNumber()+") opened.");
 											
 											//advance the watch position to here
 											show.seasonPos = seasonResponse;
@@ -180,7 +182,7 @@ public class Main
 										}
 										catch(Exception e)
 										{
-											System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
+											System.out.println(episode+"("+episode.getEpisodeNumber()+") unavailable.");
 										}
 								}
 							}
@@ -247,6 +249,7 @@ public class Main
 		Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 		
 		return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
+		//return new MagnetLink("",""); //safe mode(links are not gathered)
 	}
 	
 	private static void manageShows()
