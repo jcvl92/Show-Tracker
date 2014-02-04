@@ -49,7 +49,6 @@ public class Main
 					+ "7 - exit");
 			
 			//TODO: use BeanShell's JConsole to make the .jar an executable and more user friendly(COLORS!!!!)
-			//FIXME: if airdate is null, let that episode be set tot he watch position but say that an update is required or something
 			
 			switch(scanner.nextLine())
 			{
@@ -91,83 +90,106 @@ public class Main
 	
 	private static void browse()
 	{
-		while(true)
+		//TODO: test this function
+		try
 		{
-			//print out the shows
-			for(int i=0;i<shows.size();++i)
+			while(true)
 			{
-				System.out.println((i+1)+". "+shows.get(i));
-			}
-			System.out.println("\nSelect a show. (1-"+shows.size()+")(0 to backup)");
-			
-			//get the response
-			int response = Integer.parseInt(scanner.nextLine())-1;
-			//back up if 0
-			if(response == -1)
-				return;
-			
-			//browse the selected show
-			try
-			{
-				browseShow(shows.get(response));
-			}
-			catch(Exception e)
-			{
-				return;
+				//print out the shows
+				for(int i=0;i<shows.size();++i)
+				{
+					System.out.println((i+1)+". "+shows.get(i));
+				}
+				System.out.println("\nSelect a show. (1-"+shows.size()+")(0 to backup)");
+				
+				//get the response
+				int showResponse = Integer.parseInt(scanner.nextLine())-1;
+				//back up if 0
+				if(showResponse == -1)
+					break;
+				
+				//browse the selected show
+				ShowEntry show = shows.get(showResponse);
+				while(true)
+				{
+					//print out the seasons
+					System.out.println();
+					for(int i=0;i<show.seasons.size();++i)
+					{
+						System.out.println((i+1)+". "+show.seasons.get(i));
+					}
+					System.out.println("\nSelect a season. (1-"+show.seasons.size()+")(0 to backup)");
+					
+					//get the response
+					int seasonResponse = Integer.parseInt(scanner.nextLine())-1;
+					//back up if 0
+					if(seasonResponse == -1)
+						break;
+					
+					//browse the selected season
+					else
+					{
+						Season season = show.seasons.get(seasonResponse);
+						while(true)
+						{
+							//print out the episodes
+							System.out.println();
+							for(int i=0;i<season.episodes.size();++i)
+							{
+								System.out.println((i+1)+". "+season.episodes.get(i));
+							}
+							System.out.println("\nSelect an episode. (1-"+season.episodes.size()+")(0 to backup)");
+							
+							//get the response
+							int episodeResponse = Integer.parseInt(scanner.nextLine())-1;
+							//back up if 0
+							if(episodeResponse == -1)
+								break;
+							
+							//browse the selected episode
+							else
+							{
+								Episode episode = season.episodes.get(episodeResponse);
+								
+								while(true)
+								{
+									System.out.println("\n************************************************************"+
+											'\n'+episode.getText()+
+											"************************************************************"
+											+ "\nChoose an action(0 - Backup, 1 - Set as last watched, 2 - Download)");
+									
+									int actionResponse = Integer.parseInt(scanner.nextLine());
+									
+									if(actionResponse == 0)
+										break;
+									else if(actionResponse == 1)
+									{
+										show.seasonPos = seasonResponse;
+										show.episodePos = episodeResponse;
+									}
+									else if(actionResponse == 2)
+										try
+										{
+											//open the link
+											getMagnetLink(show, episode).open();
+											System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") opened.");
+											
+											//advance the watch position to here
+											show.seasonPos = seasonResponse;
+											show.episodePos = episodeResponse;
+										}
+										catch(Exception e)
+										{
+											System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
+										}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
-	}
-	
-	private static void browseShow(ShowEntry show)
-	{
-		while(true)
-		{
-			//print out the seasons
-			System.out.println();
-			for(int i=0;i<show.seasons.size();++i)
-			{
-				System.out.println((i+1)+". "+show.seasons.get(i));
-			}
-			System.out.println("\nSelect a season. (1-"+show.seasons.size()+")(0 to backup)");
-			
-			//get the response
-			int response = Integer.parseInt(scanner.nextLine())-1;
-			//back up if 0
-			if(response == -1)
-				return;
-			//browse the selected season
-			else
-				browseSeason(show.seasons.get(response));
-		}
-	}
-	
-	private static void browseSeason(Season season)
-	{
-		while(true)
-		{
-			//print out the episodes
-			System.out.println();
-			for(int i=0;i<season.episodes.size();++i)
-			{
-				System.out.println((i+1)+". "+season.episodes.get(i));
-			}
-			System.out.println("\nSelect an episode. (1-"+season.episodes.size()+")(0 to backup)");
-			
-			//get the response
-			int response = Integer.parseInt(scanner.nextLine())-1;
-			//back up if 0
-			if(response == -1)
-				return;
-			//browse the selected episode
-			else
-				browseEpisode(season.episodes.get(response));
-		}
-	}
-	
-	private static void browseEpisode(Episode episode)
-	{
-		//TODO: getDescription(), setAsLastWatched(), download())
-		System.out.println('\n'+episode.getText());
+		catch(Exception e){}
 	}
 	
 	private static void openMagnetLinks()
@@ -180,7 +202,9 @@ public class Main
 			boolean anyLinks=false;
 			
 			//get the date of the current watch position
-			DateTime date = show.getLastEpisodeWatched().airDate;
+			DateTime date = show.getLastEpisodeWatched()!=null ?
+								show.getLastEpisodeWatched().airDate
+								: new DateTime(0);
 			
 			//iterate through all seasons
 			for(int j=0;j<show.seasons.size();++j)
@@ -194,10 +218,21 @@ public class Main
 					if(episode.airDate != null && episode.airDate.isAfter(date) && episode.airDate.isBeforeNow())
 					{
 						anyLinks=true;
-						if(getMagnetLink(show, episode).open())
+						
+						try
+						{
+							//open the link
+							getMagnetLink(show, episode).open();
 							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") opened.");
-						else
+							
+							//advance the watch position to here
+							show.seasonPos = j;
+							show.episodePos = k;
+						}
+						catch(Exception e)
+						{
 							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
+						}
 					}
 				}
 			}
@@ -207,18 +242,11 @@ public class Main
 		}
 	}
 	
-	private static MagnetLink getMagnetLink(ShowEntry show, Episode episode)
+	private static MagnetLink getMagnetLink(ShowEntry show, Episode episode) throws IOException
 	{
-		try
-		{
-			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
-			
-			return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
-		}
-		catch (IOException e)
-		{
-			return null;
-		}
+		Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+		
+		return new MagnetLink(result.text(), result.siblingElements().get(0).attr("href"));
 	}
 	
 	private static void manageShows()
@@ -231,7 +259,9 @@ public class Main
 			{
 				System.out.println("\nCurrent shows:");
 				for(int i=0;i<shows.size();++i)
-					System.out.println(i+". "+shows.get(i).showName+" ("+shows.get(i).getLastEpisodeWatched().getEpisodeNumber()+')');
+					System.out.println(i+". "+shows.get(i).showName+
+							(shows.get(i).getLastEpisodeWatched()!=null ?
+									" ("+shows.get(i).getLastEpisodeWatched().getEpisodeNumber()+')' : ""));
 				
 				System.out.println("\nEnter \"add\", \"remove\", \"edit\", or \"quit\".");
 				response = scanner.nextLine();

@@ -1,8 +1,9 @@
 package showTracker;
 
+import java.awt.Desktop;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 class MagnetLink
 {
@@ -11,14 +12,7 @@ class MagnetLink
 	MagnetLink(String text, String magLink)
 	{
 		name = text;
-		try
-		{
-			link = new java.util.Scanner((Readable) ((HttpURLConnection) new URL("http://tinyurl.com/api-create.php?url="+magLink).openConnection()).getContent()).useDelimiter("\\A").next();
-		}
-		catch (IOException e)
-		{
-			link = "";
-		}
+		link = magLink;
 	}
 	
 	public String toString()
@@ -29,8 +23,8 @@ class MagnetLink
 	}
 	
 
-	public boolean open()
+	public void open() throws IOException, URISyntaxException
 	{
-		return false;
+		Desktop.getDesktop().browse(new URI(link));
 	}
 }
