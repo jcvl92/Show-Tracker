@@ -42,13 +42,15 @@ public class Main
 		System.out.println();
 		command:while(true)
 		{
+			//TODO: print unseen available episodes(or maybe, "episodes to be downloaded" before DLing them
 			System.out.println("1 - manage show catalog\n"
-					+ "2 - download unseen episodes\n"
-					+ "3 - browse episodes\n"
-					+ "4 - print upcoming episodes\n"
-					+ "5 - print show timelines\n"
-					+ "6 - update show catalog\n"
-					+ "7 - exit");
+					+ "2 - print unseen aired episodes\n"
+					+ "3 - download unseen episodes\n"
+					+ "4 - browse episodes\n"
+					+ "5 - print upcoming episodes\n"
+					+ "6 - print show timelines\n"
+					+ "7 - update show catalog\n"
+					+ "8 - exit");
 
 			switch(scanner.nextLine())
 			{
@@ -57,30 +59,37 @@ public class Main
 				break;
 			case "2":
 				System.out.println();
-				openMagnetLinks();
+				showLinks();
 				System.out.println();
 				break;
 			case "3":
-				browse();
+				System.out.println();
+				openMagnetLinks();
 				System.out.println();
 				break;
 			case "4":
-				System.out.println('\n'+upcomingEpisodes());
+				browse();
+				System.out.println();
 				break;
 			case "5":
-				System.out.print('\n'+timeline());
+				System.out.println('\n'+upcomingEpisodes());
 				break;
 			case "6":
+				System.out.print('\n'+timeline());
+				break;
+			case "7":
 				System.out.println();
 				updateShows();
 				System.out.println();
 				break;
-			case "7":
+			case "8":
 				break command;
 			default:
 				System.out.println("\nInvalid input, try again.");
 				break;
 			}
+			
+			new Thread(){public void run(){writeShowsToFile();}}.start();
 		}
 
 		//close the scanner
@@ -206,42 +215,73 @@ public class Main
 					show.getLastEpisodeWatched().airDate
 					: new DateTime(0);
 
-					//iterate through all seasons
-					for(int j=0;j<show.seasons.size();++j)
+			//iterate through all seasons
+			for(int j=0;j<show.seasons.size();++j)
+			{
+				Season season = show.seasons.get(j);
+
+				//iterate through all episodes
+				for(int k=0;k<season.episodes.size();++k)
+				{
+					Episode episode = season.episodes.get(k);
+					if(episode.airDate != null && episode.airDate.isAfter(date) && episode.airDate.isBeforeNow())
 					{
-						Season season = show.seasons.get(j);
+						anyLinks=true;
 
-						//iterate through all episodes
-						for(int k=0;k<season.episodes.size();++k)
+						try
 						{
-							Episode episode = season.episodes.get(k);
-							if(episode.airDate != null && episode.airDate.isAfter(date) && episode.airDate.isBeforeNow())
-							{
-								anyLinks=true;
+							//open the link
+							getMagnetLink(show, episode).open();
+							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") opened.");
 
-								try
-								{
-									//open the link
-									getMagnetLink(show, episode).open();
-									System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") opened.");
-
-									//advance the watch position to here
-									show.seasonPos = j;
-									show.episodePos = k;
-								}
-								catch(Exception e)
-								{
-									System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
-								}
-							}
+							//advance the watch position to here
+							show.seasonPos = j;
+							show.episodePos = k;
+						}
+						catch(Exception e)
+						{
+							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
 						}
 					}
+				}
+			}
 
-					if(!anyLinks)
-						System.out.println("\tNo upcoming shows available.");
+			if(!anyLinks)
+				System.out.println("\tNo upcoming shows available.");
 		}
 	}
+	
+	private static void showLinks()
+	{
+		//iterate through each show and open magnet links for that show
+		for(int i=0;i<shows.size();++i)
+		{
+			ShowEntry show = shows.get(i);
 
+			//get the date of the current watch position
+			DateTime date = show.getLastEpisodeWatched()!=null ?
+					show.getLastEpisodeWatched().airDate
+					: new DateTime(0);
+
+			//iterate through all seasons
+			for(int j=0;j<show.seasons.size();++j)
+			{
+				Season season = show.seasons.get(j);
+
+				//iterate through all episodes
+				for(int k=0;k<season.episodes.size();++k)
+				{
+					Episode episode = season.episodes.get(k);
+					if(episode.airDate != null && episode.airDate.isAfter(date) && episode.airDate.isBeforeNow())
+					{
+						//print the episode
+						System.out.println(show+" - "+episode+"("+episode.getEpisodeNumber()+')');
+					}
+				}
+			}
+		}
+	}
+	
 	private static MagnetLink getMagnetLink(ShowEntry show, Episode episode) throws IOException
 	{
 		Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
@@ -473,7 +513,21 @@ public class Main
 			e.printStackTrace();
 		}
 	}
-
+	
+	private static void writeShowsToFile()
+	{
+		try
+		{
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(username+"_data")));
+			oos.writeObject(shows);
+			oos.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	private static void removeShowFromFile(int index) throws FileNotFoundException, IOException
 	{
 		shows.remove(index);
