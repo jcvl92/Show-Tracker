@@ -42,7 +42,6 @@ public class Main
 		System.out.println();
 		command:while(true)
 		{
-			//TODO: print unseen available episodes(or maybe, "episodes to be downloaded" before DLing them
 			System.out.println("1 - manage show catalog\n"
 					+ "2 - print unseen aired episodes\n"
 					+ "3 - download unseen episodes\n"
@@ -404,7 +403,7 @@ public class Main
 				upcomingShows.append("-------------------------------------\n");
 				marker = false;
 			}
-			upcomingShows.append(upcoming.get(i).toString()+'\n');
+			upcomingShows.append(upcoming.get(i)+"\n");
 		}
 
 		//return the text
