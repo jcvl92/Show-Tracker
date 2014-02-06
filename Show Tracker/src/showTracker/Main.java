@@ -177,15 +177,10 @@ public class Main
 									}
 									else if(actionResponse == 2)
 										try
-									{
-											//open the link
+										{
 											getMagnetLink(show, episode).open();
 											System.out.println(episode+"("+episode.getEpisodeNumber()+") opened.");
-
-											//advance the watch position to here
-											show.seasonPos = seasonResponse;
-											show.episodePos = episodeResponse;
-									}
+										}
 									catch(Exception e)
 									{
 										System.out.println(episode+"("+episode.getEpisodeNumber()+") unavailable.");
