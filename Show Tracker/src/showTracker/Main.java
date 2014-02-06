@@ -2,7 +2,6 @@ package showTracker;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -495,17 +494,8 @@ public class Main
 
 	private static void addShowToFile(ShowEntry show)
 	{
-		try
-		{
-			shows.add(show);
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(username+"_data")));
-			oos.writeObject(shows);
-			oos.close();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+		shows.add(show);
+		writeShowsToFile();
 	}
 	
 	private static void writeShowsToFile()
@@ -522,11 +512,9 @@ public class Main
 		}
 	}
 	
-	private static void removeShowFromFile(int index) throws FileNotFoundException, IOException
+	private static void removeShowFromFile(int index)
 	{
 		shows.remove(index);
-		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("data")));
-		oos.writeObject(shows);
-		oos.close();
+		writeShowsToFile();
 	}
 }
