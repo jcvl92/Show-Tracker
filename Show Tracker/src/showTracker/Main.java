@@ -20,23 +20,33 @@ public class Main
 	static ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
 	static final Scanner scanner = new Scanner(System.in);
 	static ArrayList<ShowEntry> shows;
-	static String username;
 
 	public static void main(String[] args)
 	{
 		System.out.println("Welcome to the Show Tracker!\n");
-
-		//get the username
-		System.out.println("Enter your username: ");
-		username = scanner.nextLine();
-
-		//load the shows for this user from their data file
+		
+		//load the shows from the data file
 		shows = readShowsFromFile();
 
 		//if there are no shows, initialize the array list
 		if(shows == null)
 			shows = new ArrayList<ShowEntry>();
-
+		else
+		{
+			System.out.println("Upcoming:");
+			if(showLinks() > 0)
+			{
+				System.out.print("\nDownload all?(y/n): ");
+				if(scanner.nextLine().equals("y"))
+				{
+					System.out.println();
+					openMagnetLinks();
+					System.out.println();
+				}
+			}
+			else System.out.println("\tNothing.");
+		}
+		
 		//command loop
 		System.out.println();
 		command:while(true)
@@ -200,8 +210,8 @@ public class Main
 		for(int i=0;i<shows.size();++i)
 		{
 			ShowEntry show = shows.get(i);
-			System.out.println(show+":");
-			boolean anyLinks=false;
+			//System.out.println(show+":");
+			//boolean anyLinks=false;
 
 			//get the date of the current watch position
 			DateTime date = show.getLastEpisodeWatched()!=null ?
@@ -219,13 +229,13 @@ public class Main
 					Episode episode = season.episodes.get(k);
 					if(episode.airDate != null && episode.airDate.isAfter(date) && episode.airDate.isBeforeNow())
 					{
-						anyLinks=true;
+						//anyLinks=true;
 
 						try
 						{
 							//open the link
 							getMagnetLink(show, episode).open();
-							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") opened.");
+							System.out.println(show+": "+episode+'('+episode.getEpisodeNumber()+") opened.");
 
 							//advance the watch position to here
 							show.seasonPos = j;
@@ -233,19 +243,20 @@ public class Main
 						}
 						catch(Exception e)
 						{
-							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
+							//System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
 						}
 					}
 				}
 			}
 
-			if(!anyLinks)
-				System.out.println("\tNo upcoming shows available.");
+			//if(!anyLinks)
+			//	System.out.println("\tNo upcoming shows available.");
 		}
 	}
 	
-	private static void showLinks()
+	private static int showLinks()
 	{
+		int linkNum=0;
 		//iterate through each show and open magnet links for that show
 		for(int i=0;i<shows.size();++i)
 		{
@@ -269,10 +280,14 @@ public class Main
 					{
 						//print the episode
 						System.out.println(show+" - "+episode+"("+episode.getEpisodeNumber()+')');
+						
+						//increment the link counter
+						++linkNum;
 					}
 				}
 			}
 		}
+		return linkNum;
 	}
 	
 	private static MagnetLink getMagnetLink(ShowEntry show, Episode episode) throws IOException
@@ -480,7 +495,7 @@ public class Main
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(username+"_data")));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("show_data")));
 			ArrayList<ShowEntry> shows = (ArrayList<ShowEntry>)ois.readObject();
 			ois.close();
 
@@ -502,7 +517,7 @@ public class Main
 	{
 		try
 		{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(username+"_data")));
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("show_data")));
 			oos.writeObject(shows);
 			oos.close();
 		}
