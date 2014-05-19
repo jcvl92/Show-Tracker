@@ -23,81 +23,90 @@ public class Main
 
 	public static void main(String[] args)
 	{
-		System.out.println("Welcome to the Show Tracker!\n");
-		
-		//load the shows from the data file
-		shows = readShowsFromFile();
-
-		//if there are no shows, initialize the array list
-		if(shows == null)
-			shows = new ArrayList<ShowEntry>();
-		else
+		try
 		{
-			System.out.println("Upcoming:");
-			if(showLinks() > 0)
+			System.out.println("Welcome to the Show Tracker!\n");
+			
+			//load the shows from the data file
+			shows = readShowsFromFile();
+	
+			//if there are no shows, initialize the array list
+			if(shows == null)
+				shows = new ArrayList<ShowEntry>();
+			else
 			{
-				System.out.print("\nDownload all?(y/n): ");
-				if(scanner.nextLine().equals("y"))
+				System.out.println("Upcoming:");
+				if(showLinks() > 0)
 				{
+					System.out.print("\nDownload all?(y/n): ");
+					if(scanner.nextLine().equals("y"))
+					{
+						System.out.println();
+						openMagnetLinks();
+						System.out.println();
+					}
+				}
+				else System.out.println("\tNothing.");
+			}
+			
+			//command loop
+			System.out.println();
+			command:while(true)
+			{
+				System.out.println("1 - manage show catalog\n"
+						+ "2 - print unseen aired episodes\n"
+						+ "3 - download unseen episodes\n"
+						+ "4 - browse episodes\n"
+						+ "5 - print upcoming episodes\n"
+						+ "6 - print show timelines\n"
+						+ "7 - update show catalog\n"
+						+ "8 - exit");
+	
+				switch(scanner.nextLine())
+				{
+				case "1":
+					manageShows();
+					break;
+				case "2":
+					System.out.println();
+					showLinks();
+					System.out.println();
+					break;
+				case "3":
 					System.out.println();
 					openMagnetLinks();
 					System.out.println();
+					break;
+				case "4":
+					browse();
+					System.out.println();
+					break;
+				case "5":
+					System.out.println('\n'+upcomingEpisodes());
+					break;
+				case "6":
+					System.out.print('\n'+timeline());
+					break;
+				case "7":
+					System.out.println();
+					updateShows();
+					System.out.println();
+					break;
+				case "8":
+					break command;
+				default:
+					System.out.println("\nInvalid input, try again.");
+					break;
 				}
+				
+				new Thread(){public void run(){writeShowsToFile();}}.start();
 			}
-			else System.out.println("\tNothing.");
 		}
-		
-		//command loop
-		System.out.println();
-		command:while(true)
+		catch(Exception e)
 		{
-			System.out.println("1 - manage show catalog\n"
-					+ "2 - print unseen aired episodes\n"
-					+ "3 - download unseen episodes\n"
-					+ "4 - browse episodes\n"
-					+ "5 - print upcoming episodes\n"
-					+ "6 - print show timelines\n"
-					+ "7 - update show catalog\n"
-					+ "8 - exit");
-
-			switch(scanner.nextLine())
-			{
-			case "1":
-				manageShows();
-				break;
-			case "2":
-				System.out.println();
-				showLinks();
-				System.out.println();
-				break;
-			case "3":
-				System.out.println();
-				openMagnetLinks();
-				System.out.println();
-				break;
-			case "4":
-				browse();
-				System.out.println();
-				break;
-			case "5":
-				System.out.println('\n'+upcomingEpisodes());
-				break;
-			case "6":
-				System.out.print('\n'+timeline());
-				break;
-			case "7":
-				System.out.println();
-				updateShows();
-				System.out.println();
-				break;
-			case "8":
-				break command;
-			default:
-				System.out.println("\nInvalid input, try again.");
-				break;
-			}
-			
-			new Thread(){public void run(){writeShowsToFile();}}.start();
+			System.out.println("There was a problem. Updating show file and exiting.");
+			updateShows();
+			writeShowsToFile();
 		}
 
 		//close the scanner
