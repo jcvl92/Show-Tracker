@@ -105,9 +105,14 @@ public class Main
 		}
 		catch(Exception e)
 		{
-			System.out.println("There was a problem. Updating show file and exiting.");
-			updateShows();
-			writeShowsToFile();
+			if(shows.size()>0)
+			{
+				System.out.println("There was a problem. Updating show file and exiting.");
+				updateShows();
+				writeShowsToFile();
+			}
+			else
+				System.out.println("There was a problem. Exiting without updating.");
 		}
 
 		//close the scanner
