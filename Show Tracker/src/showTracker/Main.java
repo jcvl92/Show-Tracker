@@ -2,6 +2,7 @@ package showTracker;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -252,7 +253,8 @@ public class Main
 						}
 						catch(Exception e)
 						{
-							//System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
+							System.out.println("\t"+episode+'('+episode.getEpisodeNumber()+") unavailable.");
+							break;
 						}
 					}
 				}
@@ -510,8 +512,15 @@ public class Main
 
 			return shows;
 		}
+		catch(FileNotFoundException fnfe)
+		{
+			return null;
+		}
 		catch(Exception e)
 		{
+			e.printStackTrace();
+			System.out.println("Data file corrupted: "+e.getMessage());
+			System.exit(0);
 			return null;
 		}
 	}
