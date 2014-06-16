@@ -179,7 +179,7 @@ public class ShowEntry implements Serializable
 	public void manageWatchPosition()
 	{
 		System.out.println("Have you seen any episodes of "+showName+"? (y/n)");
-		if(Main.scanner.nextLine().equals("y"))
+		if(ShowTracker.scanner.nextLine().equals("y"))
 		{
 			//print out the season list
 			System.out.println();
@@ -188,7 +188,7 @@ public class ShowEntry implements Serializable
 			System.out.println("\nPlease choose the season of the last episode you have seen. (1-"+seasons.size()+')');
 
 			//get the season position
-			seasonPos = Integer.parseInt(Main.scanner.nextLine())-1;
+			seasonPos = Integer.parseInt(ShowTracker.scanner.nextLine())-1;
 
 			//print out the episode list
 			System.out.println();
@@ -197,7 +197,7 @@ public class ShowEntry implements Serializable
 			System.out.println("\nPlease choose the last episode you have seen. (1-"+seasons.get(seasonPos).episodes.size()+')');
 
 			//get the episode position
-			episodePos = Integer.parseInt(Main.scanner.nextLine())-1;
+			episodePos = Integer.parseInt(ShowTracker.scanner.nextLine())-1;
 		}
 		else
 		{

@@ -16,34 +16,42 @@ import org.joda.time.DateTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
-public class Main
+public class ShowTracker
 {
-	static ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
-	static final Scanner scanner = new Scanner(System.in);
-	static ArrayList<ShowEntry> shows;
+	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
+	final static Scanner scanner = new Scanner(System.in);
+	ArrayList<ShowEntry> shows;
 
+	public ShowTracker()
+	{
+		//load the shows from the data file
+		shows = readShowsFromFile();
+		
+		//if there are no shows, initialize the array list
+		if(shows == null)
+			shows = new ArrayList<ShowEntry>();
+	}
+	
 	public static void main(String[] args)
 	{
+		//create instance
+		final ShowTracker st = new ShowTracker();
+		
 		try
 		{
 			System.out.println("Welcome to the Show Tracker!\n");
-			
-			//load the shows from the data file
-			shows = readShowsFromFile();
 	
-			//if there are no shows, initialize the array list
-			if(shows == null)
-				shows = new ArrayList<ShowEntry>();
-			else
+			//if there are shows, print the upcoming ones
+			if(st.shows != null)
 			{
 				System.out.println("Upcoming:");
-				if(showLinks() > 0)
+				if(st.showLinks() > 0)
 				{
 					System.out.print("\nDownload all?(y/n): ");
 					if(scanner.nextLine().equals("y"))
 					{
 						System.out.println();
-						openMagnetLinks();
+						st.openMagnetLinks();
 						System.out.println();
 					}
 				}
@@ -66,31 +74,31 @@ public class Main
 				switch(scanner.nextLine())
 				{
 				case "1":
-					manageShows();
+					st.manageShows();
 					break;
 				case "2":
 					System.out.println();
-					showLinks();
+					st.showLinks();
 					System.out.println();
 					break;
 				case "3":
 					System.out.println();
-					openMagnetLinks();
+					st.openMagnetLinks();
 					System.out.println();
 					break;
 				case "4":
-					browse();
+					st.browse();
 					System.out.println();
 					break;
 				case "5":
-					System.out.println('\n'+upcomingEpisodes());
+					System.out.println('\n'+st.upcomingEpisodes());
 					break;
 				case "6":
-					System.out.print('\n'+timeline());
+					System.out.print('\n'+st.timeline());
 					break;
 				case "7":
 					System.out.println();
-					updateShows();
+					st.updateShows();
 					System.out.println();
 					break;
 				case "8":
@@ -100,16 +108,16 @@ public class Main
 					break;
 				}
 				
-				new Thread(){public void run(){writeShowsToFile();}}.start();
+				new Thread(){public void run(){st.writeShowsToFile();}}.start();
 			}
 		}
 		catch(Exception e)
 		{
-			if(shows.size()>0)
+			if(st.shows.size()>0)
 			{
 				System.out.println("There was a problem. Updating show file and exiting.");
-				updateShows();
-				writeShowsToFile();
+				st.updateShows();
+				st.writeShowsToFile();
 			}
 			else
 				System.out.println("There was a problem. Exiting without updating.");
@@ -119,7 +127,7 @@ public class Main
 		scanner.close();
 	}
 
-	private static void browse()
+	public void browse()
 	{
 		try
 		{
@@ -219,7 +227,7 @@ public class Main
 		catch(Exception e){}
 	}
 
-	private static void openMagnetLinks()
+	private void openMagnetLinks()
 	{
 		//iterate through each show and open magnet links for that show
 		for(int i=0;i<shows.size();++i)
@@ -270,7 +278,7 @@ public class Main
 		}
 	}
 	
-	private static int showLinks()
+	public int showLinks()
 	{
 		int linkNum=0;
 		//iterate through each show and open magnet links for that show
@@ -306,7 +314,7 @@ public class Main
 		return linkNum;
 	}
 	
-	private static MagnetLink getMagnetLink(ShowEntry show, Episode episode) throws IOException
+	public MagnetLink getMagnetLink(ShowEntry show, Episode episode) throws IOException
 	{
 		Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+episode.getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 
@@ -314,7 +322,7 @@ public class Main
 		//return new MagnetLink("",""); //safe mode(links are not gathered)
 	}
 
-	private static void manageShows()
+	public void manageShows()
 	{
 		String response;
 
@@ -395,7 +403,7 @@ public class Main
 		}
 	}
 
-	private static String upcomingEpisodes()
+	public String upcomingEpisodes()
 	{
 		//reset the list
 		upcoming.clear();
@@ -435,7 +443,7 @@ public class Main
 		return upcomingShows.toString();
 	}
 
-	private static String timeline()
+	public String timeline()
 	{
 		boolean populate = upcoming.isEmpty();
 		StringBuilder timeline = new StringBuilder();
@@ -494,7 +502,7 @@ public class Main
 		return timeline.toString();
 	}
 
-	private static void updateShows()
+	public void updateShows()
 	{
 		for(int i=0; i<shows.size(); ++i)
 		{
@@ -507,7 +515,7 @@ public class Main
 		}
 	}
 
-	private static ArrayList<ShowEntry> readShowsFromFile()
+	private ArrayList<ShowEntry> readShowsFromFile()
 	{
 		try
 		{
@@ -530,13 +538,13 @@ public class Main
 		}
 	}
 
-	private static void addShowToFile(ShowEntry show)
+	private void addShowToFile(ShowEntry show)
 	{
 		shows.add(show);
 		writeShowsToFile();
 	}
 	
-	private static void writeShowsToFile()
+	public void writeShowsToFile()
 	{
 		try
 		{
@@ -550,7 +558,7 @@ public class Main
 		}
 	}
 	
-	private static void removeShowFromFile(int index)
+	private void removeShowFromFile(int index)
 	{
 		shows.remove(index);
 		writeShowsToFile();
