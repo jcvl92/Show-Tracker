@@ -57,14 +57,6 @@ public class GUI {
 		main = new Main(panel, frame);
 		panel.setLayout(new BorderLayout(0, 0));
 		
-		new Thread()
-		{
-			public void run()
-			{
-				main.updateShows();
-			}
-		}.start();
-		
 		Box verticalBox = Box.createVerticalBox();
 		verticalBox.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
 		verticalBox.setBackground(Color.BLACK);

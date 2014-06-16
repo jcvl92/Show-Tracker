@@ -2,6 +2,8 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -25,12 +27,37 @@ public class Main
 	
 	public void updateShows()
 	{
+		//TODO: make this more fluid like it is in the poster program
+		//clear the panel
+		panel.removeAll();
 		
+		//create the pane and size it
+		final JTextArea jta = new JTextArea();
+		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
+		m.updateShows();
+		JScrollPane jsp = new JScrollPane(jta);
+		jsp.setPreferredSize(new Dimension(jsp.getPreferredSize().width+15, jsp.getPreferredSize().height>500 ? 500 : jsp.getPreferredSize().height));
+		
+		//set the content of the panel
+		panel.add(jsp, BorderLayout.CENTER);
+		frame.pack();
 	}
 
 	public void printUnseen()
 	{
+		//clear the panel
+		panel.removeAll();
 		
+		//create the pane and size it
+		final JTextArea jta = new JTextArea();
+		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
+		m.showLinks();
+		JScrollPane jsp = new JScrollPane(jta);
+		jsp.setPreferredSize(new Dimension(jsp.getPreferredSize().width+15, jsp.getPreferredSize().height>500 ? 500 : jsp.getPreferredSize().height));
+		
+		//set the content of the panel
+		panel.add(jsp, BorderLayout.CENTER);
+		frame.pack();
 	}
 
 	public void manageShows()
@@ -50,7 +77,16 @@ public class Main
 
 	public void printUpcoming()
 	{
+		//clear the panel
+		panel.removeAll();
 		
+		//create the pane and size it
+		JScrollPane jsp = new JScrollPane(new JTextArea(m.upcomingEpisodes()));
+		jsp.setPreferredSize(new Dimension(jsp.getPreferredSize().width+15, jsp.getPreferredSize().height>500 ? 500 : jsp.getPreferredSize().height));
+		
+		//set the content of the panel
+		panel.add(jsp, BorderLayout.CENTER);
+		frame.pack();
 	}
 
 	public void printTimelines()
@@ -60,7 +96,7 @@ public class Main
 		
 		//create the pane and size it
 		JScrollPane jsp = new JScrollPane(new JTextArea(m.timeline()));
-		jsp.setPreferredSize(new Dimension(jsp.getPreferredSize().width+15, 500));
+		jsp.setPreferredSize(new Dimension(jsp.getPreferredSize().width+15, jsp.getPreferredSize().height>500 ? 500 : jsp.getPreferredSize().height));
 		
 		//set the content of the panel
 		panel.add(jsp, BorderLayout.CENTER);
