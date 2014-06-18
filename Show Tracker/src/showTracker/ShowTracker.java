@@ -18,6 +18,7 @@ import org.jsoup.nodes.Element;
 
 public class ShowTracker
 {
+	//TODO: fix update crashing when no episodes have been seen
 	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
 	final static Scanner scanner = new Scanner(System.in);
 	public ArrayList<ShowEntry> shows;
@@ -538,7 +539,7 @@ public class ShowTracker
 		}
 	}
 
-	private void addShowToFile(ShowEntry show)
+	public void addShowToFile(ShowEntry show)
 	{
 		shows.add(show);
 		writeShowsToFile();

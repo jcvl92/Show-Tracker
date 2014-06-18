@@ -21,7 +21,7 @@ public class ShowEntry implements Serializable
 	public int episodePos;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
 
-	ShowEntry(String nameOfShow) throws IOException, InterruptedException
+	public ShowEntry(String nameOfShow) throws IOException, InterruptedException
 	{
 		//save the search string for TPB magnet link searches
 		search = nameOfShow;
@@ -30,7 +30,7 @@ public class ShowEntry implements Serializable
 		getFromTVRage(nameOfShow);
 
 		//set the last watched episode position
-		manageWatchPosition();
+		//manageWatchPosition();
 	}
 
 	private void getFromTVRage(String nameOfShow) throws IOException, InterruptedException

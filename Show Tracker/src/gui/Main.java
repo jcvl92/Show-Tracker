@@ -1,5 +1,6 @@
 package gui;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -133,6 +135,9 @@ public class Main
 			showBox.add(showPanel);
 		}
 		//create an "add" button at the bottom of the list
+		Box addBox = Box.createHorizontalBox();
+		final JTextPane addName = new JTextPane();
+		addName.setPreferredSize(new Dimension(150, addName.getPreferredSize().height));
 		final JButton btnAdd = new JButton("Add");
 		btnAdd.addActionListener(new ActionListener()
 		{
@@ -142,22 +147,30 @@ public class Main
 				{
 					public void run()
 					{
+						btnAdd.setText("Adding");
+						btnAdd.setEnabled(false);
 						//TODO: after entering the text, this should come up with candidates for the search(and they pick one)
-						//create a show add panel
+						//add the show
+						try
+						{
+							ShowEntry show = new ShowEntry(addName.getText());
+							m.addShowToFile(show);
+							//System.out.println("\""+show.showName+"\" added.");
+						}
+						catch(Exception e)
+						{
+							//System.out.println("\""+response+"\" was not added because "+e);
+						}
 						
-						//panel.removeAll();
-						//panel.add(showBox);
-						//panel.revalidate();
-						
-						//restore the old panel when that is completed
-						panel.removeAll();
-						panel.add(showBox);
-						panel.revalidate();
+						//return to the manage function when done
+						manageShows();
 					}
 				}.start();
 			}
 		});
-		showBox.add(btnAdd);
+		addBox.add(addName);
+		addBox.add(btnAdd);
+		showBox.add(addBox);
 		
 		panel.add(showBox);
 		panel.repaint();//repaint because you don't use the whole space and you don't want residual drawing there
