@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
@@ -22,10 +24,10 @@ import javax.swing.tree.DefaultTreeModel;
 
 import showTracker.*;
 
-//TODO: set a loading bar in the panel at the beginning of each function(is this needed? most things are streamed)
+//TODO: merge print unseen and download unseen with a list
 //TODO: add an indicator to the current episode in browse(aterisk*)
-//TODO: set all text areas to uneditable
 //TODO: edit the download search text
+//TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
 public class Main
 {
 	JPanel panel;
@@ -48,8 +50,10 @@ public class Main
 		
 		//create the pane and arrand text stream
 		final JTextArea jta = new JTextArea();
+		jta.setEditable(false);
 		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
-		new Thread(){
+		new Thread()
+		{
 			public void run()
 			{
 				m.updateShows();
@@ -73,8 +77,10 @@ public class Main
 		
 		//create the pane and arrange text stream
 		final JTextArea jta = new JTextArea();
+		jta.setEditable(false);
 		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
-		new Thread(){
+		new Thread()
+		{
 			public void run()
 			{
 				m.showLinks();
@@ -95,12 +101,16 @@ public class Main
 		
 		//create a list of shows(each with a delete and update button)
 		final Box showBox = Box.createVerticalBox();
-		for(ShowEntry show : m.shows)
+		for(int i=0; i<m.shows.size(); ++i)
 		{
+			final ShowEntry show = m.shows.get(i);
 			JPanel showPanel = new JPanel();
-			showPanel.add(new JTextArea(show.getText()));
+			JTextArea jta = new JTextArea(show.getText());
+			jta.setEditable(false);
+			showPanel.add(jta);
 			Box buttonBox = Box.createVerticalBox();
 			final JButton btnDelete = new JButton("Delete");
+			final int showNum = i;
 			btnDelete.addActionListener(new ActionListener()
 			{
 				public void actionPerformed(ActionEvent e)
@@ -109,7 +119,10 @@ public class Main
 					{
 						public void run()
 						{
-							btnDelete.setEnabled(false);
+							m.removeShowFromFile(showNum);
+							
+							//return to the manage function
+							manageShows();
 						}
 					}.start();
 				}
@@ -124,6 +137,15 @@ public class Main
 						public void run()
 						{
 							btnUpdate.setEnabled(false);
+							try
+							{
+								show.update();
+								btnUpdate.setText("Updated");
+							}
+							catch(Exception e)
+							{
+								btnUpdate.setText("Update failed");
+							}
 						}
 					}.start();
 				}
@@ -136,31 +158,46 @@ public class Main
 		}
 		//create an "add" button at the bottom of the list
 		Box addBox = Box.createHorizontalBox();
+		final JButton btnAdd = new JButton("Add");
 		final JTextPane addName = new JTextPane();
 		addName.setPreferredSize(new Dimension(150, addName.getPreferredSize().height));
-		final JButton btnAdd = new JButton("Add");
+		addName.addKeyListener(new KeyListener()
+		{
+			public void keyPressed(KeyEvent ke)
+			{
+				if(ke.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					addName.setEnabled(false);
+					btnAdd.setText("Adding");
+					btnAdd.setEnabled(false);
+					new Thread()
+					{
+						public void run()
+						{
+							addShow(addName.getText());
+							
+							//return to the manage function when done
+							manageShows();
+						}
+					}.start();
+				}
+			}
+			public void keyReleased(KeyEvent ke){}
+			public void keyTyped(KeyEvent ke){}
+		}
+		);
 		btnAdd.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
+				addName.setEnabled(false);
+				btnAdd.setText("Adding");
+				btnAdd.setEnabled(false);
 				new Thread()
 				{
 					public void run()
 					{
-						btnAdd.setText("Adding");
-						btnAdd.setEnabled(false);
-						//TODO: after entering the text, this should come up with candidates for the search(and they pick one)
-						//add the show
-						try
-						{
-							ShowEntry show = new ShowEntry(addName.getText());
-							m.addShowToFile(show);
-							//System.out.println("\""+show.showName+"\" added.");
-						}
-						catch(Exception e)
-						{
-							//System.out.println("\""+response+"\" was not added because "+e);
-						}
+						addShow(addName.getText());
 						
 						//return to the manage function when done
 						manageShows();
@@ -175,11 +212,33 @@ public class Main
 		panel.add(showBox);
 		panel.repaint();//repaint because you don't use the whole space and you don't want residual drawing there
 		panel.revalidate();
+		
+		//put the focus in the add show field
+		addName.requestFocus();
 	}
 
 	public void downloadUnseen()
 	{
+		//clear the panel
+		panel.removeAll();
 		
+		//create the pane and arrange text stream
+		final JTextArea jta = new JTextArea();
+		jta.setEditable(false);
+		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
+		new Thread()
+		{
+			public void run()
+			{
+				m.openMagnetLinks();
+			}
+		}.start();
+		
+		//set the content of the panel
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.fill = GridBagConstraints.BOTH;
+		panel.add(new JScrollPane(jta), gbc);
+		panel.revalidate();
 	}
 
 	public void browse()
@@ -294,7 +353,8 @@ public class Main
 					tPanel.removeAll();
 					GridBagConstraints gbc = new GridBagConstraints();
 					gbc.fill = GridBagConstraints.BOTH;
-					tPanel.add(new JTextArea(((Season)obj).getText()), gbc);
+					JTextArea jta = new JTextArea(((Season)obj).getText());
+					tPanel.add(jta, gbc);
 					tPanel.revalidate();
 				}
 				else if(obj.getClass() == ShowEntry.class)
@@ -303,7 +363,8 @@ public class Main
 					tPanel.removeAll();
 					GridBagConstraints gbc = new GridBagConstraints();
 					gbc.fill = GridBagConstraints.BOTH;
-					tPanel.add(new JTextArea(((ShowEntry)obj).getText()), gbc);
+					JTextArea jta = new JTextArea(((ShowEntry)obj).getText());
+					tPanel.add(jta, gbc);
 					tPanel.revalidate();
 				}
 				else
@@ -312,7 +373,8 @@ public class Main
 					tPanel.removeAll();
 					GridBagConstraints gbc = new GridBagConstraints();
 					gbc.fill = GridBagConstraints.BOTH;
-					tPanel.add(new JTextArea("Browse your shows."), gbc);
+					JTextArea jta = new JTextArea("Browse your shows.");
+					tPanel.add(jta, gbc);
 					tPanel.revalidate();
 				}
 			}
@@ -339,7 +401,8 @@ public class Main
 		panel.removeAll();
 		
 		//create the pane
-		JScrollPane jsp = new JScrollPane(new JTextArea(m.upcomingEpisodes()));
+		JTextArea jta = new JTextArea(m.upcomingEpisodes());
+		JScrollPane jsp = new JScrollPane(jta);
 		
 		//set the content of the panel
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -357,12 +420,29 @@ public class Main
 		panel.removeAll();
 		
 		//create the pane
-		JScrollPane jsp = new JScrollPane(new JTextArea(m.timeline()));
+		JTextArea jta = new JTextArea(m.timeline());
+		JScrollPane jsp = new JScrollPane(jta);
 		
 		//set the content of the panel
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.BOTH;
 		panel.add(jsp, gbc);
 		panel.revalidate();
+	}
+
+	public void addShow(String showName)
+	{
+		//TODO: after entering the text, this should come up with candidates for the search(and they pick one)
+		//add the show
+		try
+		{
+			ShowEntry show = new ShowEntry(showName);
+			m.addShowToFile(show);
+			//System.out.println("\""+show.showName+"\" added.");
+		}
+		catch(Exception e)
+		{
+			//System.out.println("\""+response+"\" was not added because "+e);
+		}
 	}
 }

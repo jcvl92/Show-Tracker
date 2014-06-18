@@ -179,7 +179,7 @@ public class ShowEntry implements Serializable
 	}
 
 	public void manageWatchPosition()
-	{
+	{/*
 		System.out.println("Have you seen any episodes of "+showName+"? (y/n)");
 		if(ShowTracker.scanner.nextLine().equals("y"))
 		{
@@ -205,7 +205,7 @@ public class ShowEntry implements Serializable
 		{
 			seasonPos = -1;
 			episodePos = -1;
-		}
+		}*/
 	}
 
 	/**
