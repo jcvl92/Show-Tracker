@@ -16,8 +16,10 @@ import org.jsoup.nodes.TextNode;
 public class ShowEntry implements Serializable
 {
 	String showName, seasonCount, runTime, airTime, status, search;
-	int showID, seasonPos, episodePos;
-	ArrayList<Season> seasons = new ArrayList<Season>();
+	int showID;
+	public int seasonPos;
+	public int episodePos;
+	public ArrayList<Season> seasons = new ArrayList<Season>();
 
 	ShowEntry(String nameOfShow) throws IOException, InterruptedException
 	{
@@ -97,7 +99,7 @@ public class ShowEntry implements Serializable
 						}
 						ep.put("inseason", aSeason.attr("no"));
 
-						episodes.add(new Episode(ep, airTime));
+						episodes.add(new Episode(ep, airTime, this));
 					}
 				}
 
@@ -252,7 +254,7 @@ public class ShowEntry implements Serializable
 						}
 						ep.put("inseason", aSeason.attr("no"));
 
-						episodes.add(new Episode(ep, airTime));
+						episodes.add(new Episode(ep, airTime, this));
 					}
 				}
 

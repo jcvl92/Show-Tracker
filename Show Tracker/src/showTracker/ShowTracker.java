@@ -20,7 +20,7 @@ public class ShowTracker
 {
 	ArrayList<UpcomingEpisode> upcoming = new ArrayList<UpcomingEpisode>();
 	final static Scanner scanner = new Scanner(System.in);
-	ArrayList<ShowEntry> shows;
+	public ArrayList<ShowEntry> shows;
 
 	public ShowTracker()
 	{

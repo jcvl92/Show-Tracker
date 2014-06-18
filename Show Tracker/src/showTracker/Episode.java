@@ -14,16 +14,18 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 @SuppressWarnings("serial")
-class Episode implements Serializable
+public class Episode implements Serializable
 {
 	HashMap<String, String> information;
 	String airTime, description=null;
 	DateTime airDate;
+	public ShowEntry show;
 	transient DateTimeFormatter parseFormatter;
 	transient DateTimeFormatter writeFormatter;
 
-	Episode(HashMap<String, String> info, String time) throws InterruptedException
+	Episode(HashMap<String, String> info, String time, ShowEntry s) throws InterruptedException
 	{
+		show = s;
 		setFormatters();
 		information = info;
 		airTime = time;

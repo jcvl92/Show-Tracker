@@ -4,6 +4,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
 import java.awt.BorderLayout;
 
 import javax.swing.JButton;
@@ -11,14 +12,18 @@ import javax.swing.Box;
 
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.border.MatteBorder;
 
+import java.awt.GridBagLayout;
+
 public class GUI {
 
-	private JFrame frame;
+	private JFrame frmShowTracker;
 	private Main main;
 
 	/**
@@ -29,7 +34,7 @@ public class GUI {
 			public void run() {
 				try {
 					GUI window = new GUI();
-					window.frame.setVisible(true);
+					window.frmShowTracker.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -48,19 +53,31 @@ public class GUI {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmShowTracker = new JFrame();
+		frmShowTracker.setTitle("Show Tracker");
+		
+		//set the window size and location to the middle 50% of the screen
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int width = (int)screenSize.getWidth();
+		int height = (int)screenSize.getHeight();
+		frmShowTracker.setBounds(width/4, height/4, width/2, height/2);
+		
+		frmShowTracker.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JPanel panel = new JPanel();
-		frame.getContentPane().add(panel, BorderLayout.CENTER);
-		main = new Main(panel, frame);
-		panel.setLayout(new BorderLayout(0, 0));
+		frmShowTracker.getContentPane().add(panel, BorderLayout.CENTER);
+		main = new Main(panel, frmShowTracker);
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0};
+		gbl_panel.rowHeights = new int[]{0};
+		gbl_panel.columnWeights = new double[]{Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
 		
 		Box verticalBox = Box.createVerticalBox();
 		verticalBox.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
 		verticalBox.setBackground(Color.BLACK);
-		frame.getContentPane().add(verticalBox, BorderLayout.EAST);
+		frmShowTracker.getContentPane().add(verticalBox, BorderLayout.WEST);
 		
 		JButton btnPrintUnseen = new JButton("Print Unseen");
 		btnPrintUnseen.setAlignmentX(Component.CENTER_ALIGNMENT);

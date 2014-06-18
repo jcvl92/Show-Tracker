@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 @SuppressWarnings("serial")
-class Season implements Serializable
+public class Season implements Serializable
 {
-	ArrayList<Episode> episodes;
+	public ArrayList<Episode> episodes;
 	String seasonTag;
 
 	Season(String tag, ArrayList<Episode> eps)
