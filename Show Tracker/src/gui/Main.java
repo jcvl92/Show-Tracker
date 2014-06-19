@@ -1,7 +1,9 @@
 package gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -12,7 +14,6 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -20,22 +21,23 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
+import javax.swing.border.LineBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import showTracker.*;
 
-//TODO: merge print unseen and download unseen with a list
+//TODO: in the unseen panel, when you select a row, open up the description of that show on the right
 //TODO: add an indicator to the current episode in browse(aterisk*)
 //TODO: edit the download search text
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
 //TODO: sort unseen by release date!
 public class Main
 {
+	static boolean val = true;
 	JPanel panel;
 	JFrame frame;
 	ShowTracker m = new ShowTracker();
@@ -46,11 +48,9 @@ public class Main
 		frame = f;
 	}
 	
-	/**
-	 * 
-	 */
 	public void updateShows()
 	{
+		//TODO: change this to some sort of list that shows progress via 3 stages(blank, loading wheel, check mark) 
 		//clear the panel
 		panel.removeAll();
 		
@@ -67,28 +67,23 @@ public class Main
 		}.start();
 		
 		//set the content of the panel
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(jta), gbc);
+		panel.add(new JScrollPane(jta));
 		panel.revalidate();
 	}
-
-	/**
-	 * 
-	 */
-	public void printUnseen()
+	
+	public void unseenShows()
 	{
 		//clear the panel
 		panel.removeAll();
 		
-		//create the pane with the episodes in a table
-		Episode[] episodes = m.showLinks();
+		//get the table data
+		final Episode[] episodes = m.showLinks();
 		final Object[][] data = new Object[episodes.length][5];
 		for(int i=0; i<episodes.length; ++i)
-			data[i] = new Object[]{episodes[i].show.toString(), episodes[i].getEpisodeNumber(), episodes[i].toString(), episodes[i].getDate(), false};
+			data[i] = new Object[]{episodes[i].show.toString(), episodes[i].getEpisodeNumber(), episodes[i].toString(), episodes[i].getDate(), true};
 		
-		//make a table from the links(overloading the table model to make checkboxes work)
-		JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
+		//make a table from the data(overloading the table model to make checkboxes work)
+		final JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
 		{
 			private static final long serialVersionUID = 1L;
 			public Class<?> getColumnClass(int columnIndex)
@@ -116,20 +111,63 @@ public class Main
 		});
 		jt.getTableHeader().setReorderingAllowed(false);
 		
-		//set the content of the panel
-		GridBagConstraints gbc1 = new GridBagConstraints();
-		gbc1.fill = GridBagConstraints.BOTH;
-		//gbc1.anchor = GridBagConstraints.PAGE_START;
-		panel.add(new JScrollPane(jt), gbc1);
-		GridBagConstraints gbc2 = new GridBagConstraints();
-		//gbc2.anchor = GridBagConstraints.PAGE_END;//TODO: make this below the table
-		panel.add(new JButton("Download"), gbc2);
-		panel.add(new JButton("Select/Deselect All"), gbc2);
+		//add the table to the panel
+		panel.add(new JScrollPane(jt), BorderLayout.CENTER);
+		
+		//set up the buttons panel
+		JPanel buttonPanel = new JPanel();
+		FlowLayout fl = new FlowLayout(FlowLayout.RIGHT);
+		fl.setHgap(0);fl.setVgap(0);
+		buttonPanel.setLayout(fl);
+		
+		//add the download button
+		JButton btnDownload = new JButton("Download Selected");
+		btnDownload.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				new Thread()
+				{
+					public void run()
+					{
+						for(int i=0; i<jt.getRowCount(); ++i)
+						{
+							if((boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
+								episodes[i].getText();//TODO: make this download instead of getText() - each subclass should have references to its parent class instance!!! this will make an episode a fully functional unit
+						}
+					}
+				}.start();
+			}
+		});
+		buttonPanel.add(btnDownload);
+		
+		//add the select/deselect button
+		JButton btnSelect = new JButton("Select/Deselect All");
+		
+		btnSelect.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				new Thread()
+				{
+					public void run()
+					{
+						val = !val;
+						for(int i=0; i<jt.getRowCount(); ++i)
+							jt.setValueAt(val, i, jt.getColumn("Download").getModelIndex());
+					}
+				}.start();
+			}
+		});
+		buttonPanel.add(btnSelect);
+		
+		panel.add(buttonPanel, BorderLayout.PAGE_END);
 		panel.revalidate();
 	}
 
 	public void manageShows()
 	{
+		//TODO: make the list of shows into a grid or even a better list
 		//clear the panel
 		panel.removeAll();
 		
@@ -139,6 +177,7 @@ public class Main
 		{
 			final ShowEntry show = m.shows.get(i);
 			JPanel showPanel = new JPanel();
+			showPanel.setBorder(new LineBorder(Color.BLACK));
 			JTextArea jta = new JTextArea(show.getText());
 			jta.setEditable(false);
 			showPanel.add(jta);
@@ -187,15 +226,17 @@ public class Main
 			});
 			buttonBox.add(btnDelete);
 			buttonBox.add(btnUpdate);
-			showPanel.add(buttonBox);
+			//TODO: center content within panel, this doesnt do that
+			showPanel.add(buttonBox, BorderLayout.CENTER);
 			
 			showBox.add(showPanel);
 		}
+		panel.add(showBox, BorderLayout.CENTER);
+		
 		//create an "add" button at the bottom of the list
 		Box addBox = Box.createHorizontalBox();
 		final JButton btnAdd = new JButton("Add");
 		final JTextPane addName = new JTextPane();
-		addName.setPreferredSize(new Dimension(150, addName.getPreferredSize().height));
 		addName.addKeyListener(new KeyListener()
 		{
 			public void keyPressed(KeyEvent ke)
@@ -242,38 +283,13 @@ public class Main
 		});
 		addBox.add(addName);
 		addBox.add(btnAdd);
-		showBox.add(addBox);
 		
-		panel.add(showBox);
+		panel.add(addBox, BorderLayout.PAGE_END);
 		panel.repaint();//repaint because you don't use the whole space and you don't want residual drawing there
 		panel.revalidate();
 		
 		//put the focus in the add show field
 		addName.requestFocus();
-	}
-
-	public void downloadUnseen()
-	{
-		//clear the panel
-		panel.removeAll();
-		
-		//create the pane and arrange text stream
-		final JTextArea jta = new JTextArea();
-		jta.setEditable(false);
-		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
-		new Thread()
-		{
-			public void run()
-			{
-				m.openMagnetLinks();
-			}
-		}.start();
-		
-		//set the content of the panel
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(jta), gbc);
-		panel.revalidate();
 	}
 
 	public void browse()
@@ -386,30 +402,24 @@ public class Main
 				{
 					//if a season is selected
 					tPanel.removeAll();
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.fill = GridBagConstraints.BOTH;
 					JTextArea jta = new JTextArea(((Season)obj).getText());
-					tPanel.add(jta, gbc);
+					tPanel.add(jta);
 					tPanel.revalidate();
 				}
 				else if(obj.getClass() == ShowEntry.class)
 				{
 					//if a show is selected
 					tPanel.removeAll();
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.fill = GridBagConstraints.BOTH;
 					JTextArea jta = new JTextArea(((ShowEntry)obj).getText());
-					tPanel.add(jta, gbc);
+					tPanel.add(jta);
 					tPanel.revalidate();
 				}
 				else
 				{
 					//if the root is selected
 					tPanel.removeAll();
-					GridBagConstraints gbc = new GridBagConstraints();
-					gbc.fill = GridBagConstraints.BOTH;
 					JTextArea jta = new JTextArea("Browse your shows.");
-					tPanel.add(jta, gbc);
+					tPanel.add(jta);
 					tPanel.revalidate();
 				}
 			}
@@ -419,17 +429,11 @@ public class Main
 		tree.addTreeSelectionListener(tsl);
 		tree.setModel(new DefaultTreeModel(root));
 		
-		//TODO: fix this for the gridbaglayout
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(tree, gbc);
+		panel.add(tree);
 		panel.add(tPanel);
 		panel.revalidate();
 	}
-
-	/**
-	 * 
-	 */
+	
 	public void printUpcoming()
 	{
 		//clear the panel
@@ -440,15 +444,10 @@ public class Main
 		JScrollPane jsp = new JScrollPane(jta);
 		
 		//set the content of the panel
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(jsp, gbc);
+		panel.add(jsp);
 		panel.revalidate();
 	}
-
-	/**
-	 * 
-	 */
+	
 	public void printTimelines()
 	{
 		//clear the panel
@@ -459,9 +458,7 @@ public class Main
 		JScrollPane jsp = new JScrollPane(jta);
 		
 		//set the content of the panel
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(jsp, gbc);
+		panel.add(jsp);
 		panel.revalidate();
 	}
 

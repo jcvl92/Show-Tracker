@@ -67,19 +67,14 @@ public class GUI {
 		JPanel panel = new JPanel();
 		frmShowTracker.getContentPane().add(panel, BorderLayout.CENTER);
 		main = new Main(panel, frmShowTracker);
-		GridBagLayout gbl_panel = new GridBagLayout();
-		gbl_panel.columnWidths = new int[]{0};
-		gbl_panel.rowHeights = new int[]{0};
-		gbl_panel.columnWeights = new double[]{Double.MIN_VALUE};
-		gbl_panel.rowWeights = new double[]{Double.MIN_VALUE};
-		panel.setLayout(gbl_panel);
+		panel.setLayout(new BorderLayout(0, 0));
 		
 		Box verticalBox = Box.createVerticalBox();
 		verticalBox.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
 		verticalBox.setBackground(Color.BLACK);
 		frmShowTracker.getContentPane().add(verticalBox, BorderLayout.WEST);
 		
-		JButton btnPrintUnseen = new JButton("Print Unseen");
+		JButton btnPrintUnseen = new JButton("Unseen Episodes");
 		btnPrintUnseen.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnPrintUnseen.addActionListener(new ActionListener()
 		{
@@ -89,7 +84,7 @@ public class GUI {
 				{
 					public void run()
 					{
-						main.printUnseen();
+						main.unseenShows();
 					}
 				}.start();
 			}
@@ -112,23 +107,6 @@ public class GUI {
 			}
 		});
 		verticalBox.add(btnManageShows);
-		
-		JButton btnDownloadUnseen = new JButton("Download Unseen");
-		btnDownloadUnseen.setAlignmentX(Component.CENTER_ALIGNMENT);
-		btnDownloadUnseen.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				new Thread()
-				{
-					public void run()
-					{
-						main.downloadUnseen();
-					}
-				}.start();
-			}
-		});
-		verticalBox.add(btnDownloadUnseen);
 		
 		JButton btnBrowse = new JButton("Browse");
 		btnBrowse.setAlignmentX(Component.CENTER_ALIGNMENT);
