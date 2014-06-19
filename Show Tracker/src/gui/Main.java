@@ -11,9 +11,11 @@ import java.io.PrintStream;
 
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
@@ -28,6 +30,7 @@ import showTracker.*;
 //TODO: add an indicator to the current episode in browse(aterisk*)
 //TODO: edit the download search text
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
+//TODO: sort unseen by release date!
 public class Main
 {
 	JPanel panel;
@@ -76,21 +79,37 @@ public class Main
 		panel.removeAll();
 		
 		//create the pane and arrange text stream
-		final JTextArea jta = new JTextArea();
-		jta.setEditable(false);
-		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
-		new Thread()
+		//final JTextArea jta = new JTextArea();
+		//jta.setEditable(false);
+		//System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
+		//get episodes
+		Episode[] episodes = m.showLinks();
+		Object[][] data = {
+		        {"Kathy", "Smith",
+		         "Snowboarding", new Integer(5), new Boolean(false)},
+		        {"John", "Doe",
+		         "Rowing", new Integer(3), new Boolean(true)},
+		        {"Sue", "Black",
+		         "Knitting", new Integer(2), new Boolean(false)},
+		        {"Jane", "White",
+		         "Speed reading", new Integer(20), new Boolean(true)},
+		        {"Joe", "Brown",
+		         "Pool", new Integer(10), new Boolean(false)}
+		        };
+		/*Object[][] data = new Object[episodes.length][3];
+		for(int i=0; i<episodes.length; ++i)
 		{
-			public void run()
-			{
-				m.showLinks();
-			}
-		}.start();
+			data[i] = new Object[]{episodes[i].toString(), episodes[i].getDate(), new Boolean(false)};
+		}*/
+		
+		//make a table from the links(give them check boxes)
+		JTable jt = new JTable(data, new String[]{"title", "date", "checkbox", "test", "test2"});
+		//have a select all checkbox
 		
 		//set the content of the panel
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(jta), gbc);
+		panel.add(new JScrollPane(jt), gbc);
 		panel.revalidate();
 	}
 

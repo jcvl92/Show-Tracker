@@ -82,9 +82,10 @@ public class ShowTracker
 		}
 	}
 	
-	public int showLinks()
+	public Episode[] showLinks()
 	{
-		int linkNum=0;
+		ArrayList<Episode> episodes = new ArrayList<Episode>();
+		//int linkNum=0;
 		//iterate through each show and open magnet links for that show
 		for(int i=0;i<shows.size();++i)
 		{
@@ -107,15 +108,16 @@ public class ShowTracker
 					if(episode.airDate != null && episode.airDate.isAfter(date) && episode.airDate.isBeforeNow())
 					{
 						//print the episode
-						System.out.println(show+" - "+episode+"("+episode.getEpisodeNumber()+')');
+						//System.out.println(show+" - "+episode+"("+episode.getEpisodeNumber()+')');
 						
 						//increment the link counter
-						++linkNum;
+						//++linkNum;
+						episodes.add(episode);
 					}
 				}
 			}
 		}
-		return linkNum;
+		return episodes.toArray(new Episode[episodes.size()]);
 	}
 	
 	public MagnetLink getMagnetLink(ShowEntry show, Episode episode) throws IOException
