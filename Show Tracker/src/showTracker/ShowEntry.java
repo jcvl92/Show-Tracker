@@ -23,6 +23,7 @@ public class ShowEntry implements Serializable
 
 	public ShowEntry(String nameOfShow) throws IOException, InterruptedException
 	{
+		//TODO: the workaround of not picking a last watched results in the first episode being last watched instead of some null position or something, fix it
 		//save the search string for TPB magnet link searches
 		search = nameOfShow;
 

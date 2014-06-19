@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -21,6 +22,8 @@ import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -78,33 +81,41 @@ public class Main
 		//clear the panel
 		panel.removeAll();
 		
-		//create the pane and arrange text stream
-		//final JTextArea jta = new JTextArea();
-		//jta.setEditable(false);
-		//System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
-		//get episodes
+		//create the pane with the episodes in a table
 		Episode[] episodes = m.showLinks();
-		Object[][] data = {
-		        {"Kathy", "Smith",
-		         "Snowboarding", new Integer(5), new Boolean(false)},
-		        {"John", "Doe",
-		         "Rowing", new Integer(3), new Boolean(true)},
-		        {"Sue", "Black",
-		         "Knitting", new Integer(2), new Boolean(false)},
-		        {"Jane", "White",
-		         "Speed reading", new Integer(20), new Boolean(true)},
-		        {"Joe", "Brown",
-		         "Pool", new Integer(10), new Boolean(false)}
-		        };
-		/*Object[][] data = new Object[episodes.length][3];
+		final Object[][] data = new Object[episodes.length][5];
 		for(int i=0; i<episodes.length; ++i)
-		{
-			data[i] = new Object[]{episodes[i].toString(), episodes[i].getDate(), new Boolean(false)};
-		}*/
+			data[i] = new Object[]{episodes[i].show.toString(), episodes[i].getEpisodeNumber(), episodes[i].toString(), episodes[i].getDate(), false};
+		//TODO: add a check all button(maybe modify the table header?)
 		
-		//make a table from the links(give them check boxes)
-		JTable jt = new JTable(data, new String[]{"title", "date", "checkbox", "test", "test2"});
-		//have a select all checkbox
+		//make a table from the links(overloading the table model to make checkboxes work)
+		JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
+		{
+			private static final long serialVersionUID = 1L;
+			public Class<?> getColumnClass(int columnIndex)
+			{
+				return getValueAt(0, columnIndex).getClass();
+			}
+			public int getColumnCount()
+			{
+				return columnIdentifiers.size();
+			}
+			public int getRowCount()
+			{
+				return dataVector.size();
+			}
+			public Object getValueAt(int row, int column)
+			{
+				return ((Vector<?>)dataVector.get(row)).get(column);
+			}
+			public boolean isCellEditable(int row, int column)
+			{
+				if(((Vector<?>)dataVector.get(row)).get(column).getClass().equals(Boolean.class))
+					return true;
+				return false;
+			}
+		});
+		jt.getTableHeader().setReorderingAllowed(false);
 		
 		//set the content of the panel
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -158,6 +169,7 @@ public class Main
 							btnUpdate.setEnabled(false);
 							try
 							{
+								btnUpdate.setText("Updating");
 								show.update();
 								btnUpdate.setText("Updated");
 							}
