@@ -86,7 +86,6 @@ public class Main
 		final Object[][] data = new Object[episodes.length][5];
 		for(int i=0; i<episodes.length; ++i)
 			data[i] = new Object[]{episodes[i].show.toString(), episodes[i].getEpisodeNumber(), episodes[i].toString(), episodes[i].getDate(), false};
-		//TODO: add a check all button(maybe modify the table header?)
 		
 		//make a table from the links(overloading the table model to make checkboxes work)
 		JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
@@ -118,9 +117,14 @@ public class Main
 		jt.getTableHeader().setReorderingAllowed(false);
 		
 		//set the content of the panel
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(jt), gbc);
+		GridBagConstraints gbc1 = new GridBagConstraints();
+		gbc1.fill = GridBagConstraints.BOTH;
+		//gbc1.anchor = GridBagConstraints.PAGE_START;
+		panel.add(new JScrollPane(jt), gbc1);
+		GridBagConstraints gbc2 = new GridBagConstraints();
+		//gbc2.anchor = GridBagConstraints.PAGE_END;//TODO: make this below the table
+		panel.add(new JButton("Download"), gbc2);
+		panel.add(new JButton("Select/Deselect All"), gbc2);
 		panel.revalidate();
 	}
 
