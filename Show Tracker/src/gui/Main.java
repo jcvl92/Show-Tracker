@@ -30,6 +30,7 @@ import javax.swing.tree.DefaultTreeModel;
 
 import showTracker.*;
 
+//TODO: add a mark as seen button for the unseen list(how would you do this if you can't use the checkboxes?)
 //TODO: in the unseen panel, when you select a row, open up the description of that show on the right
 //TODO: add an indicator to the current episode in browse(aterisk*)
 //TODO: edit the download search text
