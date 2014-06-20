@@ -40,6 +40,8 @@ import javax.swing.tree.DefaultTreeModel;
 
 import showTracker.*;
 
+//TODO: add update all and delete all buttons to the manage shows section
+//TODO: add offline support
 //TODO: add a mark as seen button for the unseen list(how would you do this if you can't use the checkboxes?)
 //TODO: in the unseen panel, when you select a row, open up the description of that show on the right
 //TODO: add an indicator to the current episode in browse(aterisk*)
@@ -58,29 +60,6 @@ public class Main
 	{
 		panel = p;
 		frame = f;
-	}
-	
-	public void updateShows()
-	{
-		//TODO: change this to some sort of list that shows progress via 3 stages(blank, loading wheel, check mark) 
-		//clear the panel
-		panel.removeAll();
-		
-		//create the pane and arrand text stream
-		final JTextArea jta = new JTextArea();
-		jta.setEditable(false);
-		System.setOut(new PrintStream(new OutputStream(){public void write(int n){jta.setText(jta.getText()+(char)n);}}));
-		new Thread()
-		{
-			public void run()
-			{
-				m.updateShows();
-			}
-		}.start();
-		
-		//set the content of the panel
-		panel.add(new JScrollPane(jta));
-		panel.revalidate();
 	}
 	
 	public void unseenShows()

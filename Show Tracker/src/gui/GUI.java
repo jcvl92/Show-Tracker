@@ -18,6 +18,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.border.MatteBorder;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 public class GUI {
 
@@ -67,10 +70,12 @@ public class GUI {
 		main = new Main(panel, frmShowTracker);
 		panel.setLayout(new BorderLayout(0, 0));
 		
-		Box verticalBox = Box.createVerticalBox();
-		verticalBox.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
-		verticalBox.setBackground(Color.BLACK);
-		frmShowTracker.getContentPane().add(verticalBox, BorderLayout.WEST);
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
+		frmShowTracker.getContentPane().add(buttonPanel, BorderLayout.WEST);
+		GridBagLayout gbl_buttonPanel = new GridBagLayout();
+		gbl_buttonPanel.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0};
+		buttonPanel.setLayout(gbl_buttonPanel);
 		
 		JButton btnPrintUnseen = new JButton("Unseen Episodes");
 		btnPrintUnseen.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -87,7 +92,12 @@ public class GUI {
 				}.start();
 			}
 		});
-		verticalBox.add(btnPrintUnseen);
+		GridBagConstraints gbc_btnPrintUnseen = new GridBagConstraints();
+		gbc_btnPrintUnseen.insets = new Insets(0, 0, 5, 5);
+		gbc_btnPrintUnseen.gridx = 0;
+		gbc_btnPrintUnseen.gridy = 0;
+		gbc_btnPrintUnseen.fill = GridBagConstraints.BOTH;
+		buttonPanel.add(btnPrintUnseen, gbc_btnPrintUnseen);
 		
 		JButton btnManageShows = new JButton("Manage Shows");
 		btnManageShows.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -104,7 +114,12 @@ public class GUI {
 				}.start();
 			}
 		});
-		verticalBox.add(btnManageShows);
+		GridBagConstraints gbc_btnManageShows = new GridBagConstraints();
+		gbc_btnManageShows.fill = GridBagConstraints.BOTH;
+		gbc_btnManageShows.insets = new Insets(0, 0, 5, 5);
+		gbc_btnManageShows.gridx = 0;
+		gbc_btnManageShows.gridy = 1;
+		buttonPanel.add(btnManageShows, gbc_btnManageShows);
 		
 		JButton btnBrowse = new JButton("Browse");
 		btnBrowse.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -121,7 +136,12 @@ public class GUI {
 				}.start();
 			}
 		});
-		verticalBox.add(btnBrowse);
+		GridBagConstraints gbc_btnBrowse = new GridBagConstraints();
+		gbc_btnBrowse.fill = GridBagConstraints.BOTH;
+		gbc_btnBrowse.insets = new Insets(0, 0, 5, 5);
+		gbc_btnBrowse.gridx = 0;
+		gbc_btnBrowse.gridy = 2;
+		buttonPanel.add(btnBrowse, gbc_btnBrowse);
 		
 		JButton btnPrintUpcoming = new JButton("Print Upcoming");
 		btnPrintUpcoming.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -138,7 +158,12 @@ public class GUI {
 				}.start();
 			}
 		});
-		verticalBox.add(btnPrintUpcoming);
+		GridBagConstraints gbc_btnPrintUpcoming = new GridBagConstraints();
+		gbc_btnPrintUpcoming.fill = GridBagConstraints.BOTH;
+		gbc_btnPrintUpcoming.insets = new Insets(0, 0, 5, 5);
+		gbc_btnPrintUpcoming.gridx = 0;
+		gbc_btnPrintUpcoming.gridy = 3;
+		buttonPanel.add(btnPrintUpcoming, gbc_btnPrintUpcoming);
 		
 		JButton btnPrintTimelines = new JButton("Print Timelines");
 		btnPrintTimelines.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -155,24 +180,12 @@ public class GUI {
 				}.start();
 			}
 		});
-		verticalBox.add(btnPrintTimelines);
-		
-		JButton btnUpdateShows = new JButton("Update Shows");
-		btnUpdateShows.setAlignmentX(Component.CENTER_ALIGNMENT);
-		btnUpdateShows.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				new Thread()
-				{
-					public void run()
-					{
-						main.updateShows();
-					}
-				}.start();
-			}
-		});
-		verticalBox.add(btnUpdateShows);
+		GridBagConstraints gbc_btnPrintTimelines = new GridBagConstraints();
+		gbc_btnPrintTimelines.fill = GridBagConstraints.BOTH;
+		gbc_btnPrintTimelines.insets = new Insets(0, 0, 0, 5);
+		gbc_btnPrintTimelines.gridx = 0;
+		gbc_btnPrintTimelines.gridy = 4;
+		buttonPanel.add(btnPrintTimelines, gbc_btnPrintTimelines);
 	}
 
 }
