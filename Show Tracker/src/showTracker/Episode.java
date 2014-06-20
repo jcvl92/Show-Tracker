@@ -182,4 +182,9 @@ public class Episode implements Serializable
 
 		return sb.toString();
 	}
+
+	public boolean download()
+	{
+		return false;
+	}
 }

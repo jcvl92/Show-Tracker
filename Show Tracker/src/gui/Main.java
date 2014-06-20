@@ -2,7 +2,6 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +14,7 @@ import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -24,6 +24,7 @@ import javax.swing.JTree;
 import javax.swing.border.LineBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -38,7 +39,7 @@ import showTracker.*;
 //TODO: sort unseen by release date!
 public class Main
 {
-	static boolean val = true;
+	boolean unseenVal = true;
 	JPanel panel;
 	JFrame frame;
 	ShowTracker m = new ShowTracker();
@@ -77,6 +78,9 @@ public class Main
 		//clear the panel
 		panel.removeAll();
 		
+		//reset the unseenVal so that select/deselect is consistent
+		unseenVal = true;
+		
 		//get the table data
 		final Episode[] episodes = m.showLinks();
 		final Object[][] data = new Object[episodes.length][5];
@@ -105,15 +109,26 @@ public class Main
 			}
 			public boolean isCellEditable(int row, int column)
 			{
+				//only allow editing of the checkbox cells
 				if(((Vector<?>)dataVector.get(row)).get(column).getClass().equals(Boolean.class))
 					return true;
 				return false;
 			}
 		});
+		//disable reordering
 		jt.getTableHeader().setReorderingAllowed(false);
+		//center text strings
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+		jt.setDefaultRenderer(String.class, centerRenderer);
+		
+		//create a panel to hold the table and the episode pop-up
+		JPanel jp = new JPanel();
+		jp.add(new JScrollPane(jt), BorderLayout.CENTER);
+		jp.add(new JTextArea("test"));
 		
 		//add the table to the panel
-		panel.add(new JScrollPane(jt), BorderLayout.CENTER);
+		panel.add(jp);
 		
 		//set up the buttons panel
 		JPanel buttonPanel = new JPanel();
@@ -134,7 +149,15 @@ public class Main
 						for(int i=0; i<jt.getRowCount(); ++i)
 						{
 							if((boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
-								episodes[i].getText();//TODO: make this download instead of getText() - each subclass should have references to its parent class instance!!! this will make an episode a fully functional unit
+							{
+								if(episodes[i].download())
+									((DefaultTableModel)jt.getModel()).removeRow(i);
+								else
+								{
+									if(!((String)jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())).contains(" - unavailable"))
+										jt.setValueAt(jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())+" - unavailable", i, jt.getColumn("Date Aired").getModelIndex());
+								}
+							}
 						}
 					}
 				}.start();
@@ -153,9 +176,9 @@ public class Main
 				{
 					public void run()
 					{
-						val = !val;
+						unseenVal = !unseenVal;
 						for(int i=0; i<jt.getRowCount(); ++i)
-							jt.setValueAt(val, i, jt.getColumn("Download").getModelIndex());
+							jt.setValueAt(unseenVal, i, jt.getColumn("Download").getModelIndex());
 					}
 				}.start();
 			}
