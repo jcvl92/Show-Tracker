@@ -19,8 +19,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.border.MatteBorder;
 
-import java.awt.GridBagLayout;
-
 public class GUI {
 
 	private JFrame frmShowTracker;

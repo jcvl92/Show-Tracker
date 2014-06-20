@@ -3,6 +3,8 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -22,6 +24,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -40,6 +44,7 @@ import showTracker.*;
 public class Main
 {
 	boolean unseenVal = true;
+	Thread paneler = null;
 	JPanel panel;
 	JFrame frame;
 	ShowTracker m = new ShowTracker();
@@ -77,6 +82,10 @@ public class Main
 	{
 		//clear the panel
 		panel.removeAll();
+		
+		//create the JPanel for the pop-in
+		final JPanel popIn = new JPanel();
+		popIn.setVisible(false);
 		
 		//reset the unseenVal so that select/deselect is consistent
 		unseenVal = true;
@@ -121,14 +130,48 @@ public class Main
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 		jt.setDefaultRenderer(String.class, centerRenderer);
-		
-		//create a panel to hold the table and the episode pop-up
-		JPanel jp = new JPanel();
-		jp.add(new JScrollPane(jt), BorderLayout.CENTER);
-		jp.add(new JTextArea("test"));
+		//create a listener to construct a panel with episode information on row select
+		jt.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+		{
+			public void valueChanged(final ListSelectionEvent event)
+			{
+				if(!event.getValueIsAdjusting())
+				{
+					new Thread()
+					{
+						@SuppressWarnings("deprecation")
+						public void run()
+						{
+							//quit another paneling operation if one exists
+							if(paneler != null)
+								paneler.stop();
+							paneler = this;
+							
+							//show the loading panel
+							popIn.removeAll();
+							JTextArea loading = new JTextArea("Loading");
+							loading.setEditable(false);
+							popIn.add(loading);
+							popIn.setVisible(true);
+							popIn.revalidate();
+							
+							//fill the pop-in panel with content
+							Episode e = episodes[jt.getSelectedRow()];
+							JTextArea jta = new JTextArea(e.getText());
+							jta.setEditable(false);
+							jta.setLineWrap(true);
+							jta.setWrapStyleWord(true);
+							popIn.removeAll();
+							popIn.add(jta);
+							popIn.revalidate();
+						}
+					}.start();
+				}
+			}
+		});
 		
 		//add the table to the panel
-		panel.add(jp);
+		panel.add(new JScrollPane(jt), BorderLayout.CENTER);
 		
 		//set up the buttons panel
 		JPanel buttonPanel = new JPanel();
@@ -167,7 +210,6 @@ public class Main
 		
 		//add the select/deselect button
 		JButton btnSelect = new JButton("Select/Deselect All");
-		
 		btnSelect.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -185,13 +227,18 @@ public class Main
 		});
 		buttonPanel.add(btnSelect);
 		
+		//add the buttons panel to the panel
 		panel.add(buttonPanel, BorderLayout.PAGE_END);
+		
+		//add the pop-in panel to the panel
+		panel.add(popIn, BorderLayout.LINE_END);
+		
+		//revalidate the panel to align the components
 		panel.revalidate();
 	}
 
 	public void manageShows()
 	{
-		//TODO: make the list of shows into a grid or even a better list
 		//clear the panel
 		panel.removeAll();
 		
@@ -199,13 +246,23 @@ public class Main
 		final Box showBox = Box.createVerticalBox();
 		for(int i=0; i<m.shows.size(); ++i)
 		{
-			final ShowEntry show = m.shows.get(i);
+			//create the panel and set up the layout
 			JPanel showPanel = new JPanel();
 			showPanel.setBorder(new LineBorder(Color.BLACK));
+			showPanel.setLayout(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.CENTER;
+			
+			//create the show description text area
+			final ShowEntry show = m.shows.get(i);
 			JTextArea jta = new JTextArea(show.getText());
 			jta.setEditable(false);
-			showPanel.add(jta);
+			showPanel.add(jta, gbc);
+			
+			//create the box for the buttons
 			Box buttonBox = Box.createVerticalBox();
+			
+			//delete button
 			final JButton btnDelete = new JButton("Delete");
 			final int showNum = i;
 			btnDelete.addActionListener(new ActionListener()
@@ -224,6 +281,8 @@ public class Main
 					}.start();
 				}
 			});
+			
+			//update button
 			final JButton btnUpdate = new JButton("Update");
 			btnUpdate.addActionListener(new ActionListener()
 			{
@@ -248,14 +307,17 @@ public class Main
 					}.start();
 				}
 			});
+			
+			//add the buttons to the button box
 			buttonBox.add(btnDelete);
 			buttonBox.add(btnUpdate);
-			//TODO: center content within panel, this doesnt do that
-			showPanel.add(buttonBox, BorderLayout.CENTER);
+			
+			//center content within panel
+			showPanel.add(buttonBox, gbc);
 			
 			showBox.add(showPanel);
 		}
-		panel.add(showBox, BorderLayout.CENTER);
+		panel.add(new JScrollPane(showBox), BorderLayout.CENTER);
 		
 		//create an "add" button at the bottom of the list
 		Box addBox = Box.createHorizontalBox();

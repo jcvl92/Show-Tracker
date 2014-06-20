@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
 import org.joda.time.DateTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -326,6 +327,7 @@ public class ShowTracker
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("show_data")));
+			@SuppressWarnings("unchecked")
 			ArrayList<ShowEntry> shows = (ArrayList<ShowEntry>)ois.readObject();
 			ois.close();
 
