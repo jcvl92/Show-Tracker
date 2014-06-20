@@ -3,16 +3,21 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -84,7 +89,7 @@ public class Main
 		panel.removeAll();
 		
 		//create the JPanel for the pop-in
-		final JPanel popIn = new JPanel();
+		final JPanel popIn = new JPanel(new BorderLayout());
 		popIn.setVisible(false);
 		
 		//reset the unseenVal so that select/deselect is consistent
@@ -137,35 +142,7 @@ public class Main
 			{
 				if(!event.getValueIsAdjusting())
 				{
-					new Thread()
-					{
-						@SuppressWarnings("deprecation")
-						public void run()
-						{
-							//quit another paneling operation if one exists
-							if(paneler != null)
-								paneler.stop();
-							paneler = this;
-							
-							//show the loading panel
-							popIn.removeAll();
-							JTextArea loading = new JTextArea("Loading");
-							loading.setEditable(false);
-							popIn.add(loading);
-							popIn.setVisible(true);
-							popIn.revalidate();
-							
-							//fill the pop-in panel with content
-							Episode e = episodes[jt.getSelectedRow()];
-							JTextArea jta = new JTextArea(e.getText());
-							jta.setEditable(false);
-							jta.setLineWrap(true);
-							jta.setWrapStyleWord(true);
-							popIn.removeAll();
-							popIn.add(jta);
-							popIn.revalidate();
-						}
-					}.start();
+					fillPopIn(popIn, episodes[jt.getSelectedRow()]);
 				}
 			}
 		});
@@ -380,6 +357,7 @@ public class Main
 
 	public void browse()
 	{
+		//TODO: make the tree expanded one level initially(to show the shows)
 		//clear the panel
 		panel.removeAll();
 		
@@ -410,22 +388,91 @@ public class Main
 		}
 		
 		//create the panel object
-		final JPanel tPanel = new JPanel();
+		final JPanel tPanel = new JPanel(new BorderLayout());
 		
 		//build the listener for the node selection event and set the tree
-		TreeSelectionListener tsl = new TreeSelectionListener() {
-			public void valueChanged(TreeSelectionEvent e) {
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+		TreeSelectionListener tsl = new TreeSelectionListener()
+		{
+			public void valueChanged(TreeSelectionEvent e)
+			{
+				fillPopIn(tPanel, ((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject());
+			}
+		};
+		
+		//configure and add the tree
+		tree.addTreeSelectionListener(tsl);
+		tree.setModel(new DefaultTreeModel(root));
+		panel.add(tree, BorderLayout.CENTER);
+		panel.add(tPanel, BorderLayout.LINE_END);
+		panel.revalidate();
+	}
+	
+	public void printUpcoming()
+	{
+		//clear the panel
+		panel.removeAll();
+		
+		//create the pane
+		JTextArea jta = new JTextArea(m.upcomingEpisodes());
+		JScrollPane jsp = new JScrollPane(jta);
+		
+		//set the content of the panel
+		panel.add(jsp);
+		panel.revalidate();
+	}
+	
+	public void printTimelines()
+	{
+		//clear the panel
+		panel.removeAll();
+		
+		//create the pane
+		JTextArea jta = new JTextArea(m.timeline());
+		JScrollPane jsp = new JScrollPane(jta);
+		
+		//set the content of the panel
+		panel.add(jsp);
+		panel.revalidate();
+	}
+
+	public void addShow(String showName)
+	{
+		//TODO: after entering the text, this should come up with candidates for the search(and they pick one)
+		//add the show
+		try
+		{
+			ShowEntry show = new ShowEntry(showName);
+			m.addShowToFile(show);
+		}
+		catch(Exception e){}
+	}
+
+	public void fillPopIn(final JPanel jp, final Object o)
+	{
+		new Thread()
+		{
+			@SuppressWarnings("deprecation")
+			public void run()
+			{
+				//quit another paneling operation if one exists
+				if(paneler != null)
+					paneler.stop();
+				paneler = this;
 				
-				//set the panel according to the Episode, Season, or ShowEntry that was selected
-				final Object obj = node.getUserObject();
-				if(obj.getClass() == Episode.class)
+				//show the loading panel
+				//TODO: put in a loading spinner
+				jp.removeAll();
+				jp.setVisible(true);
+				jp.repaint();
+				
+				if(o.getClass().equals(Episode.class))
 				{
-					//if an episode is selected
-					tPanel.removeAll();
-					
-					//GridBagConstraints gbc = new GridBagConstraints();
-					//gbc.fill = GridBagConstraints.BOTH;
+					//create the text section
+					Episode episode = (Episode)o;
+					JTextArea jta = new JTextArea(episode.getText());
+					jta.setEditable(false);
+					jta.setLineWrap(true);
+					jta.setWrapStyleWord(true);
 					
 					//create buttons
 					Box buttonBox = Box.createVerticalBox();
@@ -479,88 +526,36 @@ public class Main
 					});
 					buttonBox.add(btnDownload);
 					
-					//TODO: give these both constraints
-					//tPanel.add(new JScrollPane(new JTextArea(((Episode)obj).getText())));
-					tPanel.add(buttonBox);
-					tPanel.revalidate();
-				}
-				else if(obj.getClass() == Season.class)
-				{
-					//if a season is selected
-					tPanel.removeAll();
-					JTextArea jta = new JTextArea(((Season)obj).getText());
-					tPanel.add(jta);
-					tPanel.revalidate();
-				}
-				else if(obj.getClass() == ShowEntry.class)
-				{
-					//if a show is selected
-					tPanel.removeAll();
-					JTextArea jta = new JTextArea(((ShowEntry)obj).getText());
-					tPanel.add(jta);
-					tPanel.revalidate();
+					//add the components
+					jp.removeAll();
+					try
+					{
+						jp.add(new JPanel()
+						{
+							private static final long serialVersionUID = 1L;
+							private BufferedImage image = ImageIO.read(new File("image name and path"));
+							protected void paintComponent(Graphics g) {
+						        super.paintComponent(g);
+						        g.drawImage(image, 0, 0, null);            
+						    }
+						}, BorderLayout.PAGE_START);
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+					jp.add(new JScrollPane(jta), BorderLayout.CENTER);
+					jp.add(buttonBox, BorderLayout.PAGE_END);
 				}
 				else
 				{
-					//if the root is selected
-					tPanel.removeAll();
-					JTextArea jta = new JTextArea("Browse your shows.");
-					tPanel.add(jta);
-					tPanel.revalidate();
+					jp.removeAll();
+					jp.add(new JScrollPane(new JTextArea(o.toString())));
 				}
+				
+				//revalidate to redraw/realign the panel
+				jp.revalidate();
 			}
-		};
-		
-		//configure and add the tree
-		tree.addTreeSelectionListener(tsl);
-		tree.setModel(new DefaultTreeModel(root));
-		
-		panel.add(tree);
-		panel.add(tPanel);
-		panel.revalidate();
-	}
-	
-	public void printUpcoming()
-	{
-		//clear the panel
-		panel.removeAll();
-		
-		//create the pane
-		JTextArea jta = new JTextArea(m.upcomingEpisodes());
-		JScrollPane jsp = new JScrollPane(jta);
-		
-		//set the content of the panel
-		panel.add(jsp);
-		panel.revalidate();
-	}
-	
-	public void printTimelines()
-	{
-		//clear the panel
-		panel.removeAll();
-		
-		//create the pane
-		JTextArea jta = new JTextArea(m.timeline());
-		JScrollPane jsp = new JScrollPane(jta);
-		
-		//set the content of the panel
-		panel.add(jsp);
-		panel.revalidate();
-	}
-
-	public void addShow(String showName)
-	{
-		//TODO: after entering the text, this should come up with candidates for the search(and they pick one)
-		//add the show
-		try
-		{
-			ShowEntry show = new ShowEntry(showName);
-			m.addShowToFile(show);
-			//System.out.println("\""+show.showName+"\" added.");
-		}
-		catch(Exception e)
-		{
-			//System.out.println("\""+response+"\" was not added because "+e);
-		}
+		}.start();
 	}
 }
