@@ -13,8 +13,6 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -42,10 +40,8 @@ import showTracker.*;
 
 //TODO: add update all and delete all buttons to the manage shows section
 //TODO: add offline support
-//TODO: add a mark as seen button for the unseen list(how would you do this if you can't use the checkboxes?)
-//TODO: in the unseen panel, when you select a row, open up the description of that show on the right
 //TODO: add an indicator to the current episode in browse(aterisk*)
-//TODO: edit the download search text
+//TODO: add the option to edit the download search text
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
 //TODO: sort unseen by release date!
 public class Main
@@ -454,7 +450,8 @@ public class Main
 					jta.setWrapStyleWord(true);
 					
 					//create buttons
-					Box buttonBox = Box.createVerticalBox();
+					JPanel buttonBox = new JPanel();
+					buttonBox.setLayout(new GridBagLayout());
 					
 					//last watched button
 					final JButton btnLastWatched = new JButton("Set as last watched");
@@ -474,7 +471,10 @@ public class Main
 							}.start();
 						}
 					});
-					buttonBox.add(btnLastWatched);
+					GridBagConstraints gbc_btnLastWatched = new GridBagConstraints();
+					gbc_btnLastWatched.fill = GridBagConstraints.BOTH;
+					gbc_btnLastWatched.gridy = 0;
+					buttonBox.add(btnLastWatched, gbc_btnLastWatched);
 					
 					//download button
 					final JButton btnDownload = new JButton("Download");
@@ -503,7 +503,10 @@ public class Main
 							}.start();
 						}
 					});
-					buttonBox.add(btnDownload);
+					GridBagConstraints gbc_btnDownload = new GridBagConstraints();
+					gbc_btnDownload.fill = GridBagConstraints.BOTH;
+					gbc_btnDownload.gridy = 1;
+					buttonBox.add(btnDownload, gbc_btnDownload);
 					
 					//add the components
 					jp.removeAll();

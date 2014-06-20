@@ -8,19 +8,14 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 
 import javax.swing.JButton;
-import javax.swing.Box;
-
 import java.awt.Component;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.border.MatteBorder;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 
 public class GUI {
 
@@ -71,7 +66,6 @@ public class GUI {
 		panel.setLayout(new BorderLayout(0, 0));
 		
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
 		frmShowTracker.getContentPane().add(buttonPanel, BorderLayout.WEST);
 		GridBagLayout gbl_buttonPanel = new GridBagLayout();
 		gbl_buttonPanel.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0};
@@ -93,7 +87,6 @@ public class GUI {
 			}
 		});
 		GridBagConstraints gbc_btnPrintUnseen = new GridBagConstraints();
-		gbc_btnPrintUnseen.insets = new Insets(0, 0, 5, 5);
 		gbc_btnPrintUnseen.gridx = 0;
 		gbc_btnPrintUnseen.gridy = 0;
 		gbc_btnPrintUnseen.fill = GridBagConstraints.BOTH;
@@ -116,7 +109,6 @@ public class GUI {
 		});
 		GridBagConstraints gbc_btnManageShows = new GridBagConstraints();
 		gbc_btnManageShows.fill = GridBagConstraints.BOTH;
-		gbc_btnManageShows.insets = new Insets(0, 0, 5, 5);
 		gbc_btnManageShows.gridx = 0;
 		gbc_btnManageShows.gridy = 1;
 		buttonPanel.add(btnManageShows, gbc_btnManageShows);
@@ -138,7 +130,6 @@ public class GUI {
 		});
 		GridBagConstraints gbc_btnBrowse = new GridBagConstraints();
 		gbc_btnBrowse.fill = GridBagConstraints.BOTH;
-		gbc_btnBrowse.insets = new Insets(0, 0, 5, 5);
 		gbc_btnBrowse.gridx = 0;
 		gbc_btnBrowse.gridy = 2;
 		buttonPanel.add(btnBrowse, gbc_btnBrowse);
@@ -160,7 +151,6 @@ public class GUI {
 		});
 		GridBagConstraints gbc_btnPrintUpcoming = new GridBagConstraints();
 		gbc_btnPrintUpcoming.fill = GridBagConstraints.BOTH;
-		gbc_btnPrintUpcoming.insets = new Insets(0, 0, 5, 5);
 		gbc_btnPrintUpcoming.gridx = 0;
 		gbc_btnPrintUpcoming.gridy = 3;
 		buttonPanel.add(btnPrintUpcoming, gbc_btnPrintUpcoming);
@@ -182,7 +172,6 @@ public class GUI {
 		});
 		GridBagConstraints gbc_btnPrintTimelines = new GridBagConstraints();
 		gbc_btnPrintTimelines.fill = GridBagConstraints.BOTH;
-		gbc_btnPrintTimelines.insets = new Insets(0, 0, 0, 5);
 		gbc_btnPrintTimelines.gridx = 0;
 		gbc_btnPrintTimelines.gridy = 4;
 		buttonPanel.add(btnPrintTimelines, gbc_btnPrintTimelines);
