@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 
 public class ShowTracker
@@ -46,7 +47,7 @@ public class ShowTracker
 			}
 		}
 		
-		episodes.sort(new Comparator<Episode>()
+		Collections.sort(episodes, new Comparator<Episode>()
 		{
 			public int compare(Episode arg0, Episode arg1)
 			{
