@@ -146,7 +146,11 @@ public class Main
 							if((boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
 							{
 								if(episodes[i].download())
+								{
+									episodes[i].download();
+									episodes[i].setWatched();
 									((DefaultTableModel)jt.getModel()).removeRow(i);
+								}
 								else
 								{
 									if(!((String)jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())).contains(" - unavailable"))
@@ -332,7 +336,6 @@ public class Main
 
 	public void browse()
 	{
-		//TODO: make the tree expanded one level initially(to show the shows)
 		//clear the panel
 		panel.removeAll();
 		

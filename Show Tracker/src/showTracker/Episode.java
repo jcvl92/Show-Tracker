@@ -12,6 +12,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 @SuppressWarnings("serial")
 public class Episode implements Serializable
@@ -185,6 +186,26 @@ public class Episode implements Serializable
 
 	public boolean download()
 	{
-		return false;
+		try
+		{
+			//get the link from TPB
+			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+			
+			//open the link
+			new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
+			
+			//return true if it worked
+			return true;
+		}
+		catch(Exception e)
+		{
+			//return false if it failed
+			return false;
+		}
+	}
+	
+	public void setWatched()
+	{
+		
 	}
 }
