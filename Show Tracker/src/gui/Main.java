@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -209,17 +210,18 @@ public class Main
 								private static final long serialVersionUID = 1L;
 								private Image image = episode.getImage();
 								protected void paintComponent(Graphics g) {
-							        super.paintComponent(g);
-							        
-							        int sourceWidth = image.getWidth(null),
+									int sourceWidth = image.getWidth(null),
 							        	sourceHeight = image.getHeight(null),
 							        	destinationWidth = this.getWidth(),
-							        	destinationHeight = (int)((double)sourceHeight/((double)destinationWidth/(double)sourceWidth));
+							        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
 							        
+									this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+							        super.paintComponent(g);
 							        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+							        popIn.revalidate();
 							    }
-							}, BorderLayout.CENTER);
-							//popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
+							}, BorderLayout.PAGE_START);
+							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
 							popIn.add(buttonBox, BorderLayout.PAGE_END);
 							
 							//revalidate to redraw/realign the panel
@@ -571,8 +573,15 @@ public class Main
 								private static final long serialVersionUID = 1L;
 								private Image image = episode.getImage();
 								protected void paintComponent(Graphics g) {
+									int sourceWidth = image.getWidth(null),
+							        	sourceHeight = image.getHeight(null),
+							        	destinationWidth = this.getWidth(),
+							        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+							        
+									this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
 							        super.paintComponent(g);
-							        g.drawImage(image, 0, 0, null);            
+							        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+							        popIn.revalidate();
 							    }
 							}, BorderLayout.PAGE_START);
 							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
