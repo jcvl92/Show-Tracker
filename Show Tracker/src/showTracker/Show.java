@@ -113,6 +113,7 @@ public class Show implements Serializable
 	public void update() throws IOException, InterruptedException
 	{
 		//TODO: this is not robust, it relies on the fact that the new episodes will have nothing removed. find a better way to update while keeping the seen value
+		//TODO: maybe we could use the TVRage update api call?
 		//store the current episode contents
 		@SuppressWarnings("unchecked")
 		ArrayList<Season> oldSeasons = (ArrayList<Season>)seasons.clone();

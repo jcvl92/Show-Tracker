@@ -44,6 +44,7 @@ import showTracker.*;
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
 //TODO: something that is unavailable for download should not let you try and download it again
 //TODO: updating shows isn't thread safe. you could reload the panel and update it again. find a way to lock it down
+//TODO: initilize the panel with a splash screen
 public class Main
 {
 	boolean unseenVal = true;
