@@ -1,8 +1,12 @@
 package showTracker;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.HashMap;
+
+import javax.imageio.ImageIO;
 
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -113,6 +117,20 @@ public class Episode implements Serializable
 		return sb.toString();
 	}
 
+	public Image getImage()
+	{
+	    try
+	    {
+	    	//TODO: cache this image and store it forever
+	    	//TODO: figure out how to find these numbers from our objects/tvrage website
+			return ImageIO.read(new URL("http://images.tvrage.com/screencaps/13/2594/1065344272.jpg"));
+		}
+	    catch (Exception e)
+		{
+			return null;
+		}
+	}
+	
 	public String getDate()
 	{
 		if(airDate != null)
@@ -189,15 +207,16 @@ public class Episode implements Serializable
 	{
 		try
 		{
+			if(true) return false;
+			
 			//get the link from TPB
-			//Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 			
 			//open the link
-			//new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
-			throw new Exception();
+			new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
 			
 			//return true if it worked
-			//return true;
+			return true;
 		}
 		catch(Exception e)
 		{
