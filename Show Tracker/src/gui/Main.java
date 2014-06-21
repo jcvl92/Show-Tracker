@@ -210,10 +210,16 @@ public class Main
 								private Image image = episode.getImage();
 								protected void paintComponent(Graphics g) {
 							        super.paintComponent(g);
-							        g.drawImage(image, 0, 0, null);
+							        
+							        int sourceWidth = image.getWidth(null),
+							        	sourceHeight = image.getHeight(null),
+							        	destinationWidth = this.getWidth(),
+							        	destinationHeight = (int)((double)sourceHeight/((double)destinationWidth/(double)sourceWidth));
+							        
+							        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
 							    }
-							}, BorderLayout.PAGE_START);
-							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
+							}, BorderLayout.CENTER);
+							//popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
 							popIn.add(buttonBox, BorderLayout.PAGE_END);
 							
 							//revalidate to redraw/realign the panel
