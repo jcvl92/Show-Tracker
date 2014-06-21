@@ -71,9 +71,9 @@ public class GUI {
 		gbl_buttonPanel.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0};
 		buttonPanel.setLayout(gbl_buttonPanel);
 		
-		JButton btnPrintUnseen = new JButton("Unseen Episodes");
-		btnPrintUnseen.setAlignmentX(Component.CENTER_ALIGNMENT);
-		btnPrintUnseen.addActionListener(new ActionListener()
+		JButton btnUnseenEpisodes = new JButton("Unseen Episodes");
+		btnUnseenEpisodes.setAlignmentX(Component.CENTER_ALIGNMENT);
+		btnUnseenEpisodes.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
@@ -86,11 +86,11 @@ public class GUI {
 				}.start();
 			}
 		});
-		GridBagConstraints gbc_btnPrintUnseen = new GridBagConstraints();
-		gbc_btnPrintUnseen.gridx = 0;
-		gbc_btnPrintUnseen.gridy = 0;
-		gbc_btnPrintUnseen.fill = GridBagConstraints.BOTH;
-		buttonPanel.add(btnPrintUnseen, gbc_btnPrintUnseen);
+		GridBagConstraints gbc_btnUnseenEpisodes = new GridBagConstraints();
+		gbc_btnUnseenEpisodes.gridx = 0;
+		gbc_btnUnseenEpisodes.gridy = 0;
+		gbc_btnUnseenEpisodes.fill = GridBagConstraints.BOTH;
+		buttonPanel.add(btnUnseenEpisodes, gbc_btnUnseenEpisodes);
 		
 		JButton btnManageShows = new JButton("Manage Shows");
 		btnManageShows.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -113,9 +113,9 @@ public class GUI {
 		gbc_btnManageShows.gridy = 1;
 		buttonPanel.add(btnManageShows, gbc_btnManageShows);
 		
-		JButton btnBrowse = new JButton("Browse");
-		btnBrowse.setAlignmentX(Component.CENTER_ALIGNMENT);
-		btnBrowse.addActionListener(new ActionListener()
+		JButton btnBrowseShows = new JButton("Browse Shows");
+		btnBrowseShows.setAlignmentX(Component.CENTER_ALIGNMENT);
+		btnBrowseShows.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
@@ -128,15 +128,15 @@ public class GUI {
 				}.start();
 			}
 		});
-		GridBagConstraints gbc_btnBrowse = new GridBagConstraints();
-		gbc_btnBrowse.fill = GridBagConstraints.BOTH;
-		gbc_btnBrowse.gridx = 0;
-		gbc_btnBrowse.gridy = 2;
-		buttonPanel.add(btnBrowse, gbc_btnBrowse);
+		GridBagConstraints gbc_btnBrowseShows = new GridBagConstraints();
+		gbc_btnBrowseShows.fill = GridBagConstraints.BOTH;
+		gbc_btnBrowseShows.gridx = 0;
+		gbc_btnBrowseShows.gridy = 2;
+		buttonPanel.add(btnBrowseShows, gbc_btnBrowseShows);
 		
-		JButton btnPrintUpcoming = new JButton("Print Upcoming");
-		btnPrintUpcoming.setAlignmentX(Component.CENTER_ALIGNMENT);
-		btnPrintUpcoming.addActionListener(new ActionListener()
+		JButton btnEpisodeTimeline = new JButton("Episode Timeline");
+		btnEpisodeTimeline.setAlignmentX(Component.CENTER_ALIGNMENT);
+		btnEpisodeTimeline.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
@@ -144,37 +144,16 @@ public class GUI {
 				{
 					public void run()
 					{
-						main.printUpcoming();
+						
 					}
 				}.start();
 			}
 		});
-		GridBagConstraints gbc_btnPrintUpcoming = new GridBagConstraints();
-		gbc_btnPrintUpcoming.fill = GridBagConstraints.BOTH;
-		gbc_btnPrintUpcoming.gridx = 0;
-		gbc_btnPrintUpcoming.gridy = 3;
-		buttonPanel.add(btnPrintUpcoming, gbc_btnPrintUpcoming);
-		
-		JButton btnPrintTimelines = new JButton("Print Timelines");
-		btnPrintTimelines.setAlignmentX(Component.CENTER_ALIGNMENT);
-		btnPrintTimelines.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				new Thread()
-				{
-					public void run()
-					{
-						main.printTimelines();
-					}
-				}.start();
-			}
-		});
-		GridBagConstraints gbc_btnPrintTimelines = new GridBagConstraints();
-		gbc_btnPrintTimelines.fill = GridBagConstraints.BOTH;
-		gbc_btnPrintTimelines.gridx = 0;
-		gbc_btnPrintTimelines.gridy = 4;
-		buttonPanel.add(btnPrintTimelines, gbc_btnPrintTimelines);
+		GridBagConstraints gbc_btnEpisodeTimeline = new GridBagConstraints();
+		gbc_btnEpisodeTimeline.fill = GridBagConstraints.BOTH;
+		gbc_btnEpisodeTimeline.gridx = 0;
+		gbc_btnEpisodeTimeline.gridy = 3;
+		buttonPanel.add(btnEpisodeTimeline, gbc_btnEpisodeTimeline);
 	}
 
 }

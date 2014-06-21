@@ -20,11 +20,12 @@ public class Episode implements Serializable
 	HashMap<String, String> information;
 	String airTime, description=null;
 	DateTime airDate;
-	public ShowEntry show;
+	public Show show;
+	boolean seen = false;
 	transient DateTimeFormatter parseFormatter;
 	transient DateTimeFormatter writeFormatter;
 
-	Episode(HashMap<String, String> info, String time, ShowEntry s) throws InterruptedException
+	Episode(HashMap<String, String> info, String time, Show s) throws InterruptedException
 	{
 		show = s;
 		setFormatters();
@@ -59,7 +60,7 @@ public class Episode implements Serializable
 		.appendLiteral(", ")
 		.appendDayOfMonth(1)
 		.appendLiteral(' ')
-		.appendYearOfCentury(2, 2)
+		.appendYear(4, 4)
 		.toFormatter();
 	}
 
@@ -189,13 +190,14 @@ public class Episode implements Serializable
 		try
 		{
 			//get the link from TPB
-			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+			//Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 			
 			//open the link
-			new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
+			//new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
+			throw new Exception();
 			
 			//return true if it worked
-			return true;
+			//return true;
 		}
 		catch(Exception e)
 		{
@@ -204,8 +206,13 @@ public class Episode implements Serializable
 		}
 	}
 	
-	public void setWatched()
+	public void setWatched(boolean b)
 	{
-		
+		seen = b;
+	}
+	
+	public boolean isWatched()
+	{
+		return seen;
 	}
 }

@@ -13,17 +13,14 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
 @SuppressWarnings("serial")
-public class ShowEntry implements Serializable
+public class Show implements Serializable
 {
 	String showName, seasonCount, runTime, airTime, status, search;
 	int showID;
-	public int seasonPos;
-	public int episodePos;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
 
-	public ShowEntry(String nameOfShow) throws IOException, InterruptedException
+	public Show(String nameOfShow) throws IOException, InterruptedException
 	{
-		//TODO: the workaround of not picking a last watched results in the first episode being last watched instead of some null position or something, fix it
 		//save the search string for TPB magnet link searches
 		search = nameOfShow;
 
@@ -113,83 +110,12 @@ public class ShowEntry implements Serializable
 		return showName;
 	}
 
-	public String getText()
-	{
-		return "Title: "+showName+"\nNumber of seasons: "+seasonCount+"\nRun time: "+runTime+"\nAir time: "+airTime;
-	}
-
-	public Episode getNextEpisode()
-	{
-		for(int i=0; i<seasons.size(); ++i)
-		{
-			ArrayList<Episode> episodes = seasons.get(i).episodes;
-			for(int j=0; j<episodes.size(); ++j)
-			{
-				if(episodes.get(j).airDate != null)
-					if(episodes.get(j).airDate.isAfterNow())
-						return episodes.get(j);
-			}
-		}
-		return null;
-	}
-
-	public Episode getLastEpisode()
-	{
-		for(int i=seasons.size()-1; i>=0; --i)
-		{
-			if(!seasons.get(i).seasonTag.contains("season"))
-				continue;
-			ArrayList<Episode> episodes = seasons.get(i).episodes;
-			for(int j=episodes.size()-1; j>=0; --j)
-			{
-				if(episodes.get(j).airDate != null)
-					if(episodes.get(j).airDate.isBeforeNow())
-						return episodes.get(j);
-			}
-		}
-		return null;
-	}
-
-	public Episode getNextEpisodeToWatch()
-	{
-		if(seasonPos == -1 && episodePos == -1)
-			return seasons.get(0).episodes.get(0);
-
-		Season s = seasons.get(seasonPos);
-		//if this is the last episode in the season
-		if(episodePos == s.episodes.size()-1)
-		{
-			//if this is the last season
-			if(seasonPos == seasons.size()-1)
-				return null;
-
-			//get the first episode of the next season
-			return seasons.get(seasonPos+1).episodes.get(0);
-		}
-		return s.episodes.get(episodePos+1);
-	}
-
-	public Episode getLastEpisodeWatched()
-	{
-		if(seasonPos == -1 && episodePos == -1)
-			return null;
-		return seasons.get(seasonPos).episodes.get(episodePos);
-	}
-
-	/**
-	 * @param episode	An episode to check.
-	 * @return			true if the air date of the episode is on or before the air date of the watch position episode, false otherwise
-	 */
-	public boolean isSeen(Episode episode)
-	{
-		if(episode==seasons.get(seasonPos).episodes.get(episodePos) ||
-				episode.airDate.isBefore(seasons.get(seasonPos).episodes.get(episodePos).airDate))
-			return true;
-		return false;
-	}
-
 	public void update() throws IOException, InterruptedException
 	{
+		//TODO: this is not robust, it relies on the fact that the new episodes will have nothing removed. find a better way to update while keeping the seen value
+		//store the current episode contents
+		@SuppressWarnings("unchecked")
+		ArrayList<Season> oldSeasons = (ArrayList<Season>)seasons.clone();
 		//clear the current episode contents
 		seasons = new ArrayList<Season>();
 
@@ -231,6 +157,16 @@ public class ShowEntry implements Serializable
 						, episodes));
 			}
 		}
+		
+		//iterate through the episodes and set the correct seen values
+		for(int i=0; i<oldSeasons.size(); ++i)
+		{
+			Season oldSeason = oldSeasons.get(i);
+			Season newSeason = seasons.get(i);
+			for(int j=0; j<oldSeason.episodes.size(); ++j)
+			{
+				newSeason.episodes.get(j).setWatched(oldSeason.episodes.get(j).isWatched());
+			}
+		}
 	}
-
 }

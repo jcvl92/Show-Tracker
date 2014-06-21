@@ -40,10 +40,10 @@ import showTracker.*;
 
 //TODO: add update all and delete all buttons to the manage shows section
 //TODO: add offline support
-//TODO: add an indicator to the current episode in browse(aterisk*)
-//TODO: add the option to edit the download search text
+//TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
-//TODO: sort unseen by release date!
+//TODO: something that is unavailable for download should not let you try and download it again
+//TODO: updating shows isn't thread safe. you could reload the panel and update it again. find a way to lock it down
 public class Main
 {
 	boolean unseenVal = true;
@@ -71,7 +71,7 @@ public class Main
 		unseenVal = true;
 		
 		//get the table data
-		final Episode[] episodes = m.showLinks();
+		final Episode[] episodes = m.getUnseenEpisodes();
 		final Object[][] data = new Object[episodes.length][5];
 		for(int i=0; i<episodes.length; ++i)
 			data[i] = new Object[]{episodes[i].show.toString(), episodes[i].getEpisodeNumber(), episodes[i].toString(), episodes[i].getDate(), true};
@@ -117,7 +117,118 @@ public class Main
 			{
 				if(!event.getValueIsAdjusting())
 				{
-					fillPopIn(popIn, episodes[jt.getSelectedRow()]);
+					new Thread()
+					{
+						@SuppressWarnings("deprecation")
+						public void run()
+						{
+							//quit another paneling operation if one exists
+							if(paneler != null)
+								paneler.stop();
+							paneler = this;
+							
+							//show the loading panel
+							//TODO: put in a loading spinner
+							popIn.removeAll();
+							popIn.setVisible(true);
+							popIn.repaint();
+							
+							//create the text section
+							final Episode episode = episodes[jt.getSelectedRow()];
+							JTextArea jta = new JTextArea(episode.getText());
+							jta.setEditable(false);
+							jta.setLineWrap(true);
+							jta.setWrapStyleWord(true);
+							
+							//create buttons
+							JPanel buttonBox = new JPanel();
+							buttonBox.setLayout(new GridBagLayout());
+							
+							//last watched button
+							final JButton btnLastWatched = new JButton("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
+							btnLastWatched.addActionListener(new ActionListener()
+							{
+								public void actionPerformed(ActionEvent e)
+								{
+									new Thread()
+									{
+										public void run()
+										{
+											btnLastWatched.setEnabled(false);
+											episode.setWatched(!episode.isWatched());
+											m.writeShowsToFile();
+											((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
+										}
+									}.start();
+								}
+							});
+							GridBagConstraints gbc_btnLastWatched = new GridBagConstraints();
+							gbc_btnLastWatched.fill = GridBagConstraints.BOTH;
+							gbc_btnLastWatched.gridy = 0;
+							buttonBox.add(btnLastWatched, gbc_btnLastWatched);
+							
+							//download button
+							final JButton btnDownload = new JButton("Download episode");
+							btnDownload.addActionListener(new ActionListener()
+							{
+								public void actionPerformed(ActionEvent e)
+								{
+									new Thread()
+									{
+										public void run()
+										{
+											btnDownload.setEnabled(false);
+											if(episode.download())
+											{
+												episode.setWatched(!episode.isWatched());
+												m.writeShowsToFile();
+												((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
+											}
+											else
+											{
+												btnDownload.setText("Unavailable");
+												if(!((String)jt.getValueAt(jt.getSelectedRow(), jt.getColumn("Date Aired").getModelIndex())).contains(" - unavailable"))
+													jt.setValueAt(jt.getValueAt(jt.getSelectedRow(), jt.getColumn("Date Aired").getModelIndex())+" - unavailable", jt.getSelectedRow(), jt.getColumn("Date Aired").getModelIndex());
+											}
+										}
+									}.start();
+								}
+							});
+							if(((String)jt.getValueAt(jt.getSelectedRow(), jt.getColumn("Date Aired").getModelIndex())).contains(" - unavailable"))
+							{
+								btnDownload.setEnabled(false);
+								btnDownload.setText("Unavailable");
+							}
+							GridBagConstraints gbc_btnDownload = new GridBagConstraints();
+							gbc_btnDownload.fill = GridBagConstraints.BOTH;
+							gbc_btnDownload.gridy = 1;
+							buttonBox.add(btnDownload, gbc_btnDownload);
+							
+							//add the components
+							popIn.removeAll();
+							try
+							{
+								popIn.add(new JPanel()
+								{
+									private static final long serialVersionUID = 1L;
+									private BufferedImage image = ImageIO.read(new File("image name and path"));
+									protected void paintComponent(Graphics g) {
+								        super.paintComponent(g);
+								        g.drawImage(image, 0, 0, null);
+								    }
+								}, BorderLayout.PAGE_START);
+							}
+							catch (IOException e)
+							{
+								e.printStackTrace();
+							}
+							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
+							popIn.add(buttonBox, BorderLayout.PAGE_END);
+							
+							//revalidate to redraw/realign the panel
+							popIn.revalidate();
+						}
+					}.start();
 				}
 			}
 		});
@@ -147,8 +258,7 @@ public class Main
 							{
 								if(episodes[i].download())
 								{
-									episodes[i].download();
-									episodes[i].setWatched();
+									episodes[i].setWatched(true);
 									((DefaultTableModel)jt.getModel()).removeRow(i);
 								}
 								else
@@ -210,8 +320,8 @@ public class Main
 			gbc.anchor = GridBagConstraints.CENTER;
 			
 			//create the show description text area
-			final ShowEntry show = m.shows.get(i);
-			JTextArea jta = new JTextArea(show.getText());
+			final Show show = m.shows.get(i);
+			JTextArea jta = new JTextArea(show.toString());
 			jta.setEditable(false);
 			showPanel.add(jta, gbc);
 			
@@ -253,6 +363,7 @@ public class Main
 							{
 								btnUpdate.setText("Updating");
 								show.update();
+								m.writeShowsToFile();
 								btnUpdate.setText("Updated");
 							}
 							catch(Exception e)
@@ -346,7 +457,7 @@ public class Main
 		//add each show to the root node
 		for(int i=0; i<m.shows.size(); ++i)
 		{
-			ShowEntry se = m.shows.get(i);
+			Show se = m.shows.get(i);
 			DefaultMutableTreeNode show = new DefaultMutableTreeNode(se);
 			
 			//add each season to the show nodes
@@ -366,14 +477,122 @@ public class Main
 		}
 		
 		//create the panel object
-		final JPanel tPanel = new JPanel(new BorderLayout());
+		final JPanel popIn = new JPanel(new BorderLayout());
 		
 		//build the listener for the node selection event and set the tree
 		TreeSelectionListener tsl = new TreeSelectionListener()
 		{
 			public void valueChanged(TreeSelectionEvent e)
 			{
-				fillPopIn(tPanel, ((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject());
+				new Thread()
+				{
+					@SuppressWarnings("deprecation")
+					public void run()
+					{
+						//quit another paneling operation if one exists
+						if(paneler != null)
+							paneler.stop();
+						paneler = this;
+						
+						Object obj = ((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject();
+						
+						if(obj.getClass().equals(Episode.class))
+						{
+							//show the loading panel
+							//TODO: put in a loading spinner
+							popIn.removeAll();
+							popIn.setVisible(true);
+							popIn.repaint();
+							
+							//create the text section
+							final Episode episode = (Episode)obj;
+							JTextArea jta = new JTextArea(episode.getText());
+							jta.setEditable(false);
+							jta.setLineWrap(true);
+							jta.setWrapStyleWord(true);
+							
+							//create buttons
+							JPanel buttonBox = new JPanel();
+							buttonBox.setLayout(new GridBagLayout());
+							
+							//last watched button
+							final JButton btnLastWatched = new JButton("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
+							btnLastWatched.addActionListener(new ActionListener()
+							{
+								public void actionPerformed(ActionEvent e)
+								{
+									new Thread()
+									{
+										public void run()
+										{
+											episode.setWatched(!episode.isWatched());
+											btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
+											m.writeShowsToFile();
+										}
+									}.start();
+								}
+							});
+							GridBagConstraints gbc_btnLastWatched = new GridBagConstraints();
+							gbc_btnLastWatched.fill = GridBagConstraints.BOTH;
+							gbc_btnLastWatched.gridy = 0;
+							buttonBox.add(btnLastWatched, gbc_btnLastWatched);
+							
+							//download button
+							final JButton btnDownload = new JButton("Download episode");
+							btnDownload.addActionListener(new ActionListener()
+							{
+								public void actionPerformed(ActionEvent e)
+								{
+									new Thread()
+									{
+										public void run()
+										{
+											btnDownload.setEnabled(false);
+											if(episode.download())
+											{
+												episode.setWatched(!episode.isWatched());
+												btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
+												m.writeShowsToFile();
+											}
+											else
+											{
+												btnDownload.setText("Unavailable");
+											}
+										}
+									}.start();
+								}
+							});
+							GridBagConstraints gbc_btnDownload = new GridBagConstraints();
+							gbc_btnDownload.fill = GridBagConstraints.BOTH;
+							gbc_btnDownload.gridy = 1;
+							buttonBox.add(btnDownload, gbc_btnDownload);
+							
+							//add the components
+							popIn.removeAll();
+							try
+							{
+								popIn.add(new JPanel()
+								{
+									private static final long serialVersionUID = 1L;
+									private BufferedImage image = ImageIO.read(new File("image name and path"));
+									protected void paintComponent(Graphics g) {
+								        super.paintComponent(g);
+								        g.drawImage(image, 0, 0, null);            
+								    }
+								}, BorderLayout.PAGE_START);
+							}
+							catch (IOException e)
+							{
+								e.printStackTrace();
+							}
+							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
+							popIn.add(buttonBox, BorderLayout.PAGE_END);
+						}
+						
+						//revalidate to redraw/realign the panel
+						popIn.revalidate();
+					}
+				}.start();
 			}
 		};
 		
@@ -381,166 +600,20 @@ public class Main
 		tree.addTreeSelectionListener(tsl);
 		tree.setModel(new DefaultTreeModel(root));
 		panel.add(tree, BorderLayout.CENTER);
-		panel.add(tPanel, BorderLayout.LINE_END);
-		panel.revalidate();
-	}
-	
-	public void printUpcoming()
-	{
-		//clear the panel
-		panel.removeAll();
-		
-		//create the pane
-		JTextArea jta = new JTextArea(m.upcomingEpisodes());
-		JScrollPane jsp = new JScrollPane(jta);
-		
-		//set the content of the panel
-		panel.add(jsp);
-		panel.revalidate();
-	}
-	
-	public void printTimelines()
-	{
-		//clear the panel
-		panel.removeAll();
-		
-		//create the pane
-		JTextArea jta = new JTextArea(m.timeline());
-		JScrollPane jsp = new JScrollPane(jta);
-		
-		//set the content of the panel
-		panel.add(jsp);
+		panel.add(popIn, BorderLayout.LINE_END);
 		panel.revalidate();
 	}
 
 	public void addShow(String showName)
 	{
 		//TODO: after entering the text, this should come up with candidates for the search(and they pick one)
+		//TODO: do this with a pop-up
 		//add the show
 		try
 		{
-			ShowEntry show = new ShowEntry(showName);
+			Show show = new Show(showName);
 			m.addShowToFile(show);
 		}
 		catch(Exception e){}
-	}
-
-	public void fillPopIn(final JPanel jp, final Object o)
-	{
-		new Thread()
-		{
-			@SuppressWarnings("deprecation")
-			public void run()
-			{
-				//quit another paneling operation if one exists
-				if(paneler != null)
-					paneler.stop();
-				paneler = this;
-				
-				//show the loading panel
-				//TODO: put in a loading spinner
-				jp.removeAll();
-				jp.setVisible(true);
-				jp.repaint();
-				
-				if(o.getClass().equals(Episode.class))
-				{
-					//create the text section
-					Episode episode = (Episode)o;
-					JTextArea jta = new JTextArea(episode.getText());
-					jta.setEditable(false);
-					jta.setLineWrap(true);
-					jta.setWrapStyleWord(true);
-					
-					//create buttons
-					JPanel buttonBox = new JPanel();
-					buttonBox.setLayout(new GridBagLayout());
-					
-					//last watched button
-					final JButton btnLastWatched = new JButton("Set as last watched");
-					btnLastWatched.addActionListener(new ActionListener()
-					{
-						public void actionPerformed(ActionEvent e)
-						{
-							new Thread()
-							{
-								public void run()
-								{
-									//TODO: fix these
-									//((Episode)obj).show.seasonPos = ((Episode)obj).season.getSeasonNumber();
-									//((Episode)obj).show.episodePos = ((Episode)obj).getEpisodeNumber();
-									btnLastWatched.setEnabled(false);
-								}
-							}.start();
-						}
-					});
-					GridBagConstraints gbc_btnLastWatched = new GridBagConstraints();
-					gbc_btnLastWatched.fill = GridBagConstraints.BOTH;
-					gbc_btnLastWatched.gridy = 0;
-					buttonBox.add(btnLastWatched, gbc_btnLastWatched);
-					
-					//download button
-					final JButton btnDownload = new JButton("Download");
-					btnDownload.addActionListener(new ActionListener()
-					{
-						public void actionPerformed(ActionEvent e)
-						{
-							new Thread()
-							{
-								public void run()
-								{
-									try
-									{
-										//m.getMagnetLink(((Episode)obj).show, ((Episode)obj)).open();
-										btnDownload.setText("Opened");
-									}
-									catch(Exception e)
-									{
-										btnDownload.setText("Unavailable");
-									}
-									finally
-									{
-										btnDownload.setEnabled(false);
-									}
-								}
-							}.start();
-						}
-					});
-					GridBagConstraints gbc_btnDownload = new GridBagConstraints();
-					gbc_btnDownload.fill = GridBagConstraints.BOTH;
-					gbc_btnDownload.gridy = 1;
-					buttonBox.add(btnDownload, gbc_btnDownload);
-					
-					//add the components
-					jp.removeAll();
-					try
-					{
-						jp.add(new JPanel()
-						{
-							private static final long serialVersionUID = 1L;
-							private BufferedImage image = ImageIO.read(new File("image name and path"));
-							protected void paintComponent(Graphics g) {
-						        super.paintComponent(g);
-						        g.drawImage(image, 0, 0, null);            
-						    }
-						}, BorderLayout.PAGE_START);
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-					jp.add(new JScrollPane(jta), BorderLayout.CENTER);
-					jp.add(buttonBox, BorderLayout.PAGE_END);
-				}
-				else
-				{
-					jp.removeAll();
-					jp.add(new JScrollPane(new JTextArea(o.toString())));
-				}
-				
-				//revalidate to redraw/realign the panel
-				jp.revalidate();
-			}
-		}.start();
 	}
 }
