@@ -12,8 +12,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -40,9 +42,6 @@ import showTracker.*;
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
-//TODO: something that is unavailable for download should not let you try and download it again
-//TODO: updating shows isn't thread safe. you could reload the panel and update it again. find a way to lock it down
-//TODO: initilize the panel with a splash screen
 //TODO: have cached values be permenantly stored
 public class Main
 {
@@ -56,6 +55,30 @@ public class Main
 	{
 		panel = p;
 		frame = f;
+	}
+	
+	public void splash()
+	{
+		//create the splash screen
+		try
+		{
+			panel.add(new JPanel()
+			{
+				private static final long serialVersionUID = 1L;
+				private Image image = ImageIO.read(this.getClass().getResource("splash screen.png"));
+				protected void paintComponent(Graphics g) {
+					int sourceWidth = image.getWidth(null),
+			        	sourceHeight = image.getHeight(null),
+			        	destinationWidth = this.getWidth(),
+			        	destinationHeight = this.getHeight();
+			        
+					super.paintComponent(g);
+			        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+			        g.dispose();
+			    }
+			}, BorderLayout.CENTER);
+		}
+		catch(IOException e){}
 	}
 	
 	public void unseenShows()
@@ -219,6 +242,7 @@ public class Main
 									this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
 							        super.paintComponent(g);
 							        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+							        g.dispose();
 							        popIn.revalidate();
 							    }
 							}, BorderLayout.PAGE_START);
@@ -339,10 +363,13 @@ public class Main
 					{
 						public void run()
 						{
-							m.removeShowFromFile(showNum);
-							
-							//return to the manage function
-							manageShows();
+							synchronized(m)
+							{
+								m.removeShowFromFile(showNum);
+								
+								//return to the manage function
+								manageShows();
+							}
 						}
 					}.start();
 				}
@@ -361,10 +388,13 @@ public class Main
 							btnUpdate.setEnabled(false);
 							try
 							{
-								btnUpdate.setText("Updating");
-								show.update();
-								m.writeShowsToFile();
-								btnUpdate.setText("Updated");
+								synchronized(m)
+								{
+									btnUpdate.setText("Updating");
+									show.update();
+									m.writeShowsToFile();
+									btnUpdate.setText("Updated");
+								}
 							}
 							catch(Exception e)
 							{
@@ -582,6 +612,7 @@ public class Main
 									this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
 							        super.paintComponent(g);
 							        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+							        g.dispose();
 							        popIn.revalidate();
 							    }
 							}, BorderLayout.PAGE_START);
@@ -599,7 +630,7 @@ public class Main
 		//configure and add the tree
 		tree.addTreeSelectionListener(tsl);
 		tree.setModel(new DefaultTreeModel(root));
-		panel.add(tree, BorderLayout.CENTER);
+		panel.add(new JScrollPane(tree), BorderLayout.CENTER);
 		panel.add(popIn, BorderLayout.LINE_END);
 		panel.revalidate();
 	}

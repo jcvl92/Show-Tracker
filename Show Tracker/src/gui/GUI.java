@@ -20,7 +20,7 @@ import java.awt.GridBagConstraints;
 public class GUI {
 
 	private JFrame frmShowTracker;
-	private Main main;
+	private static Main main;
 
 	/**
 	 * Launch the application.
@@ -31,6 +31,7 @@ public class GUI {
 				try {
 					GUI window = new GUI();
 					window.frmShowTracker.setVisible(true);
+					main.splash();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

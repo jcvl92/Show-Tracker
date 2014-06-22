@@ -99,7 +99,7 @@ public class Episode implements Serializable
 
 		sb.append(timeDifference()+"\n\n");
 		
-		if(description == null)
+		if(description == null || image == null)
 		{
 			try
 			{
@@ -109,7 +109,14 @@ public class Episode implements Serializable
 				description = link.getElementsByClass("show_synopsis").text();
 				
 				//this grabs the image of the episode
-				image = ImageIO.read(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
+				try
+				{
+					image = ImageIO.read(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
+				}
+				catch(Exception e)
+				{
+					image = ImageIO.read(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
+				}
 			}
 			catch(Exception e)
 			{
@@ -119,7 +126,7 @@ public class Episode implements Serializable
 		}
 
 		sb.append(description);
-
+		
 		return sb.toString();
 	}
 
