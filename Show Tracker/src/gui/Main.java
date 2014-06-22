@@ -690,7 +690,10 @@ public class Main
 			ArrayList<HashMap<String, String>> entries = Show.search(showName);
 			
 			//add the search text
-			contents.add(new JTextArea("Search: "+showName));
+			JTextArea search = new JTextArea("Search: "+showName);
+			search.setEditable(false);
+			search.setBackground(Color.BLUE);
+			contents.add(search);
 			
 			//create the box for the entries
 			Box entriesBox = Box.createVerticalBox();
@@ -701,10 +704,11 @@ public class Main
 				final HashMap<String, String> showEntry = entries.get(i);
 				
 				Box entryBox = Box.createHorizontalBox();
+				entryBox.setBorder(new LineBorder(Color.BLACK));
 				
 				//show name
-				JTextArea showText = new JTextArea(showEntry.get("name"));
-				showText.setBorder(new LineBorder(Color.BLACK));
+				JTextArea showText = new JTextArea(showEntry.get("name"));showText.setBackground(Color.RED);
+				showText.setEditable(false);
 				showText.setLineWrap(true);
 				showText.setWrapStyleWord(true);
 				entryBox.add(showText);
@@ -730,10 +734,18 @@ public class Main
 				});
 				entryBox.add(select);
 				
+				//add the entry
 				entriesBox.add(entryBox);
 			}
 			
-			contents.add(new JScrollPane(entriesBox));
+			JScrollPane entryScroll = new JScrollPane(entriesBox);
+			contents.add(entryScroll);
+			
+			//create a filler to push the results to the top
+			JPanel filler = new JPanel();
+			//TODO: finish this so that it properly fills
+			filler.setPreferredSize(new Dimension(filler.getPreferredSize().width, contents.getPreferredSize().height));//-entryScroll.getHeight()-search.getHeight()));
+			contents.add(filler);
 		}
 		catch(Exception e){}
 		
