@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -43,7 +44,8 @@ import showTracker.*;
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
 //TODO: have cached values be permenantly stored
-//TODO: downloading skips every other show(this is because it is removing the shows
+//TODO: downloading is not thread safe!(downloading doesn't lock down the panel)
+//TODO: after downloading/setting as watched(which removes that entry), the pop-in needs to be removed(right now it just errors)
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -96,10 +98,10 @@ public class Main
 		unseenVal = true;
 		
 		//get the table data
-		final Episode[] episodes = m.getUnseenEpisodes();
-		final Object[][] data = new Object[episodes.length][5];
-		for(int i=0; i<episodes.length; ++i)
-			data[i] = new Object[]{episodes[i].show.toString(), episodes[i].getEpisodeNumber(), episodes[i].toString(), episodes[i].getDate(), true};
+		final ArrayList<Episode> episodes = m.getUnseenEpisodes();
+		final Object[][] data = new Object[episodes.size()][5];
+		for(int i=0; i<episodes.size(); ++i)
+			data[i] = new Object[]{episodes.get(i).show.toString(), episodes.get(i).getEpisodeNumber(), episodes.get(i).toString(), episodes.get(i).getDate(), true};
 		
 		//make a table from the data(overloading the table model to make checkboxes work)
 		final JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
@@ -159,7 +161,7 @@ public class Main
 							popIn.repaint();
 							
 							//create the text section
-							final Episode episode = episodes[jt.getSelectedRow()];
+							final Episode episode = episodes.get(jt.getSelectedRow());
 							JTextArea jta = new JTextArea(episode.getText());
 							jta.setEditable(false);
 							jta.setLineWrap(true);
@@ -274,7 +276,8 @@ public class Main
 		buttonPanel.setLayout(fl);
 		
 		//add the download button
-		JButton btnDownload = new JButton("Download Selected");
+		final JButton btnDownload = new JButton("Download Selected");
+		final JButton btnSelect = new JButton("Select/Deselect All");
 		btnDownload.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -283,22 +286,32 @@ public class Main
 				{
 					public void run()
 					{
-						for(int i=0; i<jt.getRowCount(); ++i)
+						btnDownload.setText("Downloading Selected");
+						btnDownload.setEnabled(false);
+						btnSelect.setEnabled(false);
+						for(int i=0; i<jt.getRowCount();)
 						{
 							if((boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
 							{
-								if(episodes[i].download())
+								if(episodes.get(i).download())
 								{
-									episodes[i].setWatched(true);
+									episodes.get(i).setWatched(true);
+									episodes.remove(i);
 									((DefaultTableModel)jt.getModel()).removeRow(i);
 								}
 								else
 								{
 									if(!((String)jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())).contains(" - unavailable"))
 										jt.setValueAt(jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())+" - unavailable", i, jt.getColumn("Date Aired").getModelIndex());
+									++i;
 								}
 							}
+							else
+								++i;
 						}
+						btnDownload.setText("Download Selected");
+						btnDownload.setEnabled(true);
+						btnSelect.setEnabled(true);
 					}
 				}.start();
 			}
@@ -306,7 +319,6 @@ public class Main
 		buttonPanel.add(btnDownload);
 		
 		//add the select/deselect button
-		JButton btnSelect = new JButton("Select/Deselect All");
 		btnSelect.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)

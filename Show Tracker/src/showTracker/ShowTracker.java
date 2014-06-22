@@ -24,7 +24,7 @@ public class ShowTracker
 			shows = new ArrayList<Show>();
 	}
 
-	public Episode[] getUnseenEpisodes()
+	public ArrayList<Episode> getUnseenEpisodes()
 	{
 		ArrayList<Episode> episodes = new ArrayList<Episode>();
 		
@@ -57,7 +57,7 @@ public class ShowTracker
 				return arg0.airDate.compareTo(arg1.airDate);
 			}
 		});
-		return episodes.toArray(new Episode[episodes.size()]);
+		return episodes;
 	}
 	
 	private ArrayList<Show> readShowsFromFile()
