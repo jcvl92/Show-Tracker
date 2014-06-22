@@ -17,6 +17,7 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 @SuppressWarnings("serial")
 public class Episode implements Serializable
@@ -24,6 +25,7 @@ public class Episode implements Serializable
 	HashMap<String, String> information;
 	String airTime, description=null;
 	DateTime airDate;
+	Image image = null;
 	public Show show;
 	boolean seen = false;
 	transient DateTimeFormatter parseFormatter;
@@ -96,19 +98,23 @@ public class Episode implements Serializable
 		}
 
 		sb.append(timeDifference()+"\n\n");
-
+		
 		if(description == null)
 		{
 			try
 			{
-				Document link = Jsoup.connect(information.get("link")+"/watch_episode").timeout(30*1000).get();
-
-				//this grabs the description of the show
+				Document link = Jsoup.connect(information.get("link")).timeout(30*1000).get();
+				
+				//this grabs the description of the episode
 				description = link.getElementsByClass("show_synopsis").text();
+				
+				//this grabs the image of the episode
+				image = ImageIO.read(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
 			}
 			catch(Exception e)
 			{
 				description = "";
+				image = null;
 			}
 		}
 
@@ -119,16 +125,10 @@ public class Episode implements Serializable
 
 	public Image getImage()
 	{
-	    try
-	    {
-	    	//TODO: cache this image and store it forever
-	    	//TODO: figure out how to find these numbers from our objects/tvrage website
-			return ImageIO.read(new URL("http://images.tvrage.com/screencaps/13/2594/1065344272.jpg"));
-		}
-	    catch (Exception e)
-		{
-			return null;
-		}
+		//if the image hasn't been grabbed, and the grab fails, return null
+		if(image == null && getText() == null)
+		    return null;
+	    return image;
 	}
 	
 	public String getDate()
