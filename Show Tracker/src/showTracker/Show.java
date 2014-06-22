@@ -18,55 +18,47 @@ public class Show implements Serializable
 	String showName, seasonCount, runTime, airTime, status, search;
 	int showID;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
-
-	public Show(String nameOfShow) throws IOException, InterruptedException
-	{
-		//save the search string for TPB magnet link searches
-		search = nameOfShow;
-
-		//get the data
-		getFromTVRage(nameOfShow);
-	}
-
-	private void getFromTVRage(String nameOfShow) throws IOException, InterruptedException
+	
+	public static ArrayList<HashMap<String, String>> search(String searchText) throws IOException
 	{
 		//get the search xml document
-		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+nameOfShow).timeout(30*1000).get();
-
-		//pick the first entry of the search, this is our show
-		List<Element> showDescription = ((Element)search.childNode(1).childNode(1).childNode(0).childNode(1)).children();
-
-		//search all fields for the values we want
-		for(int i=0; i<showDescription.size(); ++i)
-		{
-			switch(showDescription.get(i).tagName())
+		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+searchText).timeout(30*1000).get();
+		
+		//get the possible entries
+		Node nodes = search.childNode(1).childNode(1).childNode(0);
+		ArrayList<HashMap<String, String>> entries = new ArrayList<HashMap<String, String>>();
+		for(int i=0; i<nodes.childNodeSize(); ++i)
+			if(nodes.childNode(i).getClass().equals(Element.class))
 			{
-			case "showid":
-				showID = Integer.parseInt(showDescription.get(i).text());
-				break;
-			case "name":
-				showName = showDescription.get(i).text();
-				break;
-			case "seasons":
-				seasonCount = showDescription.get(i).text();
-				break;
-			case "runtime":
-				runTime = showDescription.get(i).text();
-				break;
-			case "airtime":
-				airTime = showDescription.get(i).text();
-				break;
-			case "airday":
-				airTime = showDescription.get(i).text()+" at "+airTime;
-				break;
-			case "status":
-				status = showDescription.get(i).text();
-				break;
+				List<Element> showDescription = ((Element)nodes.childNode(i)).children();
+				HashMap<String, String> showInfo = new HashMap<String, String>();
+				
+				//get the fields
+				for(int j=0; j<showDescription.size(); ++j)
+					showInfo.put(showDescription.get(j).tagName(), showDescription.get(j).text());
+				
+				entries.add(showInfo);
 			}
-		}
-
+		
+		//return the entries
+		return entries;
+	}
+	
+	public static Show getShow(HashMap<String, String> showEntry) throws InterruptedException, IOException
+	{
+		Show show = new Show();
+		
+		show.showID = Integer.parseInt(showEntry.get("showid"));
+		show.showName = showEntry.get("name");
+		show.seasonCount = showEntry.get("seasons");
+		show.runTime = showEntry.get("runtime");
+		show.airTime = showEntry.get("airtime");
+		if(showEntry.containsKey("airday"))
+			show.airTime = showEntry.get("airday")+" at "+show.airTime;
+		show.status = showEntry.get("status");
+		
 		//get the season details xml document
-		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+showID).timeout(30*1000).get();
+		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+show.showID).timeout(30*1000).get();
 
 		//pick the episode list
 		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);
@@ -94,17 +86,19 @@ public class Show implements Serializable
 						}
 						ep.put("inseason", aSeason.attr("no"));
 
-						episodes.add(new Episode(ep, airTime, this));
+						episodes.add(new Episode(ep, show.airTime, show));
 					}
 				}
 
-				seasons.add(new Season(
+				show.seasons.add(new Season(
 						(aSeason.attr("no")!="" ? "season "+aSeason.attr("no") : ((Element)aSeason).tagName())
 						, episodes));
 			}
 		}
+		
+		return show;
 	}
-
+	
 	public String toString()
 	{
 		return showName;

@@ -12,7 +12,7 @@ import java.util.Comparator;
 
 public class ShowTracker
 {
-	public ArrayList<Show> shows;
+	public static ArrayList<Show> shows;
 
 	public ShowTracker()
 	{
@@ -26,38 +26,41 @@ public class ShowTracker
 
 	public ArrayList<Episode> getUnseenEpisodes()
 	{
-		ArrayList<Episode> episodes = new ArrayList<Episode>();
-		
-		for(int i=0;i<shows.size();++i)
+		synchronized(shows)
 		{
-			Show show = shows.get(i);
+			ArrayList<Episode> episodes = new ArrayList<Episode>();
 			
-			//iterate through all seasons
-			for(int j=0;j<show.seasons.size();++j)
+			for(int i=0;i<shows.size();++i)
 			{
-				Season season = show.seasons.get(j);
-
-				//iterate through all episodes
-				for(int k=0;k<season.episodes.size();++k)
+				Show show = shows.get(i);
+				
+				//iterate through all seasons
+				for(int j=0;j<show.seasons.size();++j)
 				{
-					Episode episode = season.episodes.get(k);
-					if(!episode.isWatched())
-						episodes.add(episode);
+					Season season = show.seasons.get(j);
+	
+					//iterate through all episodes
+					for(int k=0;k<season.episodes.size();++k)
+					{
+						Episode episode = season.episodes.get(k);
+						if(!episode.isWatched() && episode.getAirDate().isBeforeNow())
+							episodes.add(episode);
+					}
 				}
 			}
-		}
-		
-		Collections.sort(episodes, new Comparator<Episode>()
-		{
-			public int compare(Episode arg0, Episode arg1)
+			
+			Collections.sort(episodes, new Comparator<Episode>()
 			{
-				if(arg0.airDate == null && arg1.airDate == null) return 0;
-				if(arg1.airDate == null) return 1;
-				if(arg0.airDate == null) return -1;
-				return arg0.airDate.compareTo(arg1.airDate);
-			}
-		});
-		return episodes;
+				public int compare(Episode arg0, Episode arg1)
+				{
+					if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
+					if(arg1.getAirDate() == null) return 1;
+					if(arg0.getAirDate() == null) return -1;
+					return arg0.getAirDate().compareTo(arg1.getAirDate());
+				}
+			});
+			return episodes;
+		}
 	}
 	
 	private ArrayList<Show> readShowsFromFile()
@@ -84,29 +87,38 @@ public class ShowTracker
 		}
 	}
 
-	public void addShowToFile(Show show)
+	public static void addShowToFile(Show show)
 	{
-		shows.add(show);
-		writeShowsToFile();
-	}
-	
-	public void writeShowsToFile()
-	{
-		try
+		synchronized(shows)
 		{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("show_data")));
-			oos.writeObject(shows);
-			oos.close();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
+			shows.add(show);
+			writeShowsToFile();
 		}
 	}
 	
-	public void removeShowFromFile(int index)
+	public static void writeShowsToFile()
 	{
-		shows.remove(index);
-		writeShowsToFile();
+		synchronized(shows)
+		{
+			try
+			{
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("show_data")));
+				oos.writeObject(shows);
+				oos.close();
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void removeShowFromFile(int index)
+	{
+		synchronized(shows)
+		{
+			shows.remove(index);
+			writeShowsToFile();
+		}
 	}
 }

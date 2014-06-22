@@ -25,7 +25,7 @@ public class Episode implements Serializable
 {
 	HashMap<String, String> information;
 	String airTime, description=null;
-	DateTime airDate;
+	private DateTime airDate;
 	Image image = null;
 	public Show show;
 	boolean seen = false;
@@ -80,6 +80,11 @@ public class Episode implements Serializable
 
 	public String toString()
 	{
+		return getEpisodeNumber()+" - "+information.get("title")+(isWatched() || !airDate.isBeforeNow() ? "" : "*");
+	}
+	
+	public String title()
+	{
 		return information.get("title");
 	}
 
@@ -93,9 +98,9 @@ public class Episode implements Serializable
 		if(information.get("seasonnum")!=null)
 			sb.append("Number in season: "+information.get("seasonnum")+"\n\n");
 
-		if(airDate != null)
+		if(getAirDate() != null)
 		{
-			sb.append("Airdate: "+airDate.toDate().toString()+'\n');
+			sb.append("Airdate: "+getAirDate().toDate().toString()+'\n');
 		}
 
 		sb.append(timeDifference()+"\n\n");
@@ -129,7 +134,14 @@ public class Episode implements Serializable
 
 		sb.append(description);
 		
+		save();
+		
 		return sb.toString();
+	}
+
+	private void save()
+	{
+		ShowTracker.writeShowsToFile();
 	}
 
 	public Image getImage()
@@ -142,8 +154,8 @@ public class Episode implements Serializable
 	
 	public String getDate()
 	{
-		if(airDate != null)
-			return airDate.toString(writeFormatter);
+		if(getAirDate() != null)
+			return getAirDate().toString(writeFormatter);
 		else
 			return "";
 	}
@@ -167,11 +179,11 @@ public class Episode implements Serializable
 	{
 		StringBuilder sb = new StringBuilder();
 
-		if(airDate != null)
+		if(getAirDate() != null)
 		{
-			if(airDate.isAfterNow())
+			if(getAirDate().isAfterNow())
 			{
-				Period p = new Period((ReadableInstant)null, airDate, PeriodType.standard());
+				Period p = new Period((ReadableInstant)null, getAirDate(), PeriodType.standard());
 
 				sb.append("Airing in");
 				if(p.getYears()>0)
@@ -190,7 +202,7 @@ public class Episode implements Serializable
 			}
 			else
 			{
-				Period p = new Period(airDate, (ReadableInstant)null, PeriodType.standard());
+				Period p = new Period(getAirDate(), (ReadableInstant)null, PeriodType.standard());
 
 				sb.append("Aired");
 				if(p.getYears()>0)
@@ -235,10 +247,17 @@ public class Episode implements Serializable
 	public void setWatched(boolean b)
 	{
 		seen = b;
+		save();
 	}
 	
 	public boolean isWatched()
 	{
 		return seen;
+	}
+	
+
+	public DateTime getAirDate()
+	{
+		return airDate;
 	}
 }

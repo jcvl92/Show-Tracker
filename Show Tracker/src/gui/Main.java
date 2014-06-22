@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -27,6 +28,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -43,9 +45,8 @@ import showTracker.*;
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
-//TODO: have cached values be permenantly stored
 //TODO: downloading is not thread safe!(downloading doesn't lock down the panel)
-//TODO: after downloading/setting as watched(which removes that entry), the pop-in needs to be removed(right now it just errors)
+//TODO: adding a show needs to ask about the episodes that have been seen? or just mark all as seen that are before now
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -101,7 +102,7 @@ public class Main
 		final ArrayList<Episode> episodes = m.getUnseenEpisodes();
 		final Object[][] data = new Object[episodes.size()][5];
 		for(int i=0; i<episodes.size(); ++i)
-			data[i] = new Object[]{episodes.get(i).show.toString(), episodes.get(i).getEpisodeNumber(), episodes.get(i).toString(), episodes.get(i).getDate(), true};
+			data[i] = new Object[]{episodes.get(i).show.toString(), episodes.get(i).getEpisodeNumber(), episodes.get(i).title(), episodes.get(i).getDate(), true};
 		
 		//make a table from the data(overloading the table model to make checkboxes work)
 		final JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
@@ -121,7 +122,14 @@ public class Main
 			}
 			public Object getValueAt(int row, int column)
 			{
-				return ((Vector<?>)dataVector.get(row)).get(column);
+				try
+				{
+					return ((Vector<?>)dataVector.get(row)).get(column);
+				}
+				catch(Exception e)
+				{
+					return -1;
+				}
 			}
 			public boolean isCellEditable(int row, int column)
 			{
@@ -133,6 +141,8 @@ public class Main
 		});
 		//disable reordering
 		jt.getTableHeader().setReorderingAllowed(false);
+		//disable multiple selection
+		jt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		//center text strings
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -149,6 +159,14 @@ public class Main
 						@SuppressWarnings("deprecation")
 						public void run()
 						{
+							//if this was a remove operation, just remove the panel and return
+							if(jt.getSelectedRow() == -1)
+							{
+								popIn.removeAll();
+								popIn.setVisible(false);
+								return;
+							}
+							
 							//quit another paneling operation if one exists
 							if(paneler != null)
 								paneler.stop();
@@ -183,7 +201,7 @@ public class Main
 										{
 											btnLastWatched.setEnabled(false);
 											episode.setWatched(!episode.isWatched());
-											m.writeShowsToFile();
+											ShowTracker.writeShowsToFile();
 											((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 										}
 									}.start();
@@ -208,7 +226,7 @@ public class Main
 											if(episode.download())
 											{
 												episode.setWatched(!episode.isWatched());
-												m.writeShowsToFile();
+												ShowTracker.writeShowsToFile();
 												((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 											}
 											else
@@ -353,7 +371,7 @@ public class Main
 		
 		//create a list of shows(each with a delete and update button)
 		final Box showBox = Box.createVerticalBox();
-		for(int i=0; i<m.shows.size(); ++i)
+		for(int i=0; i<ShowTracker.shows.size(); ++i)
 		{
 			//create the panel and set up the layout
 			JPanel showPanel = new JPanel();
@@ -363,7 +381,7 @@ public class Main
 			gbc.anchor = GridBagConstraints.CENTER;
 			
 			//create the show description text area
-			final Show show = m.shows.get(i);
+			final Show show = ShowTracker.shows.get(i);
 			JTextArea jta = new JTextArea(show.toString());
 			jta.setEditable(false);
 			showPanel.add(jta, gbc);
@@ -384,7 +402,7 @@ public class Main
 						{
 							synchronized(m)
 							{
-								m.removeShowFromFile(showNum);
+								ShowTracker.removeShowFromFile(showNum);
 								
 								//return to the manage function
 								manageShows();
@@ -411,7 +429,7 @@ public class Main
 								{
 									btnUpdate.setText("Updating");
 									show.update();
-									m.writeShowsToFile();
+									ShowTracker.writeShowsToFile();
 									btnUpdate.setText("Updated");
 								}
 							}
@@ -436,7 +454,7 @@ public class Main
 		panel.add(new JScrollPane(showBox), BorderLayout.CENTER);
 		
 		//create an "add" button at the bottom of the list
-		Box addBox = Box.createHorizontalBox();
+		final Box addBox = Box.createHorizontalBox();
 		final JButton btnAdd = new JButton("Add");
 		final JTextPane addName = new JTextPane();
 		addName.addKeyListener(new KeyListener()
@@ -452,10 +470,7 @@ public class Main
 					{
 						public void run()
 						{
-							addShow(addName.getText());
-							
-							//return to the manage function when done
-							manageShows();
+							addShow(panel, addName.getText());
 						}
 					}.start();
 				}
@@ -475,10 +490,7 @@ public class Main
 				{
 					public void run()
 					{
-						addShow(addName.getText());
-						
-						//return to the manage function when done
-						manageShows();
+						addShow(panel, addName.getText());
 					}
 				}.start();
 			}
@@ -504,9 +516,9 @@ public class Main
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("My Shows");
 		
 		//add each show to the root node
-		for(int i=0; i<m.shows.size(); ++i)
+		for(int i=0; i<ShowTracker.shows.size(); ++i)
 		{
-			Show se = m.shows.get(i);
+			Show se = ShowTracker.shows.get(i);
 			DefaultMutableTreeNode show = new DefaultMutableTreeNode(se);
 			
 			//add each season to the show nodes
@@ -538,15 +550,24 @@ public class Main
 					@SuppressWarnings("deprecation")
 					public void run()
 					{
-						//quit another paneling operation if one exists
-						if(paneler != null)
-							paneler.stop();
-						paneler = this;
-						
 						Object obj = ((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject();
 						
 						if(obj.getClass().equals(Episode.class))
 						{
+							final Episode episode = (Episode)obj;
+							
+							if(!episode.getAirDate().isBeforeNow())
+							{
+								popIn.removeAll();
+								popIn.setVisible(false);
+								return;
+							}
+							
+							//quit another paneling operation if one exists
+							if(paneler != null)
+								paneler.stop();
+							paneler = this;
+							
 							//show the loading panel
 							//TODO: put in a loading spinner
 							popIn.removeAll();
@@ -554,7 +575,6 @@ public class Main
 							popIn.repaint();
 							
 							//create the text section
-							final Episode episode = (Episode)obj;
 							JTextArea jta = new JTextArea(episode.getText());
 							jta.setEditable(false);
 							jta.setLineWrap(true);
@@ -576,7 +596,7 @@ public class Main
 										{
 											episode.setWatched(!episode.isWatched());
 											btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
-											m.writeShowsToFile();
+											ShowTracker.writeShowsToFile();
 										}
 									}.start();
 								}
@@ -601,7 +621,7 @@ public class Main
 											{
 												episode.setWatched(!episode.isWatched());
 												btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
-												m.writeShowsToFile();
+												ShowTracker.writeShowsToFile();
 											}
 											else
 											{
@@ -658,17 +678,67 @@ public class Main
 		panel.add(popIn, BorderLayout.LINE_END);
 		panel.revalidate();
 	}
-
-	public void addShow(String showName)
+	
+	private void addShow(JPanel pane, String showName)
 	{
-		//TODO: after entering the text, this should come up with candidates for the search(and they pick one)
-		//TODO: do this with a pop-up
+		//set up the contents of the popup
+		Box contents = Box.createVerticalBox();
+		
 		//add the show
 		try
 		{
-			Show show = new Show(showName);
-			m.addShowToFile(show);
+			ArrayList<HashMap<String, String>> entries = Show.search(showName);
+			
+			//add the search text
+			contents.add(new JTextArea("Search: "+showName));
+			
+			//create the box for the entries
+			Box entriesBox = Box.createVerticalBox();
+			
+			//iterate through the entries and add a jpanel for each
+			for(int i=0; i< entries.size(); ++i)
+			{
+				final HashMap<String, String> showEntry = entries.get(i);
+				
+				Box entryBox = Box.createHorizontalBox();
+				
+				//show name
+				JTextArea showText = new JTextArea(showEntry.get("name"));
+				showText.setBorder(new LineBorder(Color.BLACK));
+				showText.setLineWrap(true);
+				showText.setWrapStyleWord(true);
+				entryBox.add(showText);
+				
+				//selection button
+				JButton select = new JButton("Select");
+				select.addActionListener(new ActionListener()
+				{
+					public void actionPerformed(ActionEvent e)
+					{
+						try
+						{
+							Show show = Show.getShow(showEntry);
+							ShowTracker.addShowToFile(show);
+						}
+						catch(Exception e1)
+						{
+							e1.printStackTrace();
+						}
+						
+						manageShows();
+					}
+				});
+				entryBox.add(select);
+				
+				entriesBox.add(entryBox);
+			}
+			
+			contents.add(new JScrollPane(entriesBox));
 		}
 		catch(Exception e){}
+		
+		pane.removeAll();
+		pane.add(contents);
+		pane.revalidate();
 	}
 }
