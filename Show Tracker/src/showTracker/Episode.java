@@ -1,5 +1,7 @@
 package showTracker;
 
+import gui.Main;
+
 import java.awt.Image;
 import java.io.IOException;
 import java.io.Serializable;
@@ -17,7 +19,6 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 @SuppressWarnings("serial")
 public class Episode implements Serializable
@@ -214,13 +215,11 @@ public class Episode implements Serializable
 	{
 		try
 		{
-			if(true) return false;
-			
 			//get the link from TPB
 			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 			
 			//open the link
-			new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
+			if(Main.DL_ON) new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
 			
 			//return true if it worked
 			return true;

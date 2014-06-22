@@ -43,8 +43,10 @@ import showTracker.*;
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
 //TODO: have cached values be permenantly stored
+//TODO: downloading skips every other show(this is because it is removing the shows
 public class Main
 {
+	public static boolean DL_ON = false;
 	boolean unseenVal = true;
 	Thread paneler = null;
 	JPanel panel;
