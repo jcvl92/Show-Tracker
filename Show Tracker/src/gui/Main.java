@@ -234,16 +234,21 @@ public class Main
 								private static final long serialVersionUID = 1L;
 								private Image image = episode.getImage();
 								protected void paintComponent(Graphics g) {
-									int sourceWidth = image.getWidth(null),
-							        	sourceHeight = image.getHeight(null),
-							        	destinationWidth = this.getWidth(),
-							        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
-							        
-									this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-							        super.paintComponent(g);
-							        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
-							        g.dispose();
-							        popIn.revalidate();
+									super.paintComponent(g);
+									if(image != null)
+									{
+										int sourceWidth = image.getWidth(null),
+								        	sourceHeight = image.getHeight(null),
+								        	destinationWidth = this.getWidth(),
+								        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+								        
+										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+								        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+								        g.dispose();
+								        popIn.revalidate();
+									}
+									else
+										setVisible(false);
 							    }
 							}, BorderLayout.PAGE_START);
 							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
@@ -604,16 +609,21 @@ public class Main
 								private static final long serialVersionUID = 1L;
 								private Image image = episode.getImage();
 								protected void paintComponent(Graphics g) {
-									int sourceWidth = image.getWidth(null),
-							        	sourceHeight = image.getHeight(null),
-							        	destinationWidth = this.getWidth(),
-							        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
-							        
-									this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-							        super.paintComponent(g);
-							        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
-							        g.dispose();
-							        popIn.revalidate();
+									super.paintComponent(g);
+									if(image != null)
+									{
+										int sourceWidth = image.getWidth(null),
+								        	sourceHeight = image.getHeight(null),
+								        	destinationWidth = this.getWidth(),
+								        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+								        
+										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+								        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+								        g.dispose();
+								        popIn.revalidate();
+									}
+									else
+										setVisible(false);
 							    }
 							}, BorderLayout.PAGE_START);
 							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
