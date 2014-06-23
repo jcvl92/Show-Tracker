@@ -43,7 +43,7 @@ public class ShowTracker
 					for(int k=0;k<season.episodes.size();++k)
 					{
 						Episode episode = season.episodes.get(k);
-						if(!episode.isWatched() && episode.getAirDate().isBeforeNow())
+						if(!episode.isWatched() && (episode.getAirDate()==null || episode.getAirDate().isBeforeNow()))
 							episodes.add(episode);
 					}
 				}

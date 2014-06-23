@@ -684,7 +684,7 @@ public class Main
 	private void addShow(final JPanel pane, String showName)
 	{
 		//set up the contents of the popup
-		JPanel contents = new JPanel(new BorderLayout());//Box.createVerticalBox();
+		final JPanel contents = new JPanel(new BorderLayout());//Box.createVerticalBox();
 		
 		//add the show
 		try
@@ -721,15 +721,26 @@ public class Main
 				{
 					public void actionPerformed(ActionEvent e)
 					{
-						try
+						//create the loading spinner
+						contents.removeAll();
+						contents.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
+						contents.revalidate();
+						
+						new Thread()
 						{
-							Show show = Show.getShow(showEntry);
-							selectSeen(pane, show);
-						}
-						catch(Exception e1)
-						{
-							manageShows();
-						}
+							public void run()
+							{
+								try
+								{
+									Show show = Show.getShow(showEntry);
+									selectSeen(pane, show);
+								}
+								catch(Exception e)
+								{
+									manageShows();
+								}
+							}
+						}.start();
 					}
 				});
 				entryBox.add(select);

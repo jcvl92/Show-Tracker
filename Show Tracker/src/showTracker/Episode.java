@@ -156,7 +156,7 @@ public class Episode implements Serializable
 		if(getAirDate() != null)
 			return getAirDate().toString(writeFormatter);
 		else
-			return "";
+			return "Unaired";
 	}
 
 	public String getEpisodeNumber()
