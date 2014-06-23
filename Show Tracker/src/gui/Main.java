@@ -682,7 +682,7 @@ public class Main
 	private void addShow(JPanel pane, String showName)
 	{
 		//set up the contents of the popup
-		Box contents = Box.createVerticalBox();
+		JPanel contents = new JPanel(new BorderLayout());//Box.createVerticalBox();
 		
 		//add the show
 		try
@@ -690,10 +690,9 @@ public class Main
 			ArrayList<HashMap<String, String>> entries = Show.search(showName);
 			
 			//add the search text
-			JTextArea search = new JTextArea("Search: "+showName);
+			JTextArea search = new JTextArea("Search: \""+showName+"\". Select your show:");
 			search.setEditable(false);
-			search.setBackground(Color.BLUE);
-			contents.add(search);
+			contents.add(search, BorderLayout.PAGE_START);
 			
 			//create the box for the entries
 			Box entriesBox = Box.createVerticalBox();
@@ -707,7 +706,7 @@ public class Main
 				entryBox.setBorder(new LineBorder(Color.BLACK));
 				
 				//show name
-				JTextArea showText = new JTextArea(showEntry.get("name"));showText.setBackground(Color.RED);
+				JTextArea showText = new JTextArea(showEntry.get("name"));
 				showText.setEditable(false);
 				showText.setLineWrap(true);
 				showText.setWrapStyleWord(true);
@@ -738,14 +737,10 @@ public class Main
 				entriesBox.add(entryBox);
 			}
 			
-			JScrollPane entryScroll = new JScrollPane(entriesBox);
-			contents.add(entryScroll);
-			
-			//create a filler to push the results to the top
-			JPanel filler = new JPanel();
-			//TODO: finish this so that it properly fills
-			filler.setPreferredSize(new Dimension(filler.getPreferredSize().width, contents.getPreferredSize().height));//-entryScroll.getHeight()-search.getHeight()));
-			contents.add(filler);
+			//add the entries list to the top of a panel that fills with empty space
+			JPanel entriesList = new JPanel(new BorderLayout());
+			entriesList.add(entriesBox, BorderLayout.PAGE_START);
+			contents.add(new JScrollPane(entriesList));
 		}
 		catch(Exception e){}
 		
