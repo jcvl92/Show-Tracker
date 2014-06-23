@@ -89,21 +89,6 @@ public class Episode implements Serializable
 
 	public String getText()
 	{
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(information.get("title")+":\n");
-		if(information.get("epnum")!=null)
-			sb.append("Number in series: "+information.get("epnum")+'\n');
-		if(information.get("seasonnum")!=null)
-			sb.append("Number in season: "+information.get("seasonnum")+"\n\n");
-
-		if(getAirDate() != null)
-		{
-			sb.append("Airdate: "+getAirDate().toDate().toString()+'\n');
-		}
-
-		sb.append(timeDifference()+"\n\n");
-		
 		if(description == null || image == null)
 		{
 			try
@@ -130,12 +115,10 @@ public class Episode implements Serializable
 			}
 			catch(Exception e){}
 		}
-
-		sb.append(description);
 		
 		save();
 		
-		return sb.toString();
+		return description;
 	}
 
 	private void save()
