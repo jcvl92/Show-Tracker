@@ -2,13 +2,12 @@ package showTracker;
 
 import gui.Main;
 
-import java.awt.Image;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.HashMap;
 
-import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -26,7 +25,7 @@ public class Episode implements Serializable
 	HashMap<String, String> information;
 	String airTime, description=null;
 	private DateTime airDate;
-	Image image = null;
+	ImageIcon image = null;
 	public Show show;
 	boolean seen = false;
 	transient DateTimeFormatter parseFormatter;
@@ -122,11 +121,11 @@ public class Episode implements Serializable
 				//this grabs the image of the episode
 				try
 				{
-					image = ImageIO.read(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
+					image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
 				}
 				catch(Exception e)
 				{
-					image = ImageIO.read(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
+					image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
 				}
 			}
 			catch(Exception e){}
@@ -144,7 +143,7 @@ public class Episode implements Serializable
 		ShowTracker.writeShowsToFile();
 	}
 
-	public Image getImage()
+	public ImageIcon getImage()
 	{
 		//if the image hasn't been grabbed, and the grab fails, return null
 		if(image == null && getText() == null)

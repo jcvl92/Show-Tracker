@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -19,6 +20,7 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -44,9 +46,9 @@ import showTracker.*;
 //TODO: add update all and delete all buttons to the manage shows section
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
-//TODO: when processing adds, create a transluscent progress wheel(or just add one to the panel)
-//TODO: downloading is not thread safe!(downloading doesn't lock down the panel)
+//TODO: lock down panels where appropiate(like downloading and adding)
 //TODO: adding a show needs to ask about the episodes that have been seen? or just mark all as seen that are before now
+//TODO: add show pictures and desicriptions to the manage shows list
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -173,10 +175,10 @@ public class Main
 							paneler = this;
 							
 							//show the loading panel
-							//TODO: put in a loading spinner
 							popIn.removeAll();
+							popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
 							popIn.setVisible(true);
-							popIn.repaint();
+							popIn.revalidate();
 							
 							//create the text section
 							final Episode episode = episodes.get(jt.getSelectedRow());
@@ -254,18 +256,18 @@ public class Main
 							popIn.add(new JPanel()
 							{
 								private static final long serialVersionUID = 1L;
-								private Image image = episode.getImage();
+								private ImageIcon image = episode.getImage();
 								protected void paintComponent(Graphics g) {
 									super.paintComponent(g);
 									if(image != null)
 									{
-										int sourceWidth = image.getWidth(null),
-								        	sourceHeight = image.getHeight(null),
+										int sourceWidth = image.getIconWidth(),
+								        	sourceHeight = image.getIconHeight(),
 								        	destinationWidth = this.getWidth(),
 								        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
 								        
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-								        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+								        g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
 								        g.dispose();
 								        popIn.revalidate();
 									}
@@ -464,7 +466,7 @@ public class Main
 				if(ke.getKeyCode() == KeyEvent.VK_ENTER)
 				{
 					addName.setEnabled(false);
-					btnAdd.setText("Adding");
+					btnAdd.setText("Searching");
 					btnAdd.setEnabled(false);
 					new Thread()
 					{
@@ -568,11 +570,11 @@ public class Main
 								paneler.stop();
 							paneler = this;
 							
-							//show the loading panel
-							//TODO: put in a loading spinner
+							//show the loading spinner
 							popIn.removeAll();
+							popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
 							popIn.setVisible(true);
-							popIn.repaint();
+							popIn.revalidate();
 							
 							//create the text section
 							JTextArea jta = new JTextArea(episode.getText());
@@ -641,18 +643,18 @@ public class Main
 							popIn.add(new JPanel()
 							{
 								private static final long serialVersionUID = 1L;
-								private Image image = episode.getImage();
+								private ImageIcon image = episode.getImage();
 								protected void paintComponent(Graphics g) {
 									super.paintComponent(g);
 									if(image != null)
 									{
-										int sourceWidth = image.getWidth(null),
-								        	sourceHeight = image.getHeight(null),
+										int sourceWidth = image.getIconWidth(),
+								        	sourceHeight = image.getIconHeight(),
 								        	destinationWidth = this.getWidth(),
 								        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
 								        
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-								        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+								        g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
 								        g.dispose();
 								        popIn.revalidate();
 									}
@@ -679,7 +681,7 @@ public class Main
 		panel.revalidate();
 	}
 	
-	private void addShow(JPanel pane, String showName)
+	private void addShow(final JPanel pane, String showName)
 	{
 		//set up the contents of the popup
 		JPanel contents = new JPanel(new BorderLayout());//Box.createVerticalBox();
@@ -692,6 +694,7 @@ public class Main
 			//add the search text
 			JTextArea search = new JTextArea("Search: \""+showName+"\". Select your show:");
 			search.setEditable(false);
+			search.setFont(search.getFont().deriveFont(Font.BOLD));
 			contents.add(search, BorderLayout.PAGE_START);
 			
 			//create the box for the entries
@@ -721,14 +724,12 @@ public class Main
 						try
 						{
 							Show show = Show.getShow(showEntry);
-							ShowTracker.addShowToFile(show);
+							selectSeen(pane, show);
 						}
 						catch(Exception e1)
 						{
-							e1.printStackTrace();
+							manageShows();
 						}
-						
-						manageShows();
 					}
 				});
 				entryBox.add(select);
@@ -743,6 +744,51 @@ public class Main
 			contents.add(new JScrollPane(entriesList));
 		}
 		catch(Exception e){}
+		
+		pane.removeAll();
+		pane.add(contents);
+		pane.revalidate();
+	}
+	
+	private void selectSeen(JPanel pane, final Show show)
+	{
+		//promt if they have seen any episodes, if not, just return
+		//the prompt will be a text area with large font and large buttons below it
+		//design: vertical box - top:text area with prompt - bottom:two buttons in a horizontal box
+		Box contents = Box.createVerticalBox();
+		
+		//create the prompt
+		JTextArea jta = new JTextArea("Have you seen any episodes of "+show+"?");
+		jta.setFont(jta.getFont().deriveFont(Font.BOLD));
+		contents.add(jta);
+		
+		//create the buttons
+		Box buttonBox = Box.createHorizontalBox();
+		JButton yes = new JButton("Yes");
+		yes.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				//TODO: finish this
+				//draw a table of the episodes using getUnseen
+				//the user will then select an entry(the pop-in will show up here)
+				//that entry will have everything after it set as unwatched
+				ShowTracker.addShowToFile(show);
+				manageShows();
+			}
+		});
+		buttonBox.add(yes);
+		JButton no = new JButton("No");
+		no.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				ShowTracker.addShowToFile(show);
+				manageShows();
+			}
+		});
+		buttonBox.add(no);
+		contents.add(buttonBox);
 		
 		pane.removeAll();
 		pane.add(contents);
