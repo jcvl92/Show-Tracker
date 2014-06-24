@@ -763,14 +763,11 @@ public class Main
 	
 	private void selectSeen(JPanel pane, final Show show)
 	{
-		//promt if they have seen any episodes, if not, just return
-		//the prompt will be a text area with large font and large buttons below it
-		//design: vertical box - top:text area with prompt - bottom:two buttons in a horizontal box
 		Box contents = Box.createVerticalBox();
 		
 		//create the prompt
 		JTextArea jta = new JTextArea("Have you seen any episodes of "+show+"?");
-		jta.setFont(jta.getFont().deriveFont(Font.BOLD));
+		jta.setFont(jta.getFont().deriveFont(Font.BOLD, 24));
 		contents.add(jta);
 		
 		//create the buttons
