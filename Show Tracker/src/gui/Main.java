@@ -47,7 +47,6 @@ import showTracker.*;
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: lock down panels where appropiate(like downloading and adding)
-//TODO: adding a show needs to ask about the episodes that have been seen? or just mark all as seen that are before now
 //TODO: add show pictures and desicriptions to the manage shows list
 public class Main
 {
@@ -761,9 +760,13 @@ public class Main
 		pane.revalidate();
 	}
 	
-	private void selectSeen(JPanel pane, final Show show)
+	private void selectSeen(final JPanel pane, final Show show)
 	{
 		Box contents = Box.createVerticalBox();
+		
+		//create the JPanel for the pop-in
+		final JPanel popIn = new JPanel(new BorderLayout());
+		popIn.setVisible(false);
 		
 		//create the prompt
 		JTextArea jta = new JTextArea("Have you seen any episodes of "+show+"?");
@@ -777,12 +780,127 @@ public class Main
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				//TODO: finish this
-				//draw a table of the episodes using getUnseen
-				//the user will then select an entry(the pop-in will show up here)
-				//that entry will have everything after it set as unwatched
-				ShowTracker.addShowToFile(show);
-				manageShows();
+				new Thread()
+				{
+					public void run()
+					{
+						//get the table data
+						final ArrayList<Episode> episodes = show.getAiredEpisodes();
+						final Object[][] data = new Object[episodes.size()][5];
+						for(int i=0; i<episodes.size(); ++i)
+							data[i] = new Object[]{episodes.get(i).getEpisodeNumber(), episodes.get(i).title(), episodes.get(i).getDate()};
+						
+						//make a table from the data
+						final JTable jt = new JTable(data, new String[]{"Episode Number", "Episode Title", "Date Aired"})
+						{
+							private static final long serialVersionUID = 1L;
+							public boolean isCellEditable(int row, int column)
+							{
+								return false;
+							}
+						};
+						//disable reordering
+						jt.getTableHeader().setReorderingAllowed(false);
+						//disable multiple selection
+						jt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+						//center text strings
+						DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+						centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+						jt.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+						jt.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+						jt.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+						//create a listener to construct a panel with episode information on row select
+						jt.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+						{
+							public void valueChanged(final ListSelectionEvent event)
+							{
+								if(!event.getValueIsAdjusting())
+								{
+									new Thread()
+									{
+										@SuppressWarnings("deprecation")
+										public void run()
+										{
+											//quit another paneling operation if one exists
+											if(paneler != null)
+												paneler.stop();
+											paneler = this;
+											
+											//show the loading panel
+											popIn.removeAll();
+											popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
+											popIn.setVisible(true);
+											popIn.revalidate();
+											
+											//create the text section
+											final Episode episode = episodes.get(jt.getSelectedRow());
+											JTextArea jta = new JTextArea(episode.getText());
+											jta.setEditable(false);
+											jta.setLineWrap(true);
+											jta.setWrapStyleWord(true);
+											
+											//add the components
+											popIn.removeAll();
+											popIn.add(new JPanel()
+											{
+												private static final long serialVersionUID = 1L;
+												private ImageIcon image = episode.getImage();
+												protected void paintComponent(Graphics g) {
+													super.paintComponent(g);
+													if(image != null)
+													{
+														int sourceWidth = image.getIconWidth(),
+												        	sourceHeight = image.getIconHeight(),
+												        	destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
+												        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+												        
+														this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+												        g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+												        g.dispose();
+												        popIn.revalidate();
+													}
+													else
+														setVisible(false);
+											    }
+											}, BorderLayout.PAGE_START);
+											popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
+											
+											//revalidate to redraw/realign the panel
+											popIn.revalidate();
+										}
+									}.start();
+								}
+							}
+						});
+						
+						//create the select button
+						JButton btnSelect = new JButton("Select Episode");
+						btnSelect.addActionListener(new ActionListener()
+						{
+							public void actionPerformed(ActionEvent e)
+							{
+								new Thread()
+								{
+									public void run()
+									{
+										for(int i=jt.getSelectedRow(); i<episodes.size(); ++i)
+											episodes.get(i).setWatched(true);
+										ShowTracker.addShowToFile(show);
+										manageShows();
+									}
+								}.start();
+							}
+						});
+						
+						//add the contents to the pane
+						pane.removeAll();
+						pane.add(new JTextArea("Select the last episode you have seen:"), BorderLayout.PAGE_START);
+						pane.add(new JScrollPane(jt), BorderLayout.CENTER);
+						pane.add(popIn, BorderLayout.LINE_END);
+						pane.add(btnSelect, BorderLayout.PAGE_END);
+						pane.revalidate();
+					}
+				}.start();
 			}
 		});
 		buttonBox.add(yes);

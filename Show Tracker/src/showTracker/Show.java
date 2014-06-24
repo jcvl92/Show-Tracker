@@ -3,6 +3,8 @@ package showTracker;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -163,5 +165,29 @@ public class Show implements Serializable
 				newSeason.episodes.get(j).setWatched(oldSeason.episodes.get(j).isWatched());
 			}
 		}
+	}
+	
+
+	public ArrayList<Episode> getAiredEpisodes()
+	{
+		ArrayList<Episode> airedEpisodes = new ArrayList<Episode>();
+		//iterate through the seasons and episodes and add each episode if it has aired
+		for(int i=0; i<seasons.size(); ++i)
+			for(int j=0; j<seasons.get(i).episodes.size(); ++j)
+				if(seasons.get(i).episodes.get(j).getAirDate() != null && seasons.get(i).episodes.get(j).getAirDate().isBeforeNow())
+					airedEpisodes.add(seasons.get(i).episodes.get(j));
+		
+		Collections.sort(airedEpisodes, new Comparator<Episode>()
+		{
+			public int compare(Episode arg0, Episode arg1)
+			{
+				if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
+				if(arg1.getAirDate() == null) return -1;
+				if(arg0.getAirDate() == null) return 1;
+				return arg1.getAirDate().compareTo(arg0.getAirDate());
+			}
+		});
+		
+		return airedEpisodes;
 	}
 }
