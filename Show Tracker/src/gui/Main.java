@@ -801,8 +801,17 @@ public class Main
 		buttonBox.add(no);
 		contents.add(buttonBox);
 		
+		//set up the centered panel
+		JPanel addPanel = new JPanel();
+		addPanel.setBorder(new LineBorder(Color.BLACK));
+		addPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.anchor = GridBagConstraints.CENTER;
+		addPanel.add(contents);
+		
+		//add it to the pane
 		pane.removeAll();
-		pane.add(contents);
+		pane.add(addPanel);
 		pane.revalidate();
 	}
 }
