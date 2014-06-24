@@ -105,8 +105,9 @@ public class Show implements Serializable
 		//get the image for the show
 		try
 		{
-			Document page = Jsoup.connect("http://www.tvrage.com/"+show.showName).timeout(30*1000).get();
-			show.image = new ImageIcon(new URL(page.getElementsByClass("padding_bottom_10").get(0).child(0).attr("src")));
+			//Document page = Jsoup.connect("http://www.tvrage.com/"+show.showName).timeout(30*1000).get();
+			//show.image = new ImageIcon(new URL(page.getElementsByClass("padding_bottom_10").get(0).child(0).attr("src")));
+			show.image = new ImageIcon(new URL("http://images.tvrage.com/shows/4/"+show.showID+".jpg"));
 		}
 		catch(Exception e)
 		{
