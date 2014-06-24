@@ -2,11 +2,14 @@ package showTracker;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.swing.ImageIcon;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,6 +21,7 @@ import org.jsoup.nodes.TextNode;
 public class Show implements Serializable
 {
 	String showName, seasonCount, runTime, airTime, status, search;
+	ImageIcon image;
 	int showID;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
 	
@@ -98,14 +102,30 @@ public class Show implements Serializable
 			}
 		}
 		
+		//get the image for the show
+		try
+		{
+			Document page = Jsoup.connect("http://www.tvrage.com/"+show.showName).timeout(30*1000).get();
+			show.image = new ImageIcon(new URL(page.getElementsByClass("padding_bottom_10").get(0).child(0).attr("src")));
+		}
+		catch(Exception e)
+		{
+			show.image = null;
+		}
+		
 		return show;
+	}
+	
+	public ImageIcon getImage()
+	{
+		return image;
 	}
 	
 	public String toString()
 	{
 		return showName;
 	}
-
+	
 	public void update() throws IOException, InterruptedException
 	{
 		//TODO: this is not robust, it relies on the fact that the new episodes will have nothing removed. find a better way to update while keeping the seen value
@@ -167,7 +187,6 @@ public class Show implements Serializable
 		}
 	}
 	
-
 	public ArrayList<Episode> getAiredEpisodes()
 	{
 		ArrayList<Episode> airedEpisodes = new ArrayList<Episode>();

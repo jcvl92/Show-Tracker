@@ -47,7 +47,7 @@ import showTracker.*;
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: lock down panels where appropiate(like downloading and adding)
-//TODO: add show pictures and desicriptions to the manage shows list
+//TODO: fix show picture grabbing(works only for futurama)
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -375,7 +375,7 @@ public class Main
 		for(int i=0; i<ShowTracker.shows.size(); ++i)
 		{
 			//create the panel and set up the layout
-			JPanel showPanel = new JPanel();
+			final JPanel showPanel = new JPanel();
 			showPanel.setBorder(new LineBorder(Color.BLACK));
 			showPanel.setLayout(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -385,7 +385,6 @@ public class Main
 			final Show show = ShowTracker.shows.get(i);
 			JTextArea jta = new JTextArea(show.toString());
 			jta.setEditable(false);
-			showPanel.add(jta, gbc);
 			
 			//create the box for the buttons
 			Box buttonBox = Box.createVerticalBox();
@@ -447,9 +446,31 @@ public class Main
 			buttonBox.add(btnDelete);
 			buttonBox.add(btnUpdate);
 			
-			//center content within panel
+			//add content to panel
+			showPanel.add(new JPanel()
+			{
+				private static final long serialVersionUID = 1L;
+				private ImageIcon image = show.getImage();
+				protected void paintComponent(Graphics g) {
+					super.paintComponent(g);
+					if(image != null)
+					{
+						int sourceWidth = image.getIconWidth(),
+				        	sourceHeight = image.getIconHeight(),
+		        			destinationHeight = 75,
+		        			destinationWidth = (int)((double)sourceWidth/((double)sourceHeight/(double)destinationHeight));
+				        
+						this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+						g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+				        g.dispose();
+				        showPanel.revalidate();
+					}
+					else
+						setVisible(false);
+			    }
+			}, gbc);
+			showPanel.add(jta, gbc);
 			showPanel.add(buttonBox, gbc);
-			
 			showBox.add(showPanel);
 		}
 		panel.add(new JScrollPane(showBox), BorderLayout.CENTER);
@@ -478,8 +499,7 @@ public class Main
 			}
 			public void keyReleased(KeyEvent ke){}
 			public void keyTyped(KeyEvent ke){}
-		}
-		);
+		});
 		btnAdd.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -770,7 +790,7 @@ public class Main
 		
 		//create the prompt
 		JTextArea jta = new JTextArea("Have you seen any episodes of "+show+"?");
-		jta.setFont(jta.getFont().deriveFont(Font.BOLD, 24));
+		jta.setFont(jta.getFont().deriveFont(Font.BOLD, 20));
 		contents.add(jta);
 		
 		//create the buttons
