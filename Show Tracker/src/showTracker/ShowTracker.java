@@ -18,7 +18,7 @@ public class ShowTracker
 	{
 		//load the shows from the data file
 		shows = readShowsFromFile();
-		
+
 		//if there are no shows, initialize the array list
 		if(shows == null)
 			shows = new ArrayList<Show>();
@@ -29,16 +29,16 @@ public class ShowTracker
 		synchronized(shows)
 		{
 			ArrayList<Episode> episodes = new ArrayList<Episode>();
-			
+
 			for(int i=0;i<shows.size();++i)
 			{
 				Show show = shows.get(i);
-				
+
 				//iterate through all seasons
 				for(int j=0;j<show.seasons.size();++j)
 				{
 					Season season = show.seasons.get(j);
-	
+
 					//iterate through all episodes
 					for(int k=0;k<season.episodes.size();++k)
 					{
@@ -48,9 +48,9 @@ public class ShowTracker
 					}
 				}
 			}
-			
+
 			Collections.sort(episodes, new Comparator<Episode>()
-			{
+					{
 				public int compare(Episode arg0, Episode arg1)
 				{
 					if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
@@ -58,11 +58,11 @@ public class ShowTracker
 					if(arg0.getAirDate() == null) return -1;
 					return arg0.getAirDate().compareTo(arg1.getAirDate());
 				}
-			});
+					});
 			return episodes;
 		}
 	}
-	
+
 	private ArrayList<Show> readShowsFromFile()
 	{
 		try
@@ -95,7 +95,7 @@ public class ShowTracker
 			writeShowsToFile();
 		}
 	}
-	
+
 	public static void writeShowsToFile()
 	{
 		synchronized(shows)
@@ -112,7 +112,7 @@ public class ShowTracker
 			}
 		}
 	}
-	
+
 	public static void removeShowFromFile(int index)
 	{
 		synchronized(shows)

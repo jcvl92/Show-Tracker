@@ -31,6 +31,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -41,7 +42,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import showTracker.*;
+import showTracker.Episode;
+import showTracker.Season;
+import showTracker.Show;
+import showTracker.ShowTracker;
 
 //TODO: add update all and delete all buttons to the manage shows section
 //TODO: add offline support
@@ -56,13 +60,13 @@ public class Main
 	JPanel panel;
 	JFrame frame;
 	ShowTracker m = new ShowTracker();
-	
+
 	public Main(JPanel p, JFrame f)
 	{
 		panel = p;
 		frame = f;
 	}
-	
+
 	public void splash()
 	{
 		//create the splash screen
@@ -74,37 +78,37 @@ public class Main
 				private Image image = ImageIO.read(this.getClass().getResource("splash screen.png"));
 				protected void paintComponent(Graphics g) {
 					int sourceWidth = image.getWidth(null),
-			        	sourceHeight = image.getHeight(null),
-			        	destinationWidth = this.getWidth(),
-			        	destinationHeight = this.getHeight();
-			        
+							sourceHeight = image.getHeight(null),
+							destinationWidth = this.getWidth(),
+							destinationHeight = this.getHeight();
+
 					super.paintComponent(g);
-			        g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
-			        g.dispose();
-			    }
+					g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+					g.dispose();
+				}
 			}, BorderLayout.CENTER);
 		}
 		catch(IOException e){}
 	}
-	
+
 	public void unseenShows()
 	{
 		//clear the panel
 		panel.removeAll();
-		
+
 		//create the JPanel for the pop-in
 		final JPanel popIn = new JPanel(new BorderLayout());
 		popIn.setVisible(false);
-		
+
 		//reset the unseenVal so that select/deselect is consistent
 		unseenVal = true;
-		
+
 		//get the table data
 		final ArrayList<Episode> episodes = m.getUnseenEpisodes();
 		final Object[][] data = new Object[episodes.size()][5];
 		for(int i=0; i<episodes.size(); ++i)
 			data[i] = new Object[]{episodes.get(i).show.toString(), episodes.get(i).getEpisodeNumber(), episodes.get(i).title(), episodes.get(i).getDate(), true};
-		
+
 		//make a table from the data(overloading the table model to make checkboxes work)
 		final JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
 		{
@@ -146,7 +150,7 @@ public class Main
 		jt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		//center text strings
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 		jt.setDefaultRenderer(String.class, centerRenderer);
 		//create a listener to construct a panel with episode information on row select
 		jt.getSelectionModel().addListSelectionListener(new ListSelectionListener()
@@ -167,29 +171,29 @@ public class Main
 								popIn.setVisible(false);
 								return;
 							}
-							
+
 							//quit another paneling operation if one exists
 							if(paneler != null)
 								paneler.stop();
 							paneler = this;
-							
+
 							//show the loading panel
 							popIn.removeAll();
-							popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
+							popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), SwingConstants.CENTER));
 							popIn.setVisible(true);
 							popIn.revalidate();
-							
+
 							//create the text section
 							final Episode episode = episodes.get(jt.getSelectedRow());
 							JTextArea jta = new JTextArea(episode.getText());
 							jta.setEditable(false);
 							jta.setLineWrap(true);
 							jta.setWrapStyleWord(true);
-							
+
 							//create buttons
 							JPanel buttonBox = new JPanel();
 							buttonBox.setLayout(new GridBagLayout());
-							
+
 							//last watched button
 							final JButton btnLastWatched = new JButton("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
 							btnLastWatched.addActionListener(new ActionListener()
@@ -212,7 +216,7 @@ public class Main
 							gbc_btnLastWatched.fill = GridBagConstraints.BOTH;
 							gbc_btnLastWatched.gridy = 0;
 							buttonBox.add(btnLastWatched, gbc_btnLastWatched);
-							
+
 							//download button
 							final JButton btnDownload = new JButton("Download episode");
 							btnDownload.addActionListener(new ActionListener()
@@ -249,7 +253,7 @@ public class Main
 							gbc_btnDownload.fill = GridBagConstraints.BOTH;
 							gbc_btnDownload.gridy = 1;
 							buttonBox.add(btnDownload, gbc_btnDownload);
-							
+
 							//add the components
 							popIn.removeAll();
 							popIn.add(new JPanel()
@@ -261,22 +265,22 @@ public class Main
 									if(image != null)
 									{
 										int sourceWidth = image.getIconWidth(),
-								        	sourceHeight = image.getIconHeight(),
-								        	destinationWidth = this.getWidth(),
-								        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
-								        
+												sourceHeight = image.getIconHeight(),
+												destinationWidth = this.getWidth(),
+												destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-								        g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
-								        g.dispose();
-								        popIn.revalidate();
+										g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+										g.dispose();
+										popIn.revalidate();
 									}
 									else
 										setVisible(false);
-							    }
+								}
 							}, BorderLayout.PAGE_START);
 							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
 							popIn.add(buttonBox, BorderLayout.PAGE_END);
-							
+
 							//revalidate to redraw/realign the panel
 							popIn.revalidate();
 						}
@@ -284,16 +288,16 @@ public class Main
 				}
 			}
 		});
-		
+
 		//add the table to the panel
 		panel.add(new JScrollPane(jt), BorderLayout.CENTER);
-		
+
 		//set up the buttons panel
 		JPanel buttonPanel = new JPanel();
 		FlowLayout fl = new FlowLayout(FlowLayout.RIGHT);
 		fl.setHgap(0);fl.setVgap(0);
 		buttonPanel.setLayout(fl);
-		
+
 		//add the download button
 		final JButton btnDownload = new JButton("Download Selected");
 		final JButton btnSelect = new JButton("Select/Deselect All");
@@ -336,7 +340,7 @@ public class Main
 			}
 		});
 		buttonPanel.add(btnDownload);
-		
+
 		//add the select/deselect button
 		btnSelect.addActionListener(new ActionListener()
 		{
@@ -354,13 +358,13 @@ public class Main
 			}
 		});
 		buttonPanel.add(btnSelect);
-		
+
 		//add the buttons panel to the panel
 		panel.add(buttonPanel, BorderLayout.PAGE_END);
-		
+
 		//add the pop-in panel to the panel
 		panel.add(popIn, BorderLayout.LINE_END);
-		
+
 		//revalidate the panel to align the components
 		panel.revalidate();
 	}
@@ -369,7 +373,7 @@ public class Main
 	{
 		//clear the panel
 		panel.removeAll();
-		
+
 		//create a list of shows(each with a delete and update button)
 		final Box showBox = Box.createVerticalBox();
 		for(int i=0; i<ShowTracker.shows.size(); ++i)
@@ -380,15 +384,15 @@ public class Main
 			showPanel.setLayout(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.anchor = GridBagConstraints.CENTER;
-			
+
 			//create the show description text area
 			final Show show = ShowTracker.shows.get(i);
 			JTextArea jta = new JTextArea(show.toString());
 			jta.setEditable(false);
-			
+
 			//create the box for the buttons
 			Box buttonBox = Box.createVerticalBox();
-			
+
 			//delete button
 			final JButton btnDelete = new JButton("Delete");
 			final int showNum = i;
@@ -403,7 +407,7 @@ public class Main
 							synchronized(m)
 							{
 								ShowTracker.removeShowFromFile(showNum);
-								
+
 								//return to the manage function
 								manageShows();
 							}
@@ -411,7 +415,7 @@ public class Main
 					}.start();
 				}
 			});
-			
+
 			//update button
 			final JButton btnUpdate = new JButton("Update");
 			btnUpdate.addActionListener(new ActionListener()
@@ -441,11 +445,11 @@ public class Main
 					}.start();
 				}
 			});
-			
+
 			//add the buttons to the button box
 			buttonBox.add(btnDelete);
 			buttonBox.add(btnUpdate);
-			
+
 			//add content to panel
 			showPanel.add(new JPanel()
 			{
@@ -456,25 +460,25 @@ public class Main
 					if(image != null)
 					{
 						int sourceWidth = image.getIconWidth(),
-				        	sourceHeight = image.getIconHeight(),
-		        			destinationHeight = 75,
-		        			destinationWidth = (int)((double)sourceWidth/((double)sourceHeight/(double)destinationHeight));
-				        
+								sourceHeight = image.getIconHeight(),
+								destinationHeight = 75,
+								destinationWidth = (int)((double)sourceWidth/((double)sourceHeight/(double)destinationHeight));
+
 						this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
 						g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
-				        g.dispose();
-				        showPanel.revalidate();
+						g.dispose();
+						showPanel.revalidate();
 					}
 					else
 						setVisible(false);
-			    }
+				}
 			}, gbc);
 			showPanel.add(jta, gbc);
 			showPanel.add(buttonBox, gbc);
 			showBox.add(showPanel);
 		}
 		panel.add(new JScrollPane(showBox), BorderLayout.CENTER);
-		
+
 		//create an "add" button at the bottom of the list
 		final Box addBox = Box.createHorizontalBox();
 		final JButton btnAdd = new JButton("Add");
@@ -518,11 +522,11 @@ public class Main
 		});
 		addBox.add(addName);
 		addBox.add(btnAdd);
-		
+
 		panel.add(addBox, BorderLayout.PAGE_END);
 		panel.repaint();//repaint because you don't use the whole space and you don't want residual drawing there
 		panel.revalidate();
-		
+
 		//put the focus in the add show field
 		addName.requestFocus();
 	}
@@ -531,36 +535,36 @@ public class Main
 	{
 		//clear the panel
 		panel.removeAll();
-		
+
 		//create the tree object
 		final JTree tree = new JTree();
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("My Shows");
-		
+
 		//add each show to the root node
 		for(int i=0; i<ShowTracker.shows.size(); ++i)
 		{
 			Show se = ShowTracker.shows.get(i);
 			DefaultMutableTreeNode show = new DefaultMutableTreeNode(se);
-			
+
 			//add each season to the show nodes
 			for(int j=0; j<se.seasons.size(); ++j)
 			{
 				Season s = se.seasons.get(j);
 				DefaultMutableTreeNode season = new DefaultMutableTreeNode(s);
-				
+
 				//add each episode to the season nodes
 				for(int k=0; k<s.episodes.size(); ++k)
 					season.add(new DefaultMutableTreeNode(s.episodes.get(k)));
-				
+
 				show.add(season);
 			}
-			
+
 			root.add(show);
 		}
-		
+
 		//create the panel object
 		final JPanel popIn = new JPanel(new BorderLayout());
-		
+
 		//build the listener for the node selection event and set the tree
 		TreeSelectionListener tsl = new TreeSelectionListener()
 		{
@@ -572,39 +576,39 @@ public class Main
 					public void run()
 					{
 						Object obj = ((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject();
-						
+
 						if(obj.getClass().equals(Episode.class))
 						{
 							final Episode episode = (Episode)obj;
-							
+
 							if(!episode.getAirDate().isBeforeNow())
 							{
 								popIn.removeAll();
 								popIn.setVisible(false);
 								return;
 							}
-							
+
 							//quit another paneling operation if one exists
 							if(paneler != null)
 								paneler.stop();
 							paneler = this;
-							
+
 							//show the loading spinner
 							popIn.removeAll();
-							popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
+							popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), SwingConstants.CENTER));
 							popIn.setVisible(true);
 							popIn.revalidate();
-							
+
 							//create the text section
 							JTextArea jta = new JTextArea(episode.getText());
 							jta.setEditable(false);
 							jta.setLineWrap(true);
 							jta.setWrapStyleWord(true);
-							
+
 							//create buttons
 							JPanel buttonBox = new JPanel();
 							buttonBox.setLayout(new GridBagLayout());
-							
+
 							//last watched button
 							final JButton btnLastWatched = new JButton("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
 							btnLastWatched.addActionListener(new ActionListener()
@@ -626,7 +630,7 @@ public class Main
 							gbc_btnLastWatched.fill = GridBagConstraints.BOTH;
 							gbc_btnLastWatched.gridy = 0;
 							buttonBox.add(btnLastWatched, gbc_btnLastWatched);
-							
+
 							//download button
 							final JButton btnDownload = new JButton("Download episode");
 							btnDownload.addActionListener(new ActionListener()
@@ -656,7 +660,7 @@ public class Main
 							gbc_btnDownload.fill = GridBagConstraints.BOTH;
 							gbc_btnDownload.gridy = 1;
 							buttonBox.add(btnDownload, gbc_btnDownload);
-							
+
 							//add the components
 							popIn.removeAll();
 							popIn.add(new JPanel()
@@ -668,30 +672,30 @@ public class Main
 									if(image != null)
 									{
 										int sourceWidth = image.getIconWidth(),
-								        	sourceHeight = image.getIconHeight(),
-								        	destinationWidth = this.getWidth(),
-								        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
-								        
+												sourceHeight = image.getIconHeight(),
+												destinationWidth = this.getWidth(),
+												destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-								        g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
-								        g.dispose();
-								        popIn.revalidate();
+										g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+										g.dispose();
+										popIn.revalidate();
 									}
 									else
 										setVisible(false);
-							    }
+								}
 							}, BorderLayout.PAGE_START);
 							popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
 							popIn.add(buttonBox, BorderLayout.PAGE_END);
 						}
-						
+
 						//revalidate to redraw/realign the panel
 						popIn.revalidate();
 					}
 				}.start();
 			}
 		};
-		
+
 		//configure and add the tree
 		tree.addTreeSelectionListener(tsl);
 		tree.setModel(new DefaultTreeModel(root));
@@ -699,41 +703,41 @@ public class Main
 		panel.add(popIn, BorderLayout.LINE_END);
 		panel.revalidate();
 	}
-	
+
 	private void addShow(final JPanel pane, String showName)
 	{
 		//set up the contents of the popup
 		final JPanel contents = new JPanel(new BorderLayout());//Box.createVerticalBox();
-		
+
 		//add the show
 		try
 		{
 			ArrayList<HashMap<String, String>> entries = Show.search(showName);
-			
+
 			//add the search text
 			JTextArea search = new JTextArea("Search: \""+showName+"\". Select your show:");
 			search.setEditable(false);
 			search.setFont(search.getFont().deriveFont(Font.BOLD));
 			contents.add(search, BorderLayout.PAGE_START);
-			
+
 			//create the box for the entries
 			Box entriesBox = Box.createVerticalBox();
-			
+
 			//iterate through the entries and add a jpanel for each
 			for(int i=0; i< entries.size(); ++i)
 			{
 				final HashMap<String, String> showEntry = entries.get(i);
-				
+
 				Box entryBox = Box.createHorizontalBox();
 				entryBox.setBorder(new LineBorder(Color.BLACK));
-				
+
 				//show name
 				JTextArea showText = new JTextArea(showEntry.get("name"));
 				showText.setEditable(false);
 				showText.setLineWrap(true);
 				showText.setWrapStyleWord(true);
 				entryBox.add(showText);
-				
+
 				//selection button
 				JButton select = new JButton("Select");
 				select.addActionListener(new ActionListener()
@@ -742,9 +746,9 @@ public class Main
 					{
 						//create the loading spinner
 						contents.removeAll();
-						contents.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
+						contents.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), SwingConstants.CENTER));
 						contents.revalidate();
-						
+
 						new Thread()
 						{
 							public void run()
@@ -763,36 +767,36 @@ public class Main
 					}
 				});
 				entryBox.add(select);
-				
+
 				//add the entry
 				entriesBox.add(entryBox);
 			}
-			
+
 			//add the entries list to the top of a panel that fills with empty space
 			JPanel entriesList = new JPanel(new BorderLayout());
 			entriesList.add(entriesBox, BorderLayout.PAGE_START);
 			contents.add(new JScrollPane(entriesList));
 		}
 		catch(Exception e){}
-		
+
 		pane.removeAll();
 		pane.add(contents);
 		pane.revalidate();
 	}
-	
+
 	private void selectSeen(final JPanel pane, final Show show)
 	{
 		Box contents = Box.createVerticalBox();
-		
+
 		//create the JPanel for the pop-in
 		final JPanel popIn = new JPanel(new BorderLayout());
 		popIn.setVisible(false);
-		
+
 		//create the prompt
 		JTextArea jta = new JTextArea("Have you seen any episodes of "+show+"?");
 		jta.setFont(jta.getFont().deriveFont(Font.BOLD, 20));
 		contents.add(jta);
-		
+
 		//create the buttons
 		Box buttonBox = Box.createHorizontalBox();
 		JButton yes = new JButton("Yes");
@@ -809,7 +813,7 @@ public class Main
 						final Object[][] data = new Object[episodes.size()][5];
 						for(int i=0; i<episodes.size(); ++i)
 							data[i] = new Object[]{episodes.get(i).getEpisodeNumber(), episodes.get(i).title(), episodes.get(i).getDate()};
-						
+
 						//make a table from the data
 						final JTable jt = new JTable(data, new String[]{"Episode Number", "Episode Title", "Date Aired"})
 						{
@@ -825,7 +829,7 @@ public class Main
 						jt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 						//center text strings
 						DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-						centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+						centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 						jt.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
 						jt.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
 						jt.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
@@ -845,20 +849,20 @@ public class Main
 											if(paneler != null)
 												paneler.stop();
 											paneler = this;
-											
+
 											//show the loading panel
 											popIn.removeAll();
-											popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), JLabel.CENTER));
+											popIn.add(new JLabel(new ImageIcon(this.getClass().getResource("loading spinner.gif")), SwingConstants.CENTER));
 											popIn.setVisible(true);
 											popIn.revalidate();
-											
+
 											//create the text section
 											final Episode episode = episodes.get(jt.getSelectedRow());
 											JTextArea jta = new JTextArea(episode.getText());
 											jta.setEditable(false);
 											jta.setLineWrap(true);
 											jta.setWrapStyleWord(true);
-											
+
 											//add the components
 											popIn.removeAll();
 											popIn.add(new JPanel()
@@ -870,21 +874,21 @@ public class Main
 													if(image != null)
 													{
 														int sourceWidth = image.getIconWidth(),
-												        	sourceHeight = image.getIconHeight(),
-												        	destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
-												        	destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
-												        
+																sourceHeight = image.getIconHeight(),
+																destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
+																destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+
 														this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-												        g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
-												        g.dispose();
-												        popIn.revalidate();
+														g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+														g.dispose();
+														popIn.revalidate();
 													}
 													else
 														setVisible(false);
-											    }
+												}
 											}, BorderLayout.PAGE_START);
 											popIn.add(new JScrollPane(jta), BorderLayout.CENTER);
-											
+
 											//revalidate to redraw/realign the panel
 											popIn.revalidate();
 										}
@@ -892,7 +896,7 @@ public class Main
 								}
 							}
 						});
-						
+
 						//create the select button
 						JButton btnSelect = new JButton("Select Episode");
 						btnSelect.addActionListener(new ActionListener()
@@ -911,7 +915,7 @@ public class Main
 								}.start();
 							}
 						});
-						
+
 						//add the contents to the pane
 						pane.removeAll();
 						pane.add(new JTextArea("Select the last episode you have seen:"), BorderLayout.PAGE_START);
@@ -935,7 +939,7 @@ public class Main
 		});
 		buttonBox.add(no);
 		contents.add(buttonBox);
-		
+
 		//set up the centered panel
 		JPanel addPanel = new JPanel();
 		addPanel.setBorder(new LineBorder(Color.BLACK));
@@ -943,7 +947,7 @@ public class Main
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.anchor = GridBagConstraints.CENTER;
 		addPanel.add(contents);
-		
+
 		//add it to the pane
 		pane.removeAll();
 		pane.add(addPanel);

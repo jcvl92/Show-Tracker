@@ -1,21 +1,18 @@
 package gui;
 
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import java.awt.BorderLayout;
-
-import javax.swing.JButton;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class GUI {
 
@@ -52,26 +49,26 @@ public class GUI {
 	private void initialize() {
 		frmShowTracker = new JFrame();
 		frmShowTracker.setTitle("Show Tracker");
-		
+
 		//set the window size and location to the middle 50% of the screen
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		int width = (int)screenSize.getWidth();
 		int height = (int)screenSize.getHeight();
 		frmShowTracker.setBounds(width/4, height/4, width/2, height/2);
-		
+
 		frmShowTracker.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		JPanel panel = new JPanel();
 		frmShowTracker.getContentPane().add(panel, BorderLayout.CENTER);
 		main = new Main(panel, frmShowTracker);
 		panel.setLayout(new BorderLayout(0, 0));
-		
+
 		JPanel buttonPanel = new JPanel();
 		frmShowTracker.getContentPane().add(buttonPanel, BorderLayout.WEST);
 		GridBagLayout gbl_buttonPanel = new GridBagLayout();
 		gbl_buttonPanel.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0};
 		buttonPanel.setLayout(gbl_buttonPanel);
-		
+
 		JButton btnUnseenEpisodes = new JButton("Unseen Episodes");
 		btnUnseenEpisodes.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnUnseenEpisodes.addActionListener(new ActionListener()
@@ -92,7 +89,7 @@ public class GUI {
 		gbc_btnUnseenEpisodes.gridy = 0;
 		gbc_btnUnseenEpisodes.fill = GridBagConstraints.BOTH;
 		buttonPanel.add(btnUnseenEpisodes, gbc_btnUnseenEpisodes);
-		
+
 		JButton btnManageShows = new JButton("Manage Shows");
 		btnManageShows.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnManageShows.addActionListener(new ActionListener()
@@ -113,7 +110,7 @@ public class GUI {
 		gbc_btnManageShows.gridx = 0;
 		gbc_btnManageShows.gridy = 1;
 		buttonPanel.add(btnManageShows, gbc_btnManageShows);
-		
+
 		JButton btnBrowseShows = new JButton("Browse Shows");
 		btnBrowseShows.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnBrowseShows.addActionListener(new ActionListener()
@@ -134,7 +131,7 @@ public class GUI {
 		gbc_btnBrowseShows.gridx = 0;
 		gbc_btnBrowseShows.gridy = 2;
 		buttonPanel.add(btnBrowseShows, gbc_btnBrowseShows);
-		
+
 		JButton btnEpisodeTimeline = new JButton("Episode Timeline");
 		btnEpisodeTimeline.setAlignmentX(Component.CENTER_ALIGNMENT);
 		btnEpisodeTimeline.addActionListener(new ActionListener()
@@ -145,7 +142,7 @@ public class GUI {
 				{
 					public void run()
 					{
-						
+
 					}
 				}.start();
 			}

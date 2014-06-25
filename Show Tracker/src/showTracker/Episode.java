@@ -81,7 +81,7 @@ public class Episode implements Serializable
 	{
 		return getEpisodeNumber()+" - "+information.get("title")+(isWatched() || !airDate.isBeforeNow() ? "" : "*");
 	}
-	
+
 	public String title()
 	{
 		return information.get("title");
@@ -95,14 +95,14 @@ public class Episode implements Serializable
 			{
 				description = "";
 				Document link = Jsoup.connect(information.get("link")).timeout(30*1000).get();
-				
+
 				//this grabs the description of the episode
 				try
 				{
 					description = link.getElementsByClass("show_synopsis").text();
 				}
 				catch(Exception e){}
-				
+
 				//this grabs the image of the episode
 				try
 				{
@@ -115,9 +115,9 @@ public class Episode implements Serializable
 			}
 			catch(Exception e){}
 		}
-		
+
 		save();
-		
+
 		return description;
 	}
 
@@ -130,10 +130,10 @@ public class Episode implements Serializable
 	{
 		//if the image hasn't been grabbed, and the grab fails, return null
 		if(image == null && getText() == null)
-		    return null;
-	    return image;
+			return null;
+		return image;
 	}
-	
+
 	public String getDate()
 	{
 		if(getAirDate() != null)
@@ -212,10 +212,10 @@ public class Episode implements Serializable
 		{
 			//get the link from TPB
 			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
-			
+
 			//open the link
 			if(Main.DL_ON) new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
-			
+
 			//return true if it worked
 			return true;
 		}
@@ -225,18 +225,18 @@ public class Episode implements Serializable
 			return false;
 		}
 	}
-	
+
 	public void setWatched(boolean b)
 	{
 		seen = b;
 		save();
 	}
-	
+
 	public boolean isWatched()
 	{
 		return seen;
 	}
-	
+
 
 	public DateTime getAirDate()
 	{

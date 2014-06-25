@@ -24,12 +24,12 @@ public class Show implements Serializable
 	ImageIcon image;
 	int showID;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
-	
+
 	public static ArrayList<HashMap<String, String>> search(String searchText) throws IOException
 	{
 		//get the search xml document
 		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+searchText).timeout(30*1000).get();
-		
+
 		//get the possible entries
 		Node nodes = search.childNode(1).childNode(1).childNode(0);
 		ArrayList<HashMap<String, String>> entries = new ArrayList<HashMap<String, String>>();
@@ -38,7 +38,7 @@ public class Show implements Serializable
 			{
 				List<Node> showDescription = nodes.childNode(i).childNodes();
 				HashMap<String, String> showInfo = new HashMap<String, String>();
-				
+
 				//get the fields
 				for(int j=0; j<showDescription.size(); ++j)
 				{
@@ -48,18 +48,18 @@ public class Show implements Serializable
 					else if(((TextNode)showDescription.get(j)).text().contains("http"))
 						showInfo.put("link", ((TextNode)showDescription.get(j)).text());
 				}
-				
+
 				entries.add(showInfo);
 			}
-		
+
 		//return the entries
 		return entries;
 	}
-	
+
 	public static Show getShow(HashMap<String, String> showEntry) throws InterruptedException, IOException
 	{
 		Show show = new Show();
-		
+
 		show.showID = Integer.parseInt(showEntry.get("showid"));
 		show.showName = showEntry.get("name");
 		show.seasonCount = showEntry.get("seasons");
@@ -69,7 +69,7 @@ public class Show implements Serializable
 			show.airTime = showEntry.get("airday")+" at "+show.airTime;
 		show.status = showEntry.get("status");
 		show.link = showEntry.get("link");
-		
+
 		//get the season details xml document
 		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+show.showID).timeout(30*1000).get();
 
@@ -108,7 +108,7 @@ public class Show implements Serializable
 						, episodes));
 			}
 		}
-		
+
 		//get the image for the show
 		try
 		{
@@ -119,20 +119,20 @@ public class Show implements Serializable
 		{
 			show.image = null;
 		}
-		
+
 		return show;
 	}
-	
+
 	public ImageIcon getImage()
 	{
 		return image;
 	}
-	
+
 	public String toString()
 	{
 		return showName;
 	}
-	
+
 	public void update() throws IOException, InterruptedException
 	{
 		//TODO: this is not robust, it relies on the fact that the new episodes will have nothing removed. find a better way to update while keeping the seen value
@@ -181,7 +181,7 @@ public class Show implements Serializable
 						, episodes));
 			}
 		}
-		
+
 		//iterate through the episodes and set the correct seen values
 		for(int i=0; i<oldSeasons.size(); ++i)
 		{
@@ -193,7 +193,7 @@ public class Show implements Serializable
 			}
 		}
 	}
-	
+
 	public ArrayList<Episode> getAiredEpisodes()
 	{
 		ArrayList<Episode> airedEpisodes = new ArrayList<Episode>();
@@ -202,9 +202,9 @@ public class Show implements Serializable
 			for(int j=0; j<seasons.get(i).episodes.size(); ++j)
 				if(seasons.get(i).episodes.get(j).getAirDate() != null && seasons.get(i).episodes.get(j).getAirDate().isBeforeNow())
 					airedEpisodes.add(seasons.get(i).episodes.get(j));
-		
+
 		Collections.sort(airedEpisodes, new Comparator<Episode>()
-		{
+				{
 			public int compare(Episode arg0, Episode arg1)
 			{
 				if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
@@ -212,8 +212,8 @@ public class Show implements Serializable
 				if(arg0.getAirDate() == null) return 1;
 				return arg1.getAirDate().compareTo(arg0.getAirDate());
 			}
-		});
-		
+				});
+
 		return airedEpisodes;
 	}
 }
