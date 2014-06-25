@@ -189,7 +189,7 @@ public class Show implements Serializable
 			Season newSeason = seasons.get(i);
 			for(int j=0; j<oldSeason.episodes.size(); ++j)
 			{
-				newSeason.episodes.get(j).setWatchedAndSave(oldSeason.episodes.get(j).isWatched());
+				newSeason.episodes.get(j).setWatched(oldSeason.episodes.get(j).isWatched());
 			}
 		}
 	}

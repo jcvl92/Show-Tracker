@@ -16,6 +16,7 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -47,8 +48,7 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: add update all and delete all buttons to the manage shows section
-//TODO: add offline support
+//TODO: add update all button to the manage shows section
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: lock down panels where appropiate(like downloading and adding)
 public class Main
@@ -372,7 +372,56 @@ public class Main
 	{
 		//clear the panel
 		panel.removeAll();
-
+		
+		//map of shows to update buttons for the update all button to manipulate
+		final HashMap<Show, JButton> uData = new HashMap<Show, JButton>();
+		
+		//create the header with update button
+		JPanel header = new JPanel(new BorderLayout());
+		JTextArea headerText = new JTextArea("Your Shows:");
+		headerText.setFont(new Font("Times New Roman", Font.BOLD, 20));
+		header.add(headerText);
+		final JButton btnUpdateAll = new JButton("Update All");
+		btnUpdateAll.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				new Thread()
+				{
+					public void run()
+					{
+						btnUpdateAll.setEnabled(false);
+						btnUpdateAll.setText("Updating All");
+						synchronized(m)
+						{
+							for(Entry<Show, JButton> entry : uData.entrySet())
+							{
+								JButton button = entry.getValue();
+								button.setEnabled(false);
+								try
+								{
+									synchronized(m)
+									{
+										button.setText("Updating");
+										entry.getKey().update();
+										button.setText("Updated");
+									}
+								}
+								catch(Exception e)
+								{
+									button.setText("Update failed");
+								}
+							}
+							ShowTracker.writeShowsToFile();
+							btnUpdateAll.setText("Updated All");
+						}
+					}
+				}.start();
+			}
+		});
+		header.add(btnUpdateAll, BorderLayout.LINE_END);
+		panel.add(header, BorderLayout.PAGE_START);
+		
 		//create a list of shows(each with a delete and update button)
 		final Box showBox = Box.createVerticalBox();
 		for(int i=0; i<ShowTracker.shows.size(); ++i)
@@ -444,6 +493,9 @@ public class Main
 					}.start();
 				}
 			});
+			
+			//add the update button to update data
+			uData.put(show, btnUpdate);
 
 			//add the buttons to the button box
 			buttonBox.add(btnDelete);
@@ -523,7 +575,6 @@ public class Main
 		addBox.add(btnAdd);
 
 		panel.add(addBox, BorderLayout.PAGE_END);
-		panel.repaint();//repaint because you don't use the whole space and you don't want residual drawing there
 		panel.revalidate();
 
 		//put the focus in the add show field
