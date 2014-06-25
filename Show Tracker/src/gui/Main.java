@@ -51,7 +51,7 @@ import showTracker.ShowTracker;
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: lock down panels where appropiate(like downloading and adding)
-//TODO: adding family guy doesn't work
+//TODO: selecting a show is REALLY slow and takes a shitload of network power
 public class Main
 {
 	public static boolean DL_ON = false;
