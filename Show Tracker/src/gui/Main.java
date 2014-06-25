@@ -47,7 +47,7 @@ import showTracker.*;
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: lock down panels where appropiate(like downloading and adding)
-//TODO: fix show picture grabbing(doesn't work for american dad)
+//TODO: adding family guy doesn't work
 public class Main
 {
 	public static boolean DL_ON = false;
