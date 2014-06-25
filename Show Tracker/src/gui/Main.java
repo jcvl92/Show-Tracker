@@ -48,9 +48,10 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: add update all button to the manage shows section
-//TODO: add the option to edit the download search text(have an edit button in the manage shows section)
-//TODO: lock down panels where appropiate(like downloading and adding)
+//TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
+//TODO: evaluate the memory and cpu usage of the various features
+//TODO: make everything look pretty
+//TODO: implement the timeline function
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -428,15 +429,56 @@ public class Main
 		{
 			//create the panel and set up the layout
 			final JPanel showPanel = new JPanel();
+			showPanel.setBackground(Color.WHITE);
 			showPanel.setBorder(new LineBorder(Color.BLACK));
 			showPanel.setLayout(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.anchor = GridBagConstraints.CENTER;
 
-			//create the show description text area
+			//create the show name text area
 			final Show show = ShowTracker.shows.get(i);
-			JTextArea jta = new JTextArea(show.toString());
-			jta.setEditable(false);
+			JTextArea showName = new JTextArea(show.toString());
+			showName.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+			showName.setEditable(false);
+			
+			//create a box containing the show name and search text editor
+			Box showText = Box.createVerticalBox();
+			
+			//add the prompt
+			JTextArea searchTextEditPrompt = new JTextArea("Search String:");
+			searchTextEditPrompt.setEditable(false);
+			showText.add(searchTextEditPrompt);
+			
+			//create the editable text
+			final JTextArea searchTextEdit = new JTextArea(show.getSearchText());
+			searchTextEdit.setBorder(new LineBorder(Color.BLACK));
+			searchTextEdit.setBackground(Color.LIGHT_GRAY);
+			showText.add(searchTextEdit);
+			
+			//create the button to save the text
+			final JButton btnSearchTextSave = new JButton("Save");
+			btnSearchTextSave.setPreferredSize(new Dimension(showText.getPreferredSize().width, btnSearchTextSave.getPreferredSize().height));
+			btnSearchTextSave.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					new Thread()
+					{
+						public void run()
+						{
+							btnSearchTextSave.setEnabled(false);
+							synchronized(m)
+							{
+								show.setSearchText(searchTextEdit.getText());
+							}
+							btnSearchTextSave.setText("Saved");
+						}
+					}.start();
+				}
+			});
+			JPanel searchTextSaveStretcher = new JPanel(new GridBagLayout());
+			searchTextSaveStretcher.add(btnSearchTextSave);
+			showText.add(searchTextSaveStretcher);
 
 			//create the box for the buttons
 			Box buttonBox = Box.createVerticalBox();
@@ -502,6 +544,7 @@ public class Main
 			buttonBox.add(btnUpdate);
 
 			//add content to panel
+			showPanel.add(showName, gbc);
 			showPanel.add(new JPanel()
 			{
 				private static final long serialVersionUID = 1L;
@@ -524,7 +567,7 @@ public class Main
 						setVisible(false);
 				}
 			}, gbc);
-			showPanel.add(jta, gbc);
+			showPanel.add(showText, gbc);
 			showPanel.add(buttonBox, gbc);
 			showBox.add(showPanel);
 		}

@@ -48,6 +48,8 @@ public class Show implements Serializable
 					else if(((TextNode)showDescription.get(j)).text().contains("http"))
 						showInfo.put("link", ((TextNode)showDescription.get(j)).text());
 				}
+				
+				showInfo.put("search", searchText);
 
 				entries.add(showInfo);
 			}
@@ -69,6 +71,7 @@ public class Show implements Serializable
 			show.airTime = showEntry.get("airday")+" at "+show.airTime;
 		show.status = showEntry.get("status");
 		show.link = showEntry.get("link");
+		show.search = showEntry.get("search");
 
 		//get the season details xml document
 		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+show.showID).timeout(30*1000).get();
@@ -215,5 +218,16 @@ public class Show implements Serializable
 				});
 
 		return airedEpisodes;
+	}
+	
+
+	public String getSearchText()
+	{
+		return search;
+	}
+	
+	public void setSearchText(String str)
+	{
+		search = str;
 	}
 }
