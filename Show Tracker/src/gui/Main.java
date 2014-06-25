@@ -51,7 +51,6 @@ import showTracker.ShowTracker;
 //TODO: add offline support
 //TODO: add the option to edit the download search text(have an edit button in the manage shows section)
 //TODO: lock down panels where appropiate(like downloading and adding)
-//TODO: selecting a show is REALLY slow and takes a shitload of network power
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -205,7 +204,7 @@ public class Main
 										public void run()
 										{
 											btnLastWatched.setEnabled(false);
-											episode.setWatched(!episode.isWatched());
+											episode.setWatchedAndSave(!episode.isWatched());
 											ShowTracker.writeShowsToFile();
 											((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 										}
@@ -230,7 +229,7 @@ public class Main
 											btnDownload.setEnabled(false);
 											if(episode.download())
 											{
-												episode.setWatched(!episode.isWatched());
+												episode.setWatchedAndSave(!episode.isWatched());
 												ShowTracker.writeShowsToFile();
 												((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 											}
@@ -318,7 +317,7 @@ public class Main
 							{
 								if(episodes.get(i).download())
 								{
-									episodes.get(i).setWatched(true);
+									episodes.get(i).setWatchedAndSave(true);
 									episodes.remove(i);
 									((DefaultTableModel)jt.getModel()).removeRow(i);
 								}
@@ -619,7 +618,7 @@ public class Main
 									{
 										public void run()
 										{
-											episode.setWatched(!episode.isWatched());
+											episode.setWatchedAndSave(!episode.isWatched());
 											btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
 											ShowTracker.writeShowsToFile();
 										}
@@ -644,7 +643,7 @@ public class Main
 											btnDownload.setEnabled(false);
 											if(episode.download())
 											{
-												episode.setWatched(!episode.isWatched());
+												episode.setWatchedAndSave(!episode.isWatched());
 												btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
 												ShowTracker.writeShowsToFile();
 											}

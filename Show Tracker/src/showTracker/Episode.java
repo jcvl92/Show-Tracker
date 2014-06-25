@@ -210,11 +210,14 @@ public class Episode implements Serializable
 	{
 		try
 		{
-			//get the link from TPB
-			Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
-
-			//open the link
-			if(Main.DL_ON) new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
+			if(Main.DL_ON)
+			{
+				//get the link from TPB
+				Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+	
+				//open the link
+				new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
+			}
 
 			//return true if it worked
 			return true;
@@ -225,8 +228,13 @@ public class Episode implements Serializable
 			return false;
 		}
 	}
-
+	
 	public void setWatched(boolean b)
+	{
+		seen = b;
+	}
+	
+	public void setWatchedAndSave(boolean b)
 	{
 		seen = b;
 		save();
@@ -236,8 +244,7 @@ public class Episode implements Serializable
 	{
 		return seen;
 	}
-
-
+	
 	public DateTime getAirDate()
 	{
 		return airDate;
