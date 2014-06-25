@@ -16,11 +16,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 
 @SuppressWarnings("serial")
 public class Show implements Serializable
 {
-	String showName, seasonCount, runTime, airTime, status, search;
+	String showName, seasonCount, runTime, airTime, status, search, link;
 	ImageIcon image;
 	int showID;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
@@ -36,12 +37,18 @@ public class Show implements Serializable
 		for(int i=0; i<nodes.childNodeSize(); ++i)
 			if(nodes.childNode(i).getClass().equals(Element.class))
 			{
-				List<Element> showDescription = ((Element)nodes.childNode(i)).children();
+				List<Node> showDescription = nodes.childNode(i).childNodes();
 				HashMap<String, String> showInfo = new HashMap<String, String>();
 				
 				//get the fields
 				for(int j=0; j<showDescription.size(); ++j)
-					showInfo.put(showDescription.get(j).tagName(), showDescription.get(j).text());
+				{
+					if(showDescription.get(j).getClass() == Element.class)
+						showInfo.put(((Element)showDescription.get(j)).tagName(),
+								((Element)showDescription.get(j)).text());
+					else if(((TextNode)showDescription.get(j)).text().contains("http"))
+						showInfo.put("link", ((TextNode)showDescription.get(j)).text());
+				}
 				
 				entries.add(showInfo);
 			}
@@ -62,6 +69,7 @@ public class Show implements Serializable
 		if(showEntry.containsKey("airday"))
 			show.airTime = showEntry.get("airday")+" at "+show.airTime;
 		show.status = showEntry.get("status");
+		show.link = showEntry.get("link");
 		
 		//get the season details xml document
 		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+show.showID).timeout(30*1000).get();
@@ -105,9 +113,8 @@ public class Show implements Serializable
 		//get the image for the show
 		try
 		{
-			//Document page = Jsoup.connect("http://www.tvrage.com/"+show.showName).timeout(30*1000).get();
-			//show.image = new ImageIcon(new URL(page.getElementsByClass("padding_bottom_10").get(0).child(0).attr("src")));
-			show.image = new ImageIcon(new URL("http://images.tvrage.com/shows/4/"+show.showID+".jpg"));
+			Document page = Jsoup.connect(show.link).timeout(30*1000).get();
+			show.image = new ImageIcon(new URL(page.getElementsByClass("padding_bottom_10").get(0).child(0).attr("src")));
 		}
 		catch(Exception e)
 		{
