@@ -796,7 +796,24 @@ public class Main
 		panel.add(popIn, BorderLayout.LINE_END);
 		panel.revalidate();
 	}
-
+	
+	public void timeline()
+	{
+		panel.removeAll();
+		
+		//create a drawing panel
+		panel.add(new JPanel()
+		{
+			private static final long serialVersionUID = 1L;
+			protected void paintComponent(Graphics g)
+			{
+				super.paintComponent(g);
+			}
+		}, BorderLayout.CENTER);
+		
+		panel.revalidate();
+	}
+	
 	private void addShow(final JPanel pane, String showName)
 	{
 		//set up the contents of the popup
