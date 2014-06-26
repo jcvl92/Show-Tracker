@@ -802,14 +802,7 @@ public class Main
 		panel.removeAll();
 		
 		//create a drawing panel
-		panel.add(new JPanel()
-		{
-			private static final long serialVersionUID = 1L;
-			protected void paintComponent(Graphics g)
-			{
-				super.paintComponent(g);
-			}
-		}, BorderLayout.CENTER);
+		panel.add(new TimelinePanel(), BorderLayout.CENTER);
 		
 		panel.revalidate();
 	}

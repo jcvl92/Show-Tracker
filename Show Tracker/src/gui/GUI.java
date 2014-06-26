@@ -142,7 +142,7 @@ public class GUI {
 				{
 					public void run()
 					{
-
+						main.timeline();
 					}
 				}.start();
 			}

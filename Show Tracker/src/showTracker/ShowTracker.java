@@ -121,4 +121,28 @@ public class ShowTracker
 			writeShowsToFile();
 		}
 	}
+	
+
+	public static Episode[] getTimelineEpisodes(long timelineBegin, long timelineEnd)
+	{
+		//TODO: change this to skip null air dates and also add in the air time to the air date
+		ArrayList<Episode> times = new ArrayList<Episode>();
+		
+		for(int i=0; i<shows.size(); ++i)
+		{
+			Show show = shows.get(i);
+			for(int j=0; j<shows.get(i).seasons.size(); ++j)
+			{
+				Season season = show.seasons.get(j);
+				for(int k=0; k<shows.get(i).seasons.get(j).episodes.size(); ++k)
+				{
+					Episode episode = season.episodes.get(k);
+					long episodeTime = episode.getAirDate().toDate().getTime();
+					if(episodeTime > timelineBegin && episodeTime < timelineEnd)
+						times.add(episode);
+				}
+			}
+		}
+		return times.toArray(new Episode[times.size()]);
+	}
 }
