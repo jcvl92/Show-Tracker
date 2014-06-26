@@ -52,6 +52,8 @@ import showTracker.ShowTracker;
 //TODO: evaluate the memory and cpu usage of the various features
 //TODO: make everything look pretty
 //TODO: implement the timeline function
+//TODO: browse pop-in window should go away after selecting a non-episode
+//TODO: put in failure messages when information could not be grabbed
 public class Main
 {
 	public static boolean DL_ON = false;
