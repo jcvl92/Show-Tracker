@@ -54,6 +54,8 @@ import showTracker.ShowTracker;
 //TODO: implement the timeline function
 //TODO: browse pop-in window should go away after selecting a non-episode
 //TODO: put in failure messages when information could not be grabbed
+//TODO: add timeout failure support
+//TODO: change the favicon
 public class Main
 {
 	public static boolean DL_ON = false;
