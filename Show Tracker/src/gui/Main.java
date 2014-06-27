@@ -6,9 +6,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -274,6 +276,7 @@ public class Main
 												destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
 
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 										g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
 										g.dispose();
 										popIn.revalidate();
@@ -563,6 +566,7 @@ public class Main
 								destinationWidth = (int)((double)sourceWidth/((double)sourceHeight/(double)destinationHeight));
 
 						this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+						((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 						g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
 						g.dispose();
 						showPanel.revalidate();
@@ -774,6 +778,7 @@ public class Main
 												destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
 
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 										g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
 										g.dispose();
 										popIn.revalidate();
@@ -986,6 +991,7 @@ public class Main
 																destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
 
 														this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+														((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 														g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
 														g.dispose();
 														popIn.revalidate();
