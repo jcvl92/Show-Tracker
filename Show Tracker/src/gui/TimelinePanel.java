@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
+//TODO: change markers to green if the mark is x weeks from now
 public class TimelinePanel extends JPanel
 {
 	private static final long serialVersionUID = 1L;
@@ -52,9 +53,9 @@ public class TimelinePanel extends JPanel
 		int lineY = getHeight()*4/5,
 				lineWidth = getWidth(),
 				lineThickness = getHeight()*1/30,
-				dotThickness = lineThickness*2,
+				dotThickness = lineThickness*3/4,
 				markHeight = lineThickness*2,
-				markThickness = getWidth()/300;
+				markThickness = getWidth()/400;
 
 		//draw the timeline base line
 		g.fillRect(0, lineY, lineWidth, lineThickness);
@@ -67,11 +68,30 @@ public class TimelinePanel extends JPanel
 			else
 				g.setColor(Color.RED);
 
-			g.fillRect(timeToXValue(markers[i], lineWidth)-(markThickness/2), lineY, markThickness, markHeight);
+			g.fillRect(timeToXValue(markers[i], lineWidth)-(markThickness/2), lineY, markThickness, markHeight*3/4);
 		}
-		//draw the episode markers
+		
+		//draw the episode lines
+		int X=-1, Y=lineY;
+		g.setColor(Color.BLACK);
 		for(int i=0; i<points.length; ++i)
 		{
+			int newX = timeToXValue(points[i], lineWidth);
+			if(X != -1 && X-newX < dotThickness && X-newX > -dotThickness)
+				Y = Y-dotThickness;
+			else
+				Y = lineY;
+			
+			X = newX;
+			//draw line
+			g.fillRect(X-(markThickness/2), Y-(markHeight-lineThickness), markThickness, markHeight-(Y-lineY));
+		}
+		
+		//draw the episode circles
+		X=-1;
+		for(int i=0; i<points.length; ++i)
+		{
+			//set the color
 			try
 			{
 				g.setColor(new Color(showColors.get(episodes[i].show.showName())));
@@ -81,9 +101,20 @@ public class TimelinePanel extends JPanel
 				showColors.put(episodes[i].show.showName(), colorGenerator.nextInt());
 				g.setColor(new Color(showColors.get(episodes[i].show.showName())));
 			}
-			g.fillOval(timeToXValue(points[i], lineWidth)-(dotThickness/6), lineY-((dotThickness-lineThickness)/2)-1, dotThickness/3, dotThickness);
+			int newX = timeToXValue(points[i], lineWidth);
+			if(X != -1 && X-newX < dotThickness && X-newX > -dotThickness)
+				Y = Y-dotThickness;
+			else
+				Y = lineY;
+			
+			X = newX;
+			
+			//draw ball
+			g.fillOval(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
+			
 			g.setColor(Color.BLACK);
-			g.drawOval(timeToXValue(points[i], lineWidth)-(dotThickness/6), lineY-((dotThickness-lineThickness)/2)-1, dotThickness/3, dotThickness);
+			//draw ball outline
+			g.drawOval(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
 		}
 	}
 

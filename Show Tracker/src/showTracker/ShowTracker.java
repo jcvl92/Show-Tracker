@@ -50,7 +50,7 @@ public class ShowTracker
 			}
 
 			Collections.sort(episodes, new Comparator<Episode>()
-					{
+			{
 				public int compare(Episode arg0, Episode arg1)
 				{
 					if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
@@ -58,7 +58,7 @@ public class ShowTracker
 					if(arg0.getAirDate() == null) return -1;
 					return arg0.getAirDate().compareTo(arg1.getAirDate());
 				}
-					});
+			});
 			return episodes;
 		}
 	}
@@ -143,6 +143,18 @@ public class ShowTracker
 				}
 			}
 		}
+		
+		Collections.sort(times, new Comparator<Episode>()
+		{
+			public int compare(Episode arg0, Episode arg1)
+			{
+				if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
+				if(arg1.getAirDate() == null) return 1;
+				if(arg0.getAirDate() == null) return -1;
+				return arg0.getAirDate().compareTo(arg1.getAirDate());
+			}
+		});
+		
 		return times.toArray(new Episode[times.size()]);
 	}
 }
