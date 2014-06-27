@@ -220,7 +220,11 @@ public class Show implements Serializable
 		return airedEpisodes;
 	}
 	
-
+	public String showName()
+	{
+		return showName;
+	}
+	
 	public String getSearchText()
 	{
 		return search;

@@ -2,20 +2,24 @@ package gui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.HashMap;
+import java.util.Random;
+
 import javax.swing.JPanel;
 
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
-//this panel shows you shows from 2 weeks ago and 2 weeks ahead
 public class TimelinePanel extends JPanel
 {
 	private static final long serialVersionUID = 1L;
-	final int PAST_DAYS = 14, FUTURE_DAYS = 14;
+	final int PAST_DAYS = 15, FUTURE_DAYS = 15;
 	long timelineNow, timelineBegin, timelineEnd;
 	long[] points;
 	Episode[] episodes;
 	long[] markers = new long[PAST_DAYS+FUTURE_DAYS+1];
+	HashMap<String, Integer> showColors = new HashMap<String, Integer>();
+	Random colorGenerator = new Random();
 	
 	public TimelinePanel()
 	{
@@ -50,23 +54,37 @@ public class TimelinePanel extends JPanel
     			lineThickness = getHeight()*1/30,
     			dotThickness = lineThickness*2,
     			markHeight = lineThickness*2,
-    			markThickness = 1;
+    			markThickness = getWidth()/300;
         
         //draw the timeline base line 
         g.fillRect(0, lineY, lineWidth, lineThickness);
         
-        //draw the dots on the line
+        //draw the day markers on the line
         for(int i=0; i<markers.length; ++i)
         {
         	if(markers[i] == timelineNow)
         		g.setColor(Color.BLUE);
         	else
         		g.setColor(Color.RED);
+        	
         	g.fillRect(timeToXValue(markers[i], lineWidth)-(markThickness/2), lineY, markThickness, markHeight);
         }
-        g.setColor(Color.GREEN);
+        //draw the episode markers
         for(int i=0; i<points.length; ++i)
-        	g.fillOval(timeToXValue(points[i], lineWidth)-(dotThickness/2), lineY-((dotThickness-lineThickness)/2)-1, dotThickness, dotThickness);
+        {
+        	try
+        	{
+        		g.setColor(new Color(showColors.get(episodes[i].show.showName())));
+        	}
+        	catch(NullPointerException npe)
+        	{
+        		showColors.put(episodes[i].show.showName(), colorGenerator.nextInt());
+        		g.setColor(new Color(showColors.get(episodes[i].show.showName())));
+        	}
+        	g.fillOval(timeToXValue(points[i], lineWidth)-(dotThickness/6), lineY-((dotThickness-lineThickness)/2)-1, dotThickness/3, dotThickness);
+        	g.setColor(Color.BLACK);
+        	g.drawOval(timeToXValue(points[i], lineWidth)-(dotThickness/6), lineY-((dotThickness-lineThickness)/2)-1, dotThickness/3, dotThickness);
+        }
 	}
 	
 	private int timeToXValue(long time, int width)
