@@ -11,7 +11,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
-import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -60,6 +59,7 @@ import showTracker.ShowTracker;
 //TODO: put in failure messages when information could not be grabbed
 //TODO: add timeout failure support
 //TODO: change the favicon
+//TODO: downloading causes the panel to continuously try to open and waste network power, fix that(maybe the download button turns paneling off?)
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -87,8 +87,8 @@ public class Main
 				protected void paintComponent(Graphics g) {
 					int sourceWidth = image.getWidth(null),
 							sourceHeight = image.getHeight(null),
-							destinationWidth = this.getWidth(),
-							destinationHeight = this.getHeight();
+							destinationWidth = getWidth(),
+							destinationHeight = getHeight();
 
 					super.paintComponent(g);
 					g.drawImage(image, 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
@@ -272,12 +272,11 @@ public class Main
 									super.paintComponent(g);
 									if(image != null)
 									{
-										int destinationWidth = this.getWidth(),
-												destinationHeight = (int)((double)image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
+										int destinationWidth = getWidth(),
+												destinationHeight = (int)(image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 
-										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-										g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
+										setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+										g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight), 0, 0, null);
 										g.dispose();
 										popIn.revalidate();
 									}
@@ -380,10 +379,10 @@ public class Main
 	{
 		//clear the panel
 		panel.removeAll();
-		
+
 		//map of shows to update buttons for the update all button to manipulate
 		final HashMap<Show, JButton> uData = new HashMap<Show, JButton>();
-		
+
 		//create the header with update button
 		JPanel header = new JPanel(new BorderLayout());
 		JTextArea headerText = new JTextArea("Your Shows:");
@@ -429,7 +428,7 @@ public class Main
 		});
 		header.add(btnUpdateAll, BorderLayout.LINE_END);
 		panel.add(header, BorderLayout.PAGE_START);
-		
+
 		//create a list of shows(each with a delete and update button)
 		final Box showBox = Box.createVerticalBox();
 		for(int i=0; i<ShowTracker.shows.size(); ++i)
@@ -447,21 +446,21 @@ public class Main
 			JTextArea showName = new JTextArea(show.toString());
 			showName.setFont(new Font("Times New Roman", Font.PLAIN, 20));
 			showName.setEditable(false);
-			
+
 			//create a box containing the show name and search text editor
 			Box showText = Box.createVerticalBox();
-			
+
 			//add the prompt
 			JTextArea searchTextEditPrompt = new JTextArea("Search String:");
 			searchTextEditPrompt.setEditable(false);
 			showText.add(searchTextEditPrompt);
-			
+
 			//create the editable text
 			final JTextArea searchTextEdit = new JTextArea(show.getSearchText());
 			searchTextEdit.setBorder(new LineBorder(Color.BLACK));
 			searchTextEdit.setBackground(Color.LIGHT_GRAY);
 			showText.add(searchTextEdit);
-			
+
 			//create the button to save the text
 			final JButton btnSearchTextSave = new JButton("Save");
 			btnSearchTextSave.setPreferredSize(new Dimension(showText.getPreferredSize().width, btnSearchTextSave.getPreferredSize().height));
@@ -542,7 +541,7 @@ public class Main
 					}.start();
 				}
 			});
-			
+
 			//add the update button to update data
 			uData.put(show, btnUpdate);
 
@@ -561,11 +560,10 @@ public class Main
 					if(image != null)
 					{
 						int destinationHeight = 75,
-								destinationWidth = (int)((double)image.getIconWidth()/((double)image.getIconHeight()/(double)destinationHeight));
+								destinationWidth = (int)(image.getIconWidth()/((double)image.getIconHeight()/(double)destinationHeight));
 
-						this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-						((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-						g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
+						setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+						g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight), 0, 0, null);
 						g.dispose();
 						showPanel.revalidate();
 					}
@@ -770,12 +768,11 @@ public class Main
 									super.paintComponent(g);
 									if(image != null)
 									{
-										int destinationWidth = this.getWidth(),
-												destinationHeight = (int)((double)image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
+										int destinationWidth = getWidth(),
+												destinationHeight = (int)(image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 
-										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-										g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
+										setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+										g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight), 0, 0, null);
 										g.dispose();
 										popIn.revalidate();
 									}
@@ -801,17 +798,17 @@ public class Main
 		panel.add(popIn, BorderLayout.LINE_END);
 		panel.revalidate();
 	}
-	
+
 	public void timeline()
 	{
 		panel.removeAll();
-		
+
 		//create a drawing panel
 		panel.add(new TimelinePanel(), BorderLayout.CENTER);
-		
+
 		panel.revalidate();
 	}
-	
+
 	private void addShow(final JPanel pane, String showName)
 	{
 		//set up the contents of the popup
@@ -982,11 +979,10 @@ public class Main
 													if(image != null)
 													{
 														int destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
-																destinationHeight = (int)((double)image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
+																destinationHeight = (int)(image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 
-														this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-														((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-														g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
+														setPreferredSize(new Dimension(destinationWidth, destinationHeight));
+														g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight), 0, 0, null);
 														g.dispose();
 														popIn.revalidate();
 													}
@@ -1060,27 +1056,23 @@ public class Main
 		pane.add(addPanel);
 		pane.revalidate();
 	}
-	
+
 	public BufferedImage getScaledInstance(ImageIcon image,
-            int targetWidth,
-            int targetHeight,
-            Object hint)
+			int targetWidth,
+			int targetHeight)
 	{
 		BufferedImage img = new BufferedImage(
-			    image.getIconWidth(),
-			    image.getIconHeight(),
-			    BufferedImage.TYPE_INT_RGB);
-			Graphics g1 = img.createGraphics();
-			// paint the Icon to the BufferedImage.
-			image.paintIcon(null, g1, 0,0);
-			g1.dispose();
-		
-		int type = (img.getTransparency() == Transparency.OPAQUE) ?
-		BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
-		BufferedImage ret = (BufferedImage)img;
+				image.getIconWidth(),
+				image.getIconHeight(),
+				BufferedImage.TYPE_INT_RGB);
+		Graphics g1 = img.createGraphics();
+		image.paintIcon(null, g1, 0,0);
+		g1.dispose();
+
+		BufferedImage ret = img;
 		int w = img.getWidth(),
-			h = img.getHeight();
-		
+				h = img.getHeight();
+
 		do {
 			if (w > targetWidth) {
 				w /= 2;
@@ -1088,23 +1080,23 @@ public class Main
 					w = targetWidth;
 				}
 			}
-			
+
 			if (h > targetHeight) {
 				h /= 2;
 				if (h < targetHeight) {
 					h = targetHeight;
 				}
 			}
-			
-			BufferedImage tmp = new BufferedImage(w, h, type);
+
+			BufferedImage tmp = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 			Graphics2D g2 = tmp.createGraphics();
-			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 			g2.drawImage(ret, 0, 0, w, h, null);
 			g2.dispose();
-			
+
 			ret = tmp;
 		} while (w != targetWidth || h != targetHeight);
-		
+
 		return ret;
 	}
 }

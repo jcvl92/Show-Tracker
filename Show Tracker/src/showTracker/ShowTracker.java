@@ -121,11 +121,11 @@ public class ShowTracker
 			writeShowsToFile();
 		}
 	}
-	
+
 	public static Episode[] getTimelineEpisodes(long timelineBegin, long timelineEnd)
 	{
 		ArrayList<Episode> times = new ArrayList<Episode>();
-		
+
 		for(int i=0; i<shows.size(); ++i)
 		{
 			Show show = shows.get(i);

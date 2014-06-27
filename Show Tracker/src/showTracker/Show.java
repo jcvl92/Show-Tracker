@@ -48,7 +48,7 @@ public class Show implements Serializable
 					else if(((TextNode)showDescription.get(j)).text().contains("http"))
 						showInfo.put("link", ((TextNode)showDescription.get(j)).text());
 				}
-				
+
 				showInfo.put("search", searchText);
 
 				entries.add(showInfo);
@@ -219,17 +219,17 @@ public class Show implements Serializable
 
 		return airedEpisodes;
 	}
-	
+
 	public String showName()
 	{
 		return showName;
 	}
-	
+
 	public String getSearchText()
 	{
 		return search;
 	}
-	
+
 	public void setSearchText(String str)
 	{
 		search = str;
