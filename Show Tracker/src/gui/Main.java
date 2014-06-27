@@ -11,10 +11,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -270,14 +272,12 @@ public class Main
 									super.paintComponent(g);
 									if(image != null)
 									{
-										int sourceWidth = image.getIconWidth(),
-												sourceHeight = image.getIconHeight(),
-												destinationWidth = this.getWidth(),
-												destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+										int destinationWidth = this.getWidth(),
+												destinationHeight = (int)((double)image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-										g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+										g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
 										g.dispose();
 										popIn.revalidate();
 									}
@@ -560,14 +560,12 @@ public class Main
 					super.paintComponent(g);
 					if(image != null)
 					{
-						int sourceWidth = image.getIconWidth(),
-								sourceHeight = image.getIconHeight(),
-								destinationHeight = 75,
-								destinationWidth = (int)((double)sourceWidth/((double)sourceHeight/(double)destinationHeight));
+						int destinationHeight = 75,
+								destinationWidth = (int)((double)image.getIconWidth()/((double)image.getIconHeight()/(double)destinationHeight));
 
 						this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-						((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-						g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+						((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+						g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
 						g.dispose();
 						showPanel.revalidate();
 					}
@@ -772,14 +770,12 @@ public class Main
 									super.paintComponent(g);
 									if(image != null)
 									{
-										int sourceWidth = image.getIconWidth(),
-												sourceHeight = image.getIconHeight(),
-												destinationWidth = this.getWidth(),
-												destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+										int destinationWidth = this.getWidth(),
+												destinationHeight = (int)((double)image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 
 										this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-										g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+										((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+										g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
 										g.dispose();
 										popIn.revalidate();
 									}
@@ -985,14 +981,12 @@ public class Main
 													super.paintComponent(g);
 													if(image != null)
 													{
-														int sourceWidth = image.getIconWidth(),
-																sourceHeight = image.getIconHeight(),
-																destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
-																destinationHeight = (int)((double)sourceHeight/((double)sourceWidth/(double)destinationWidth));
+														int destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
+																destinationHeight = (int)((double)image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 
 														this.setPreferredSize(new Dimension(destinationWidth, destinationHeight));
-														((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-														g.drawImage(image.getImage(), 0, 0, destinationWidth, destinationHeight, 0, 0, sourceWidth, sourceHeight, null);
+														((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+														g.drawImage(getScaledInstance(image, destinationWidth, destinationHeight, RenderingHints.VALUE_INTERPOLATION_BICUBIC), 0, 0, null);
 														g.dispose();
 														popIn.revalidate();
 													}
@@ -1065,5 +1059,52 @@ public class Main
 		pane.removeAll();
 		pane.add(addPanel);
 		pane.revalidate();
+	}
+	
+	public BufferedImage getScaledInstance(ImageIcon image,
+            int targetWidth,
+            int targetHeight,
+            Object hint)
+	{
+		BufferedImage img = new BufferedImage(
+			    image.getIconWidth(),
+			    image.getIconHeight(),
+			    BufferedImage.TYPE_INT_RGB);
+			Graphics g1 = img.createGraphics();
+			// paint the Icon to the BufferedImage.
+			image.paintIcon(null, g1, 0,0);
+			g1.dispose();
+		
+		int type = (img.getTransparency() == Transparency.OPAQUE) ?
+		BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
+		BufferedImage ret = (BufferedImage)img;
+		int w = img.getWidth(),
+			h = img.getHeight();
+		
+		do {
+			if (w > targetWidth) {
+				w /= 2;
+				if (w < targetWidth) {
+					w = targetWidth;
+				}
+			}
+			
+			if (h > targetHeight) {
+				h /= 2;
+				if (h < targetHeight) {
+					h = targetHeight;
+				}
+			}
+			
+			BufferedImage tmp = new BufferedImage(w, h, type);
+			Graphics2D g2 = tmp.createGraphics();
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
+			g2.drawImage(ret, 0, 0, w, h, null);
+			g2.dispose();
+			
+			ret = tmp;
+		} while (w != targetWidth || h != targetHeight);
+		
+		return ret;
 	}
 }
