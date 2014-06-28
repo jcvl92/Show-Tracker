@@ -2,7 +2,12 @@ package gui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.geom.Ellipse2D;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import javax.swing.JPanel;
@@ -11,7 +16,9 @@ import showTracker.Episode;
 import showTracker.ShowTracker;
 
 //TODO: change markers to green if the mark is x weeks from now
-public class TimelinePanel extends JPanel
+//TODO: change marks to be at midnight
+//TODO: recall the episode details drawer upon painting(if an episode is selected)
+public class TimelinePanel extends JPanel implements MouseListener
 {
 	private static final long serialVersionUID = 1L;
 	final int PAST_DAYS = 15, FUTURE_DAYS = 15;
@@ -20,12 +27,17 @@ public class TimelinePanel extends JPanel
 	Episode[] episodes;
 	long[] markers = new long[PAST_DAYS+FUTURE_DAYS+1];
 	HashMap<String, Integer> showColors = new HashMap<String, Integer>();
+	HashMap<Ellipse2D, Episode> circles = new HashMap<Ellipse2D, Episode>();
 	Random colorGenerator = new Random();
 
 	public TimelinePanel()
 	{
 		super();
-
+		
+		//create the mouselistener
+		addMouseListener(this);
+		
+		//set the background
 		setBackground(Color.LIGHT_GRAY);
 
 		//set up the timeline variables
@@ -106,15 +118,18 @@ public class TimelinePanel extends JPanel
 				Y = Y-dotThickness;
 			else
 				Y = lineY;
-			
 			X = newX;
 			
-			//draw ball
-			g.fillOval(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
+			//create the circle and save it with the associated episode
+			Ellipse2D circle = new Ellipse2D.Double(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
+			circles.put(circle, episodes[i]);
 			
-			g.setColor(Color.BLACK);
+			//draw ball
+			((Graphics2D)g).fill(circle);
+			
 			//draw ball outline
-			g.drawOval(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
+			g.setColor(Color.BLACK);
+			((Graphics2D)g).draw(circle);
 		}
 	}
 
@@ -122,5 +137,45 @@ public class TimelinePanel extends JPanel
 	{
 		int res = (int)(((time-timelineBegin)*width)/(timelineEnd-timelineBegin));
 		return res<width ? res : width-1;
+	}
+	
+	public void mouseClicked(MouseEvent e)
+	{
+		//iterate though each mapped circle and check to see if it was clicked
+		if(e.getButton() == 1)
+			for(Entry<Ellipse2D, Episode> entry : circles.entrySet())
+			    if(entry.getKey().contains(e.getPoint()))
+			    {
+			    	drawPanel(entry.getKey(), entry.getValue());
+			    	break;
+			    }
+	}
+	
+	public void mouseEntered(MouseEvent e){}
+	public void mouseExited(MouseEvent e){}
+	public void mousePressed(MouseEvent e){}
+	public void mouseReleased(MouseEvent e){}
+	
+	private void drawPanel(Ellipse2D circle, Episode episode)
+	{
+		//TODO: show the loading circle
+		Graphics g = this.getGraphics();
+		
+		//redraw the previous circles to unhighlight them
+		
+		//highlight the circle
+		g.setColor(Color.BLACK);
+		((Graphics2D)g).fill(circle);
+		g.setColor(Color.WHITE);
+		((Graphics2D)g).draw(circle);
+		
+		//draw a box to hold the episode information
+		g.setColor(Color.WHITE);
+		g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+		g.setColor(Color.BLACK);
+		g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+		
+		//draw episode information
+		g.drawString(episode.show+" - "+episode+":\n"+episode.getText(), getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
 	}
 }
