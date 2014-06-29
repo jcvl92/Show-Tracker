@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 import showTracker.Episode;
@@ -42,8 +44,8 @@ public class TimelinePanel extends JPanel implements MouseListener
 
 		//set up the timeline variables
 		timelineNow = System.currentTimeMillis();
-		timelineBegin = timelineNow-(1000*60*60*24*PAST_DAYS);
-		timelineEnd = timelineNow+(1000*60*60*24*FUTURE_DAYS);
+		timelineBegin = timelineNow-(1000L*60*60*24*PAST_DAYS);
+		timelineEnd = timelineNow+(1000L*60*60*24*FUTURE_DAYS);
 
 		//set up the day markers
 		for(int i=-PAST_DAYS; i<=FUTURE_DAYS; ++i)
@@ -136,7 +138,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 	private int timeToXValue(long time, int width)
 	{
 		int res = (int)(((time-timelineBegin)*width)/(timelineEnd-timelineBegin));
-		return res<width ? res : width-1;
+		return res<width ? (res+1) : width-1;
 	}
 	
 	public void mouseClicked(MouseEvent e)
@@ -156,10 +158,10 @@ public class TimelinePanel extends JPanel implements MouseListener
 	public void mousePressed(MouseEvent e){}
 	public void mouseReleased(MouseEvent e){}
 	
-	private void drawPanel(Ellipse2D circle, Episode episode)
+	private void drawPanel(final Ellipse2D circle, final Episode episode)
 	{
 		//TODO: show the loading circle
-		Graphics g = this.getGraphics();
+		final Graphics g = this.getGraphics();
 		
 		//redraw the previous circles to unhighlight them
 		
@@ -169,13 +171,35 @@ public class TimelinePanel extends JPanel implements MouseListener
 		g.setColor(Color.WHITE);
 		((Graphics2D)g).draw(circle);
 		
-		//draw a box to hold the episode information
-		g.setColor(Color.WHITE);
-		g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-		g.setColor(Color.BLACK);
-		g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+		//show the loading circle
 		
-		//draw episode information
-		g.drawString(episode.show+" - "+episode+":\n"+episode.getText(), getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
+		//TODO: fix this so that is loads the gif properly
+		ImageIcon spinner = new ImageIcon(this.getClass().getResource("loading spinner.gif"));
+		spinner.paintIcon(this, g, spinner.getIconWidth(), spinner.getIconHeight());
+		//g.drawImage(new ImageIcon(this.getClass().getResource("loading spinner.gif")).getImage(), 0, 0, null);
+		
+		/*new Thread()
+		{
+			public void run()
+			{
+				//load the episode information
+				String text = episode.getText();
+				
+				//highlight the circle
+				g.setColor(Color.BLACK);
+				((Graphics2D)g).fill(circle);
+				g.setColor(Color.WHITE);
+				((Graphics2D)g).draw(circle);
+				
+				//draw a box to hold the episode information
+				g.setColor(Color.WHITE);
+				g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				g.setColor(Color.BLACK);
+				g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				
+				//draw episode information
+				g.drawString(episode.show+" - "+episode+":\n"+text, getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
+			}
+		}.start();*/
 	}
 }

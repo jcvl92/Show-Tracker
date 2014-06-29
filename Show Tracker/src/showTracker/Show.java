@@ -28,7 +28,7 @@ public class Show implements Serializable
 	public static ArrayList<HashMap<String, String>> search(String searchText) throws IOException
 	{
 		//get the search xml document
-		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+searchText).timeout(30*1000).get();
+		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+searchText).timeout(60*1000).get();
 
 		//get the possible entries
 		Node nodes = search.childNode(1).childNode(1).childNode(0);
@@ -74,7 +74,7 @@ public class Show implements Serializable
 		show.search = showEntry.get("search");
 
 		//get the season details xml document
-		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+show.showID).timeout(30*1000).get();
+		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+show.showID).timeout(60*1000).get();
 
 		//pick the episode list
 		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);
@@ -115,7 +115,7 @@ public class Show implements Serializable
 		//get the image for the show
 		try
 		{
-			Document page = Jsoup.connect(show.link).timeout(30*1000).get();
+			Document page = Jsoup.connect(show.link).timeout(60*1000).get();
 			show.image = new ImageIcon(new URL(page.getElementsByClass("padding_bottom_10").get(0).child(0).attr("src")));
 		}
 		catch(Exception e)
@@ -147,7 +147,7 @@ public class Show implements Serializable
 		seasons = new ArrayList<Season>();
 
 		//get the season details xml document
-		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+showID).timeout(30*1000).get();
+		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+showID).timeout(60*1000).get();
 
 		//pick the episode list
 		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);

@@ -1057,7 +1057,7 @@ public class Main
 		pane.revalidate();
 	}
 
-	public BufferedImage getScaledInstance(ImageIcon image,
+	public static BufferedImage getScaledInstance(ImageIcon image,
 			int targetWidth,
 			int targetHeight)
 	{
