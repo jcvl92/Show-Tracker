@@ -18,7 +18,7 @@ import showTracker.ShowTracker;
 
 //TODO: change markers to green if the mark is x weeks from now
 //TODO: change marks to be at midnight
-//TODO: recall the episode details drawer upon painting(if an episode is selected)
+//TODO: draw the episode color legend
 public class TimelinePanel extends JPanel implements MouseListener
 {
 	private static final long serialVersionUID = 1L;
@@ -135,9 +135,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 			g.setColor(Color.BLACK);
 			((Graphics2D)g).draw(circle);
 			
-			if(waiting)
-				spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, getHeight()/2-spinner.getIconHeight()/2);
-			else if(selected != null)
+			if(selected != null)
 			{
 				Episode episode = circles.get(selected);
 				//highlight the circle
@@ -146,23 +144,30 @@ public class TimelinePanel extends JPanel implements MouseListener
 				g.setColor(Color.WHITE);
 				((Graphics2D)g).draw(selected);
 				
-				//get the preloaded episode information
-				String text = episode.getText();
-				
-				//highlight the circle
-				g.setColor(Color.BLACK);
-				((Graphics2D)g).fill(selected);
-				g.setColor(Color.WHITE);
-				((Graphics2D)g).draw(selected);
-				
-				//draw a box to hold the episode information
-				g.setColor(Color.WHITE);
-				g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-				g.setColor(Color.BLACK);
-				g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-				
-				//draw episode information
-				g.drawString(episode.show+" - "+episode+":\n"+text, getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
+				if(waiting)
+					spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
+				else
+				{
+					//get the preloaded episode information
+					String text = episode.getText();
+					
+					//highlight the circle
+					g.setColor(Color.BLACK);
+					((Graphics2D)g).fill(selected);
+					g.setColor(Color.WHITE);
+					((Graphics2D)g).draw(selected);
+					
+					//draw a box to hold the episode information
+					g.setColor(Color.BLACK);
+					g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+					g.setColor(Color.GREEN);
+					g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+					
+					//draw episode information
+					g.setColor(Color.WHITE);
+					g.drawString(episode.show+" - "+episode+':', getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
+					g.drawString(text, getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight()*2);
+				}
 			}
 		}
 	}
@@ -182,6 +187,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 			    {
 			    	//show the spinner while waiting to gather the episode information
 			    	waiting = true;
+			    	selected = entry.getKey();
 			    	repaint();
 			    	new Thread()
 					{
@@ -189,7 +195,6 @@ public class TimelinePanel extends JPanel implements MouseListener
 						{
 							//gather episode information and stop waiting
 							entry.getValue().getText();
-							selected = entry.getKey();
 							waiting = false;
 							repaint();
 						}

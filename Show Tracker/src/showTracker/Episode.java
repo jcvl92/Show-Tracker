@@ -89,7 +89,7 @@ public class Episode implements Serializable
 
 	public String getText()
 	{
-		boolean save=false;
+		boolean save = false;
 		
 		if(description == null || image == null)
 		{
@@ -105,7 +105,7 @@ public class Episode implements Serializable
 						description = link.getElementsByClass("show_synopsis").text();
 						if(description.equals(""))
 							description = link.getElementsByClass("padding_bottom_10").get(1).text();
-						save=true;
+						save = true;
 					}
 					catch(Exception e){}
 
@@ -115,12 +115,12 @@ public class Episode implements Serializable
 					{
 						image = new ImageIcon();
 						image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
-						save=true;
+						save = true;
 					}
 					catch(Exception e)
 					{
 						image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
-						save=true;
+						save = true;
 					}
 			}
 			catch(Exception e){}
