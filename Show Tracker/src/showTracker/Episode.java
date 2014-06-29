@@ -89,34 +89,44 @@ public class Episode implements Serializable
 
 	public String getText()
 	{
+		boolean save=false;
+		
 		if(description == null || image == null)
 		{
 			try
 			{
-				description = "";
-				Document link = Jsoup.connect(information.get("link")).timeout(30*1000).get();
+				Document link = Jsoup.connect(information.get("link")).timeout(60*1000).get();
+				
+				//grab the description of the episode
+				if(description == null)
+					try
+					{
+						description = "";
+						description = link.getElementsByClass("show_synopsis").text();
+						if(description.equals(""))
+							description = link.getElementsByClass("padding_bottom_10").get(1).text();
+						save=true;
+					}
+					catch(Exception e){}
 
-				//this grabs the description of the episode
-				try
-				{
-					description = link.getElementsByClass("show_synopsis").text();
-				}
-				catch(Exception e){}
-
-				//this grabs the image of the episode
-				try
-				{
-					image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
-				}
-				catch(Exception e)
-				{
-					image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
-				}
+				//grab the image of the episode
+				if(image == null)
+					try
+					{
+						image = new ImageIcon();
+						image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
+						save=true;
+					}
+					catch(Exception e)
+					{
+						image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
+						save=true;
+					}
 			}
 			catch(Exception e){}
 		}
 
-		save();
+		if(save) save();
 
 		return description;
 	}
