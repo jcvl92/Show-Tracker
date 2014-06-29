@@ -31,6 +31,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 	HashMap<String, Integer> showColors = new HashMap<String, Integer>();
 	HashMap<Ellipse2D, Episode> circles = new HashMap<Ellipse2D, Episode>();
 	Random colorGenerator = new Random();
+	boolean selected = false;
 
 	public TimelinePanel()
 	{
@@ -62,76 +63,79 @@ public class TimelinePanel extends JPanel implements MouseListener
 
 	public void paintComponent(Graphics g)
 	{
-		super.paintComponent(g);
-
-		int lineY = getHeight()*4/5,
-				lineWidth = getWidth(),
-				lineThickness = getHeight()*1/30,
-				dotThickness = lineThickness*3/4,
-				markHeight = lineThickness*2,
-				markThickness = getWidth()/400;
-
-		//draw the timeline base line
-		g.fillRect(0, lineY, lineWidth, lineThickness);
-
-		//draw the day markers on the line
-		for(int i=0; i<markers.length; ++i)
-		{
-			if(markers[i] == timelineNow)
-				g.setColor(Color.BLUE);
-			else
-				g.setColor(Color.RED);
-
-			g.fillRect(timeToXValue(markers[i], lineWidth)-(markThickness/2), lineY, markThickness, markHeight*3/4);
-		}
+		//super.paintComponent(g);
 		
-		//draw the episode lines
-		int X=-1, Y=lineY;
-		g.setColor(Color.BLACK);
-		for(int i=0; i<points.length; ++i)
+		if(!selected)
 		{
-			int newX = timeToXValue(points[i], lineWidth);
-			if(X != -1 && X-newX < dotThickness && X-newX > -dotThickness)
-				Y = Y-dotThickness;
-			else
-				Y = lineY;
-			
-			X = newX;
-			//draw line
-			g.fillRect(X-(markThickness/2), Y-(markHeight-lineThickness), markThickness, markHeight-(Y-lineY));
-		}
-		
-		//draw the episode circles
-		X=-1;
-		for(int i=0; i<points.length; ++i)
-		{
-			//set the color
-			try
+			int lineY = getHeight()*4/5,
+					lineWidth = getWidth(),
+					lineThickness = getHeight()*1/30,
+					dotThickness = lineThickness*3/4,
+					markHeight = lineThickness*2,
+					markThickness = getWidth()/400;
+	
+			//draw the timeline base line
+			g.fillRect(0, lineY, lineWidth, lineThickness);
+	
+			//draw the day markers on the line
+			for(int i=0; i<markers.length; ++i)
 			{
-				g.setColor(new Color(showColors.get(episodes[i].show.showName())));
+				if(markers[i] == timelineNow)
+					g.setColor(Color.BLUE);
+				else
+					g.setColor(Color.RED);
+	
+				g.fillRect(timeToXValue(markers[i], lineWidth)-(markThickness/2), lineY, markThickness, markHeight*3/4);
 			}
-			catch(NullPointerException npe)
-			{
-				showColors.put(episodes[i].show.showName(), colorGenerator.nextInt());
-				g.setColor(new Color(showColors.get(episodes[i].show.showName())));
-			}
-			int newX = timeToXValue(points[i], lineWidth);
-			if(X != -1 && X-newX < dotThickness && X-newX > -dotThickness)
-				Y = Y-dotThickness;
-			else
-				Y = lineY;
-			X = newX;
 			
-			//create the circle and save it with the associated episode
-			Ellipse2D circle = new Ellipse2D.Double(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
-			circles.put(circle, episodes[i]);
-			
-			//draw ball
-			((Graphics2D)g).fill(circle);
-			
-			//draw ball outline
+			//draw the episode lines
+			int X=-1, Y=lineY;
 			g.setColor(Color.BLACK);
-			((Graphics2D)g).draw(circle);
+			for(int i=0; i<points.length; ++i)
+			{
+				int newX = timeToXValue(points[i], lineWidth);
+				if(X != -1 && X-newX < dotThickness && X-newX > -dotThickness)
+					Y = Y-dotThickness;
+				else
+					Y = lineY;
+				
+				X = newX;
+				//draw line
+				g.fillRect(X-(markThickness/2), Y-(markHeight-lineThickness), markThickness, markHeight-(Y-lineY));
+			}
+			
+			//draw the episode circles
+			X=-1;
+			for(int i=0; i<points.length; ++i)
+			{
+				//set the color
+				try
+				{
+					g.setColor(new Color(showColors.get(episodes[i].show.showName())));
+				}
+				catch(NullPointerException npe)
+				{
+					showColors.put(episodes[i].show.showName(), colorGenerator.nextInt());
+					g.setColor(new Color(showColors.get(episodes[i].show.showName())));
+				}
+				int newX = timeToXValue(points[i], lineWidth);
+				if(X != -1 && X-newX < dotThickness && X-newX > -dotThickness)
+					Y = Y-dotThickness;
+				else
+					Y = lineY;
+				X = newX;
+				
+				//create the circle and save it with the associated episode
+				Ellipse2D circle = new Ellipse2D.Double(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
+				circles.put(circle, episodes[i]);
+				
+				//draw ball
+				((Graphics2D)g).fill(circle);
+				
+				//draw ball outline
+				g.setColor(Color.BLACK);
+				((Graphics2D)g).draw(circle);
+			}
 		}
 	}
 
@@ -148,6 +152,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 			for(Entry<Ellipse2D, Episode> entry : circles.entrySet())
 			    if(entry.getKey().contains(e.getPoint()))
 			    {
+			    	selected=true;
 			    	drawPanel(entry.getKey(), entry.getValue());
 			    	break;
 			    }
@@ -177,6 +182,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 		ImageIcon spinner = new ImageIcon(this.getClass().getResource("loading spinner.gif"));
 		spinner.paintIcon(this, g, spinner.getIconWidth(), spinner.getIconHeight());
 		//g.drawImage(new ImageIcon(this.getClass().getResource("loading spinner.gif")).getImage(), 0, 0, null);
+		g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
 		
 		/*new Thread()
 		{
