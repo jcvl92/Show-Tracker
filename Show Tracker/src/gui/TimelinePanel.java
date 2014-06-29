@@ -1,7 +1,6 @@
 package gui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
@@ -30,7 +29,10 @@ public class TimelinePanel extends JPanel implements MouseListener
 	long[] markers = new long[PAST_DAYS+FUTURE_DAYS+1];
 	HashMap<String, Integer> showColors = new HashMap<String, Integer>();
 	HashMap<Ellipse2D, Episode> circles = new HashMap<Ellipse2D, Episode>();
+	ImageIcon spinner = new ImageIcon(this.getClass().getResource("loading spinner.gif"));
 	Random colorGenerator = new Random();
+	boolean waiting = false;
+	Ellipse2D selected = null;
 
 	public TimelinePanel()
 	{
@@ -40,7 +42,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 		addMouseListener(this);
 		
 		//set the background
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(Color.WHITE);
 
 		//set up the timeline variables
 		timelineNow = System.currentTimeMillis();
@@ -133,6 +135,9 @@ public class TimelinePanel extends JPanel implements MouseListener
 			g.setColor(Color.BLACK);
 			((Graphics2D)g).draw(circle);
 		}
+		
+		if(waiting)
+			spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
 	}
 
 	private int timeToXValue(long time, int width)
@@ -148,7 +153,10 @@ public class TimelinePanel extends JPanel implements MouseListener
 			for(Entry<Ellipse2D, Episode> entry : circles.entrySet())
 			    if(entry.getKey().contains(e.getPoint()))
 			    {
-			    	drawPanel(entry.getKey(), entry.getValue());
+			    	//waiting = true;
+					//paintComponent(g);
+			    	selected = entry.getKey();
+			    	setDisplay(entry.getKey(), entry.getValue());
 			    	break;
 			    }
 	}
@@ -158,7 +166,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 	public void mousePressed(MouseEvent e){}
 	public void mouseReleased(MouseEvent e){}
 	
-	private void drawPanel(final Ellipse2D circle, final Episode episode)
+	private void setDisplay(Ellipse2D circle, Episode episode)
 	{
 		//TODO: show the loading circle
 		final Graphics g = this.getGraphics();
@@ -172,34 +180,28 @@ public class TimelinePanel extends JPanel implements MouseListener
 		((Graphics2D)g).draw(circle);
 		
 		//show the loading circle
+		waiting = true;
+		repaint();
 		
-		//TODO: fix this so that is loads the gif properly
-		ImageIcon spinner = new ImageIcon(this.getClass().getResource("loading spinner.gif"));
-		spinner.paintIcon(this, g, spinner.getIconWidth(), spinner.getIconHeight());
-		//g.drawImage(new ImageIcon(this.getClass().getResource("loading spinner.gif")).getImage(), 0, 0, null);
+		//load the episode information
+		String text = episode.getText();
 		
-		/*new Thread()
-		{
-			public void run()
-			{
-				//load the episode information
-				String text = episode.getText();
-				
-				//highlight the circle
-				g.setColor(Color.BLACK);
-				((Graphics2D)g).fill(circle);
-				g.setColor(Color.WHITE);
-				((Graphics2D)g).draw(circle);
-				
-				//draw a box to hold the episode information
-				g.setColor(Color.WHITE);
-				g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-				g.setColor(Color.BLACK);
-				g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-				
-				//draw episode information
-				g.drawString(episode.show+" - "+episode+":\n"+text, getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
-			}
-		}.start();*/
+		//waiting = false;
+		//repaint();
+		
+		//highlight the circle
+		g.setColor(Color.BLACK);
+		((Graphics2D)g).fill(circle);
+		g.setColor(Color.WHITE);
+		((Graphics2D)g).draw(circle);
+		
+		//draw a box to hold the episode information
+		g.setColor(Color.WHITE);
+		g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+		g.setColor(Color.BLACK);
+		g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+		
+		//draw episode information
+		g.drawString(episode.show+" - "+episode+":\n"+text, getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
 	}
 }
