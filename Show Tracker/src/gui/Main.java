@@ -812,8 +812,9 @@ public class Main
 	private void addShow(final JPanel pane, String showName)
 	{
 		//set up the contents of the popup
-		final JPanel contents = new JPanel(new BorderLayout());//Box.createVerticalBox();
-
+		final JPanel contents = new JPanel(new BorderLayout());
+		contents.setBackground(Color.WHITE);
+		
 		//add the show
 		try
 		{
@@ -1045,6 +1046,7 @@ public class Main
 
 		//set up the centered panel
 		JPanel addPanel = new JPanel();
+		addPanel.setBackground(Color.WHITE);
 		addPanel.setBorder(new LineBorder(Color.BLACK));
 		addPanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
