@@ -21,12 +21,11 @@ import showTracker.Episode;
 import showTracker.ShowTracker;
 
 //TODO: add labels to the unique date markers
-//TODO: wrap the episode title just like the description
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
 	final int PAST_DAYS = 15, FUTURE_DAYS = 15;
-	long timelineNow, timelineBegin, timelineEnd;
+	long timelineToday, timelineBegin, timelineEnd;
 	long[] points, markers = new long[PAST_DAYS+FUTURE_DAYS+1];
 	Episode[] episodes;
 	HashMap<String, Integer> showColors = new HashMap<String, Integer>();
@@ -48,14 +47,14 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		setBackground(Color.WHITE);
 
 		//set up the timeline variables
-		timelineNow = System.currentTimeMillis();
-		timelineNow = timelineNow - timelineNow%(1000L*60*60);
-		timelineBegin = timelineNow-(1000L*60*60*24*PAST_DAYS);
-		timelineEnd = timelineNow+(1000L*60*60*24*FUTURE_DAYS);
+		timelineToday = System.currentTimeMillis();
+		timelineToday = timelineToday - timelineToday%(1000L*60*60);
+		timelineBegin = timelineToday-(1000L*60*60*24*PAST_DAYS);
+		timelineEnd = timelineToday+(1000L*60*60*24*FUTURE_DAYS);
 
 		//set up the day markers
 		for(int i=-PAST_DAYS; i<=FUTURE_DAYS; ++i)
-			markers[i+PAST_DAYS] = timelineNow+(1000*60*60*24*i);
+			markers[i+PAST_DAYS] = timelineToday+(1000*60*60*24*i);
 
 		//get the episodes to go on the timeline
 		episodes = ShowTracker.getTimelineEpisodes(timelineBegin, timelineEnd);
@@ -84,7 +83,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		//draw the day markers on the line
 		for(int i=-PAST_DAYS; i<=FUTURE_DAYS; ++i)
 		{
-			if(markers[i+PAST_DAYS] == timelineNow)
+			if(markers[i+PAST_DAYS] == timelineToday)
 				g.setColor(Color.BLUE);
 			else if(i%7 == 0)
 				g.setColor(Color.GREEN);
@@ -168,6 +167,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 			{
 				//get the preloaded episode information
 				String[] text = episode.getText().split(" ");
+				String[] title = (episode.show+" - "+episode+':').split(" ");
 				
 				//wrap the text by word
 				ArrayList<String> texts = new ArrayList<String>();
@@ -180,7 +180,18 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 						texts.add(text[j]);
 					else
 						texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
-				} 
+				}
+				ArrayList<String> titles = new ArrayList<String>();
+				for(int j=0; j<title.length; ++j)
+				{
+					if(titles.size()==0 || 
+							g.getFontMetrics().stringWidth(
+									titles.get(titles.size()-1) + title[j] + (titles.get(titles.size()-1).length()==0 ? "" : " ")
+									) > getWidth()*8/10)
+						titles.add(title[j]);
+					else
+						titles.set(titles.size()-1, titles.get(titles.size()-1)+' '+title[j]);
+				}
 				
 				//highlight the circle
 				g.setColor(Color.BLACK);
@@ -194,14 +205,15 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				g.setColor(Color.GREEN);
 				g.drawRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
 				
-				//draw episode title
+				//draw wrapped episode title
 				g.setColor(Color.WHITE);
-				g.drawString(episode.show+" - "+episode+':', getWidth()*1/10, getHeight()/10+g.getFontMetrics().getHeight());
+				for(int j=0; j<titles.size(); ++j)
+					g.drawString(titles.get(j), getWidth()*1/10, getHeight()/10+g.getFontMetrics().getHeight()+(g.getFontMetrics().getHeight()*j));
 				
 				//draw wrapped episode information
 				g.setColor(Color.LIGHT_GRAY);
 				for(int j=0; j<texts.size(); ++j)
-					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getHeight()*2+(g.getFontMetrics().getHeight()*j));
+					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getHeight()*2+(g.getFontMetrics().getHeight()*(j+titles.size()-1)));
 			}
 		}
 		else
