@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.TimeZone;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -21,6 +22,7 @@ import showTracker.Episode;
 import showTracker.ShowTracker;
 
 //TODO: add labels to the unique date markers
+//TODO: add a legend that autoscrolls if there is room for it
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
@@ -48,7 +50,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 
 		//set up the timeline variables
 		timelineToday = System.currentTimeMillis();
-		timelineToday = timelineToday - timelineToday%(1000L*60*60);
+		timelineToday = timelineToday - timelineToday%(1000L*60*60*24);
 		timelineBegin = timelineToday-(1000L*60*60*24*PAST_DAYS);
 		timelineEnd = timelineToday+(1000L*60*60*24*FUTURE_DAYS);
 
@@ -60,7 +62,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		episodes = ShowTracker.getTimelineEpisodes(timelineBegin, timelineEnd);
 		points = new long[episodes.length];
 		for(int i=0; i<episodes.length; ++i)
-			points[i] = episodes[i].getAirDate().toDate().getTime();
+			points[i] = episodes[i].getAirDate().getMillis() + TimeZone.getDefault().getRawOffset();
 	}
 
 	public void paintComponent(Graphics g)
@@ -223,7 +225,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 	private int timeToXValue(long time, int width)
 	{
 		int res = (int)(((time-timelineBegin)*width)/(timelineEnd-timelineBegin));
-		return res<width ? (res+1) : width-1;
+		return res<width ? (res) : width-1;
 	}
 	
 	public void mouseClicked(MouseEvent e)
