@@ -9,10 +9,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ShowTracker
 {
 	public static ArrayList<Show> shows;
+	public static ReentrantLock writing = new ReentrantLock();
 
 	public ShowTracker()
 	{
@@ -102,6 +104,7 @@ public class ShowTracker
 		{
 			try
 			{
+				writing.lock();
 				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("show_data")));
 				oos.writeObject(shows);
 				oos.close();
@@ -109,6 +112,10 @@ public class ShowTracker
 			catch(Exception e)
 			{
 				e.printStackTrace();
+			}
+			finally
+			{
+				writing.unlock();
 			}
 		}
 	}

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Vector;
-
 import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -54,8 +53,8 @@ import showTracker.ShowTracker;
 //TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
 //TODO: evaluate the memory and cpu usage of the various features
 //TODO: add timeout failure support
-//TODO: prevent data corruption(exiting during a write)
 //TODO: make image and information gathering more reliable(maybe scrape another source?)
+//TODO: after adding an episode, trying to download the episodes happens slower than closing and reopening
 public class Main
 {
 	public static boolean DL_ON = false;

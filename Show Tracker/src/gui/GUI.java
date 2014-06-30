@@ -15,6 +15,9 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
+import showTracker.ShowTracker;
 
 public class GUI {
 
@@ -38,10 +41,23 @@ public class GUI {
 		});
 	}
 	
-	public GUI() throws IOException {
+	public GUI() throws IOException
+	{
 		initialize();
+		
 		//set the favicon
 		frmShowTracker.setIconImage(ImageIO.read(this.getClass().getResource("favicon.png")));
+		
+		//change the default close operation
+		frmShowTracker.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		frmShowTracker.addWindowListener(new java.awt.event.WindowAdapter()
+		{
+		    public void windowClosing(java.awt.event.WindowEvent windowEvent)
+		    {
+		    	ShowTracker.writing.lock();
+		    	System.exit(0);
+		    }
+		});
 	}
 
 	/**
