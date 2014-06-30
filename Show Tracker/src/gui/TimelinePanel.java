@@ -165,7 +165,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 			}
 			else if(i%7 == 0)
 			{
-				String weeks = i/7+" week"+(Math.abs(i/7)>1 ? "s" : "");
+				String weeks = (i>0 ? "+" : "")+i/7+" week"+(Math.abs(i/7)>1 ? "s" : "");
 				g.setColor(Color.BLACK);
 				int x = X-(g.getFontMetrics().stringWidth(weeks)/2);
 				if(x < 0)
