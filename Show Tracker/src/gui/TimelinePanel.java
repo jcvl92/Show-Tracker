@@ -18,25 +18,21 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
-//TODO: change markers to green if the mark is x weeks from now
-//TODO: change marks to be at midnight
-//TODO: draw the episode color legend
-//TODO: highlighted selection doesn't move during a window resize redrawing
+//TODO: add labels to the unique date markers
 //TODO: wrap the episode title just like the description
 public class TimelinePanel extends JPanel implements MouseListener
 {
 	private static final long serialVersionUID = 1L;
 	final int PAST_DAYS = 15, FUTURE_DAYS = 15;
 	long timelineNow, timelineBegin, timelineEnd;
-	long[] points;
+	long[] points, markers = new long[PAST_DAYS+FUTURE_DAYS+1];
 	Episode[] episodes;
-	long[] markers = new long[PAST_DAYS+FUTURE_DAYS+1];
 	HashMap<String, Integer> showColors = new HashMap<String, Integer>();
-	HashMap<Ellipse2D, Episode> circles = new HashMap<Ellipse2D, Episode>();
+	HashMap<Ellipse2D, Integer> circles = new HashMap<Ellipse2D, Integer>();
 	ImageIcon spinner = new ImageIcon(this.getClass().getResource("loading spinner.gif"));
 	Random colorGenerator = new Random();
 	boolean waiting = false;
-	Ellipse2D selected = null;
+	int selected = -1;
 
 	public TimelinePanel()
 	{
@@ -50,14 +46,13 @@ public class TimelinePanel extends JPanel implements MouseListener
 
 		//set up the timeline variables
 		timelineNow = System.currentTimeMillis();
+		timelineNow = timelineNow - timelineNow%(1000L*60*60);
 		timelineBegin = timelineNow-(1000L*60*60*24*PAST_DAYS);
 		timelineEnd = timelineNow+(1000L*60*60*24*FUTURE_DAYS);
 
 		//set up the day markers
 		for(int i=-PAST_DAYS; i<=FUTURE_DAYS; ++i)
-		{
 			markers[i+PAST_DAYS] = timelineNow+(1000*60*60*24*i);
-		}
 
 		//get the episodes to go on the timeline
 		episodes = ShowTracker.getTimelineEpisodes(timelineBegin, timelineEnd);
@@ -76,19 +71,24 @@ public class TimelinePanel extends JPanel implements MouseListener
 				dotThickness = lineThickness*3/4,
 				markHeight = lineThickness*2,
 				markThickness = getWidth()/400;
-
+		
+		//set the font size as a function of the width of the episode panel
+		g.setFont(new Font("TimesRoman", Font.PLAIN, getWidth()*3/100));
+		
 		//draw the timeline base line
 		g.fillRect(0, lineY, lineWidth, lineThickness);
 
 		//draw the day markers on the line
-		for(int i=0; i<markers.length; ++i)
+		for(int i=-PAST_DAYS; i<=FUTURE_DAYS; ++i)
 		{
-			if(markers[i] == timelineNow)
+			if(markers[i+PAST_DAYS] == timelineNow)
 				g.setColor(Color.BLUE);
+			else if(i%7 == 0)
+				g.setColor(Color.GREEN);
 			else
 				g.setColor(Color.RED);
 
-			g.fillRect(timeToXValue(markers[i], lineWidth)-(markThickness/2), lineY, markThickness, markHeight*3/4);
+			g.fillRect(timeToXValue(markers[i+PAST_DAYS], lineWidth)-(markThickness/2), lineY, markThickness, markHeight*3/4);
 		}
 		
 		//draw the episode lines
@@ -108,6 +108,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 		}
 		
 		//draw the episode circles
+		circles = new HashMap<Ellipse2D, Integer>();
 		X=-1;
 		for(int i=0; i<points.length; ++i)
 		{
@@ -128,9 +129,9 @@ public class TimelinePanel extends JPanel implements MouseListener
 				Y = lineY;
 			X = newX;
 			
-			//create the circle and save it with the associated episode
+			//create the circle and save it with the associated episode number
 			Ellipse2D circle = new Ellipse2D.Double(X-(dotThickness/2), Y-dotThickness-markHeight+lineThickness, dotThickness, dotThickness);
-			circles.put(circle, episodes[i]);
+			circles.put(circle, i);
 			
 			//draw ball
 			((Graphics2D)g).fill(circle);
@@ -139,15 +140,24 @@ public class TimelinePanel extends JPanel implements MouseListener
 			g.setColor(Color.BLACK);
 			((Graphics2D)g).draw(circle);
 		}
-			
-		if(selected != null)
+		
+		//draw the selected episode box
+		if(selected >= 0)
 		{
-			Episode episode = circles.get(selected);
+			Episode episode = episodes[selected];
+			Ellipse2D selectedCircle = null;
+			for(Entry<Ellipse2D, Integer> entry : circles.entrySet())
+				if(entry.getValue().equals(selected))
+				{
+					selectedCircle = entry.getKey();
+					break;
+				}
+			
 			//highlight the circle
 			g.setColor(Color.BLACK);
-			((Graphics2D)g).fill(selected);
+			((Graphics2D)g).fill(selectedCircle);
 			g.setColor(Color.WHITE);
-			((Graphics2D)g).draw(selected);
+			((Graphics2D)g).draw(selectedCircle);
 			
 			if(waiting)
 				spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
@@ -155,9 +165,6 @@ public class TimelinePanel extends JPanel implements MouseListener
 			{
 				//get the preloaded episode information
 				String[] text = episode.getText().split(" ");
-				
-				//set the font size as a function of the width of the episode panel
-				g.setFont(new Font("TimesRoman", Font.PLAIN, getWidth()*3/100));
 				
 				//wrap the text by word
 				ArrayList<String> texts = new ArrayList<String>();
@@ -174,26 +181,28 @@ public class TimelinePanel extends JPanel implements MouseListener
 				
 				//highlight the circle
 				g.setColor(Color.BLACK);
-				((Graphics2D)g).fill(selected);
+				((Graphics2D)g).fill(selectedCircle);
 				g.setColor(Color.WHITE);
-				((Graphics2D)g).draw(selected);
+				((Graphics2D)g).draw(selectedCircle);
 				
 				//draw a box to hold the episode information
 				g.setColor(Color.BLACK);
-				g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				g.fillRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
 				g.setColor(Color.GREEN);
-				g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				g.drawRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
 				
 				//draw episode title
 				g.setColor(Color.WHITE);
-				g.drawString(episode.show+" - "+episode+':', getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
+				g.drawString(episode.show+" - "+episode+':', getWidth()*1/10, getHeight()/10+g.getFontMetrics().getHeight());
 				
 				//draw wrapped episode information
 				g.setColor(Color.LIGHT_GRAY);
 				for(int j=0; j<texts.size(); ++j)
-					g.drawString(texts.get(j), getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight()*2+(g.getFontMetrics().getHeight()*j));
+					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getHeight()*2+(g.getFontMetrics().getHeight()*j));
 			}
 		}
+		else
+			g.drawString("Click an episode to view it's information.", (getWidth()-g.getFontMetrics().stringWidth("Click an episode to view it's information."))/2, lineY/2);
 	}
 
 	private int timeToXValue(long time, int width)
@@ -206,19 +215,19 @@ public class TimelinePanel extends JPanel implements MouseListener
 	{
 		//iterate though each mapped circle and check to see if it was clicked
 		if(e.getButton() == 1)
-			for(final Entry<Ellipse2D, Episode> entry : circles.entrySet())
+			for(final Entry<Ellipse2D, Integer> entry : circles.entrySet())
 			    if(entry.getKey().contains(e.getPoint()))
 			    {
 			    	//show the spinner while waiting to gather the episode information
 			    	waiting = true;
-			    	selected = entry.getKey();
+			    	selected = entry.getValue();
 			    	repaint();
 			    	new Thread()
 					{
 						public void run()
 						{
 							//gather episode information and stop waiting
-							entry.getValue().getText();
+							episodes[entry.getValue()].getText();
 							waiting = false;
 							repaint();
 						}
