@@ -142,7 +142,7 @@ public class Episode implements Serializable
 		if(image ==null || image.getImage() == null)
 		{
 			getText();
-			if(image.getImage() == null)
+			if(image==null || image.getImage() == null)
 				return show.getImage();
 		}
 		return image;

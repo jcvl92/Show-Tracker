@@ -48,7 +48,7 @@ public class GUI {
 		//set the favicon
 		frmShowTracker.setIconImage(ImageIO.read(this.getClass().getResource("favicon.png")));
 		
-		//change the default close operation
+		//change the default close operation to prevent data file corruption
 		frmShowTracker.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		frmShowTracker.addWindowListener(new java.awt.event.WindowAdapter()
 		{
