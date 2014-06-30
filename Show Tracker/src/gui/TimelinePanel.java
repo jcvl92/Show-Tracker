@@ -1,11 +1,13 @@
 package gui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +22,7 @@ import showTracker.ShowTracker;
 
 //TODO: add labels to the unique date markers
 //TODO: wrap the episode title just like the description
-public class TimelinePanel extends JPanel implements MouseListener
+public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
 	final int PAST_DAYS = 15, FUTURE_DAYS = 15;
@@ -38,8 +40,9 @@ public class TimelinePanel extends JPanel implements MouseListener
 	{
 		super();
 		
-		//create the mouselistener
+		//create the mouselisteners
 		addMouseListener(this);
+		addMouseMotionListener(this);
 		
 		//set the background
 		setBackground(Color.WHITE);
@@ -236,8 +239,24 @@ public class TimelinePanel extends JPanel implements MouseListener
 			    }
 	}
 	
+	public void mouseMoved(MouseEvent e)
+	{
+		boolean setHand = false;
+		for(final Entry<Ellipse2D, Integer> entry : circles.entrySet())
+		    if(entry.getKey().contains(e.getPoint()) && entry.getValue() != selected)
+		    {
+		    	setHand = true;
+		    	break;
+		    }
+		if(setHand)
+			this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		else
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+	
 	public void mouseEntered(MouseEvent e){}
 	public void mouseExited(MouseEvent e){}
 	public void mousePressed(MouseEvent e){}
 	public void mouseReleased(MouseEvent e){}
+	public void mouseDragged(MouseEvent e){}
 }
