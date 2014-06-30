@@ -53,8 +53,8 @@ import showTracker.ShowTracker;
 
 //TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
 //TODO: evaluate the memory and cpu usage of the various features
-//TODO: browse pop-in window should go away after selecting a non-episode
 //TODO: add timeout failure support
+//TODO: prevent data corruption(exiting during a write)
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -669,7 +669,9 @@ public class Main
 					public void run()
 					{
 						Object obj = ((DefaultMutableTreeNode)tree.getLastSelectedPathComponent()).getUserObject();
-
+						
+						popIn.setVisible(false);
+						
 						if(obj.getClass().equals(Episode.class))
 						{
 							final Episode episode = (Episode)obj;
