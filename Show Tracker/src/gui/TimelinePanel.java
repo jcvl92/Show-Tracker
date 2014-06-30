@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -19,6 +20,7 @@ import showTracker.ShowTracker;
 //TODO: change markers to green if the mark is x weeks from now
 //TODO: change marks to be at midnight
 //TODO: draw the episode color legend
+//TODO: highlighted selection doesn't move during a window resize redrawing
 public class TimelinePanel extends JPanel implements MouseListener
 {
 	private static final long serialVersionUID = 1L;
@@ -134,40 +136,56 @@ public class TimelinePanel extends JPanel implements MouseListener
 			//draw ball outline
 			g.setColor(Color.BLACK);
 			((Graphics2D)g).draw(circle);
+		}
 			
-			if(selected != null)
+		if(selected != null)
+		{
+			Episode episode = circles.get(selected);
+			//highlight the circle
+			g.setColor(Color.BLACK);
+			((Graphics2D)g).fill(selected);
+			g.setColor(Color.WHITE);
+			((Graphics2D)g).draw(selected);
+			
+			if(waiting)
+				spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
+			else
 			{
-				Episode episode = circles.get(selected);
+				//get the preloaded episode information
+				String[] text = episode.getText().split(" ");
+				
+				//wrap the text by word
+				ArrayList<String> texts = new ArrayList<String>();
+				for(int j=0; j<text.length; ++j)
+				{
+					if(texts.size()==0 || 
+							g.getFontMetrics().stringWidth(
+									texts.get(texts.size()-1) + text[j] + (texts.get(texts.size()-1).length()==0 ? "" : " ")
+									) > getWidth()*8/10)
+						texts.add(text[j]);
+					else
+						texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
+				}
+				
 				//highlight the circle
 				g.setColor(Color.BLACK);
 				((Graphics2D)g).fill(selected);
 				g.setColor(Color.WHITE);
 				((Graphics2D)g).draw(selected);
 				
-				if(waiting)
-					spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
-				else
-				{
-					//get the preloaded episode information
-					String text = episode.getText();
-					
-					//highlight the circle
-					g.setColor(Color.BLACK);
-					((Graphics2D)g).fill(selected);
-					g.setColor(Color.WHITE);
-					((Graphics2D)g).draw(selected);
-					
-					//draw a box to hold the episode information
-					g.setColor(Color.BLACK);
-					g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-					g.setColor(Color.GREEN);
-					g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-					
-					//draw episode information
-					g.setColor(Color.WHITE);
-					g.drawString(episode.show+" - "+episode+':', getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
-					g.drawString(text, getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight()*2);
-				}
+				//draw a box to hold the episode information
+				g.setColor(Color.BLACK);
+				g.fillRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				g.setColor(Color.GREEN);
+				g.drawRoundRect(getWidth()*1/20, getHeight()*1/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				
+				//draw episode title
+				g.setColor(Color.WHITE);
+				g.drawString(episode.show+" - "+episode+':', getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
+				
+				//draw wrapped episode information
+				for(int j=0; j<texts.size(); ++j)
+					g.drawString(texts.get(j), getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight()*2+(g.getFontMetrics().getHeight()*j));
 			}
 		}
 	}
