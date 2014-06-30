@@ -78,7 +78,84 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		//set the font size as a function of the width of the episode panel
 		g.setFont(new Font("TimesRoman", Font.PLAIN, getWidth()*3/100));
 		
+		//draw the selected episode box
+		if(selected >= 0)
+		{
+			Episode episode = episodes[selected];
+			Ellipse2D selectedCircle = null;
+			for(Entry<Ellipse2D, Integer> entry : circles.entrySet())
+				if(entry.getValue().equals(selected))
+				{
+					selectedCircle = entry.getKey();
+					break;
+				}
+			
+			//highlight the circle
+			g.setColor(Color.BLACK);
+			((Graphics2D)g).fill(selectedCircle);
+			g.setColor(Color.WHITE);
+			((Graphics2D)g).draw(selectedCircle);
+			
+			if(waiting)
+				spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
+			else
+			{
+				//get the preloaded episode information
+				String[] text = episode.getText().split(" ");
+				String[] title = (episode.show+" - "+episode+':').split(" ");
+				
+				//wrap the text by word
+				ArrayList<String> texts = new ArrayList<String>();
+				for(int j=0; j<text.length; ++j)
+				{
+					if(texts.size()==0 || 
+							g.getFontMetrics().stringWidth(
+									texts.get(texts.size()-1) + text[j] + (texts.get(texts.size()-1).length()==0 ? "" : " ")
+									) > getWidth()*8/10)
+						texts.add(text[j]);
+					else
+						texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
+				}
+				ArrayList<String> titles = new ArrayList<String>();
+				for(int j=0; j<title.length; ++j)
+				{
+					if(titles.size()==0 || 
+							g.getFontMetrics().stringWidth(
+									titles.get(titles.size()-1) + title[j] + (titles.get(titles.size()-1).length()==0 ? "" : " ")
+									) > getWidth()*8/10)
+						titles.add(title[j]);
+					else
+						titles.set(titles.size()-1, titles.get(titles.size()-1)+' '+title[j]);
+				}
+				
+				//highlight the circle
+				g.setColor(Color.BLACK);
+				((Graphics2D)g).fill(selectedCircle);
+				g.setColor(Color.WHITE);
+				((Graphics2D)g).draw(selectedCircle);
+				
+				//draw a box to hold the episode information
+				g.setColor(Color.BLACK);
+				g.fillRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				g.setColor(Color.GREEN);
+				g.drawRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
+				
+				//draw wrapped episode title
+				g.setColor(Color.WHITE);
+				for(int j=0; j<titles.size(); ++j)
+					g.drawString(titles.get(j), getWidth()*1/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*j));
+				
+				//draw wrapped episode information
+				g.setColor(Color.LIGHT_GRAY);
+				for(int j=0; j<texts.size(); ++j)
+					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*(j+titles.size())));
+			}
+		}
+		else
+			g.drawString("Click an episode to view it's information.", (getWidth()-g.getFontMetrics().stringWidth("Click an episode to view it's information."))/2, lineY/2);
+		
 		//draw the timeline base line
+		g.setColor(Color.DARK_GRAY);
 		g.fillRect(0, lineY, lineWidth, lineThickness);
 
 		//draw the day markers on the line
@@ -161,82 +238,6 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 			g.setColor(Color.BLACK);
 			((Graphics2D)g).draw(circle);
 		}
-		
-		//draw the selected episode box
-		if(selected >= 0)
-		{
-			Episode episode = episodes[selected];
-			Ellipse2D selectedCircle = null;
-			for(Entry<Ellipse2D, Integer> entry : circles.entrySet())
-				if(entry.getValue().equals(selected))
-				{
-					selectedCircle = entry.getKey();
-					break;
-				}
-			
-			//highlight the circle
-			g.setColor(Color.BLACK);
-			((Graphics2D)g).fill(selectedCircle);
-			g.setColor(Color.WHITE);
-			((Graphics2D)g).draw(selectedCircle);
-			
-			if(waiting)
-				spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
-			else
-			{
-				//get the preloaded episode information
-				String[] text = episode.getText().split(" ");
-				String[] title = (episode.show+" - "+episode+':').split(" ");
-				
-				//wrap the text by word
-				ArrayList<String> texts = new ArrayList<String>();
-				for(int j=0; j<text.length; ++j)
-				{
-					if(texts.size()==0 || 
-							g.getFontMetrics().stringWidth(
-									texts.get(texts.size()-1) + text[j] + (texts.get(texts.size()-1).length()==0 ? "" : " ")
-									) > getWidth()*8/10)
-						texts.add(text[j]);
-					else
-						texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
-				}
-				ArrayList<String> titles = new ArrayList<String>();
-				for(int j=0; j<title.length; ++j)
-				{
-					if(titles.size()==0 || 
-							g.getFontMetrics().stringWidth(
-									titles.get(titles.size()-1) + title[j] + (titles.get(titles.size()-1).length()==0 ? "" : " ")
-									) > getWidth()*8/10)
-						titles.add(title[j]);
-					else
-						titles.set(titles.size()-1, titles.get(titles.size()-1)+' '+title[j]);
-				}
-				
-				//highlight the circle
-				g.setColor(Color.BLACK);
-				((Graphics2D)g).fill(selectedCircle);
-				g.setColor(Color.WHITE);
-				((Graphics2D)g).draw(selectedCircle);
-				
-				//draw a box to hold the episode information
-				g.setColor(Color.BLACK);
-				g.fillRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-				g.setColor(Color.GREEN);
-				g.drawRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
-				
-				//draw wrapped episode title
-				g.setColor(Color.WHITE);
-				for(int j=0; j<titles.size(); ++j)
-					g.drawString(titles.get(j), getWidth()*1/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*j));
-				
-				//draw wrapped episode information
-				g.setColor(Color.LIGHT_GRAY);
-				for(int j=0; j<texts.size(); ++j)
-					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*(j+titles.size())));
-			}
-		}
-		else
-			g.drawString("Click an episode to view it's information.", (getWidth()-g.getFontMetrics().stringWidth("Click an episode to view it's information."))/2, lineY/2);
 	}
 
 	private int timeToXValue(long time, int width)
