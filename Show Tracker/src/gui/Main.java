@@ -54,7 +54,6 @@ import showTracker.ShowTracker;
 //TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
 //TODO: evaluate the memory and cpu usage of the various features
 //TODO: make everything look pretty
-//TODO: implement the timeline function
 //TODO: browse pop-in window should go away after selecting a non-episode
 //TODO: put in failure messages when information could not be grabbed
 //TODO: add timeout failure support
@@ -979,6 +978,7 @@ public class Main
 													super.paintComponent(g);
 													if(image != null)
 													{
+														//TODO: fix this!
 														int destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
 																destinationHeight = (int)(image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 
