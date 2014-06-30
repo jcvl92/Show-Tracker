@@ -55,7 +55,6 @@ import showTracker.ShowTracker;
 //TODO: evaluate the memory and cpu usage of the various features
 //TODO: browse pop-in window should go away after selecting a non-episode
 //TODO: add timeout failure support
-//TODO: change the favicon
 public class Main
 {
 	public static boolean DL_ON = false;

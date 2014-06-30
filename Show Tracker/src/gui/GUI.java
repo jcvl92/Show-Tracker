@@ -9,7 +9,9 @@ import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -35,12 +37,11 @@ public class GUI {
 			}
 		});
 	}
-
-	/**
-	 * Create the application.
-	 */
-	public GUI() {
+	
+	public GUI() throws IOException {
 		initialize();
+		//set the favicon
+		frmShowTracker.setIconImage(ImageIO.read(this.getClass().getResource("favicon.png")));
 	}
 
 	/**
