@@ -53,12 +53,9 @@ import showTracker.ShowTracker;
 
 //TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
 //TODO: evaluate the memory and cpu usage of the various features
-//TODO: make everything look pretty
 //TODO: browse pop-in window should go away after selecting a non-episode
-//TODO: put in failure messages when information could not be grabbed
 //TODO: add timeout failure support
 //TODO: change the favicon
-//TODO: downloading causes the panel to continuously try to open and waste network power, fix that(maybe the download button turns paneling off?)
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -269,7 +266,7 @@ public class Main
 								private ImageIcon image = episode.getImage();
 								protected void paintComponent(Graphics g) {
 									super.paintComponent(g);
-									if(image != null)
+									if(image.getImage() != null)
 									{
 										int destinationWidth = getWidth(),
 												destinationHeight = (int)(image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
@@ -314,6 +311,7 @@ public class Main
 				{
 					public void run()
 					{
+						jt.clearSelection();
 						btnDownload.setText("Downloading Selected");
 						btnDownload.setEnabled(false);
 						btnSelect.setEnabled(false);
@@ -765,7 +763,7 @@ public class Main
 								private ImageIcon image = episode.getImage();
 								protected void paintComponent(Graphics g) {
 									super.paintComponent(g);
-									if(image != null)
+									if(image.getImage() != null)
 									{
 										int destinationWidth = getWidth(),
 												destinationHeight = (int)(image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
@@ -976,9 +974,8 @@ public class Main
 												private ImageIcon image = episode.getImage();
 												protected void paintComponent(Graphics g) {
 													super.paintComponent(g);
-													if(image != null)
+													if(image.getImage() != null)
 													{
-														//TODO: fix this!
 														int destinationWidth = new ImageIcon(this.getClass().getResource("loading spinner.gif")).getIconWidth(),
 																destinationHeight = (int)(image.getIconHeight()/((double)image.getIconWidth()/(double)destinationWidth));
 

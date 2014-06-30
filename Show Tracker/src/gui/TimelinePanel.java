@@ -22,7 +22,6 @@ import showTracker.Episode;
 import showTracker.ShowTracker;
 
 //TODO: add an image to the information if one is available
-//TODO: add a legend that autoscrolls if there is room for it
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
