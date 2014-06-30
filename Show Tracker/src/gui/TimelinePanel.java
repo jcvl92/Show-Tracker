@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
-//TODO: add labels to the unique date markers
+//TODO: add an image to the information if one is available
 //TODO: add a legend that autoscrolls if there is room for it
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
@@ -85,14 +85,32 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		//draw the day markers on the line
 		for(int i=-PAST_DAYS; i<=FUTURE_DAYS; ++i)
 		{
+			int X = timeToXValue(markers[i+PAST_DAYS], lineWidth);
 			if(markers[i+PAST_DAYS] == timelineToday)
+			{
+				g.setColor(Color.BLACK);
+				g.drawString("Today", X-(g.getFontMetrics().stringWidth("Today")/2), lineY+markHeight*3/4+g.getFontMetrics().getAscent());
 				g.setColor(Color.BLUE);
+				g.fillRect(X-(markThickness/2), lineY, markThickness*2, markHeight*3/4);
+			}
 			else if(i%7 == 0)
+			{
+				String weeks = i/7+" week"+(Math.abs(i/7)>1 ? "s" : "");
+				g.setColor(Color.BLACK);
+				int x = X-(g.getFontMetrics().stringWidth(weeks)/2);
+				if(x < 0)
+					x = 0;
+				else if(x+g.getFontMetrics().stringWidth(weeks) > getWidth())
+					x = getWidth() - g.getFontMetrics().stringWidth(weeks);
+				g.drawString(weeks, x, lineY+markHeight*3/4+g.getFontMetrics().getAscent());
 				g.setColor(Color.GREEN);
+				g.fillRect(X-(markThickness/2), lineY, markThickness*2, markHeight*3/4);
+			}
 			else
+			{
 				g.setColor(Color.RED);
-
-			g.fillRect(timeToXValue(markers[i+PAST_DAYS], lineWidth)-(markThickness/2), lineY, markThickness, markHeight*3/4);
+				g.fillRect(X-(markThickness/2), lineY, markThickness, markHeight*3/4);
+			}
 		}
 		
 		//draw the episode lines
@@ -105,8 +123,8 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				Y = Y-dotThickness;
 			else
 				Y = lineY;
-			
 			X = newX;
+			
 			//draw line
 			g.fillRect(X-(markThickness/2), Y-(markHeight-lineThickness), markThickness, markHeight-(Y-lineY));
 		}
@@ -210,12 +228,12 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				//draw wrapped episode title
 				g.setColor(Color.WHITE);
 				for(int j=0; j<titles.size(); ++j)
-					g.drawString(titles.get(j), getWidth()*1/10, getHeight()/10+g.getFontMetrics().getHeight()+(g.getFontMetrics().getHeight()*j));
+					g.drawString(titles.get(j), getWidth()*1/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*j));
 				
 				//draw wrapped episode information
 				g.setColor(Color.LIGHT_GRAY);
 				for(int j=0; j<texts.size(); ++j)
-					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getHeight()*2+(g.getFontMetrics().getHeight()*(j+titles.size()-1)));
+					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*(j+titles.size())));
 			}
 		}
 		else
