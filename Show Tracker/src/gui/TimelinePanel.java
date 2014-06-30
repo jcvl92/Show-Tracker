@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
-//TODO: add an image to the information if one is available(just use the show image for testing)
+//TODO: add an image to the information box
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;

@@ -138,9 +138,13 @@ public class Episode implements Serializable
 
 	public ImageIcon getImage()
 	{
-		//if the image hasn't been grabbed, and the grab fails, return null
-		if(image == null && getText() == null)
-			return null;
+		//if the image hasn't been grabbed, and the grab fails, return the show image
+		if(image ==null || image.getImage() == null)
+		{
+			getText();
+			if(image.getImage() == null)
+				return show.getImage();
+		}
 		return image;
 	}
 
