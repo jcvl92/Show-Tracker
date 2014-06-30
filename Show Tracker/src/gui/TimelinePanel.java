@@ -90,12 +90,6 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 					break;
 				}
 			
-			//highlight the circle
-			g.setColor(Color.BLACK);
-			((Graphics2D)g).fill(selectedCircle);
-			g.setColor(Color.WHITE);
-			((Graphics2D)g).draw(selectedCircle);
-			
 			if(waiting)
 				spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
 			else
@@ -237,6 +231,23 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 			//draw ball outline
 			g.setColor(Color.BLACK);
 			((Graphics2D)g).draw(circle);
+		}
+		
+		//highlight the selected circle if one is selected
+		if(selected >= 0)
+		{
+			Ellipse2D selectedCircle = null;
+			for(Entry<Ellipse2D, Integer> entry : circles.entrySet())
+				if(entry.getValue().equals(selected))
+				{
+					selectedCircle = entry.getKey();
+					break;
+				}
+			
+			g.setColor(Color.BLACK);
+			((Graphics2D)g).fill(selectedCircle);
+			g.setColor(Color.WHITE);
+			((Graphics2D)g).draw(selectedCircle);
 		}
 	}
 

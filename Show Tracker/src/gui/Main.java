@@ -55,6 +55,7 @@ import showTracker.ShowTracker;
 //TODO: evaluate the memory and cpu usage of the various features
 //TODO: add timeout failure support
 //TODO: prevent data corruption(exiting during a write)
+//TODO: make image and information gathering more reliable(maybe scrape another source?)
 public class Main
 {
 	public static boolean DL_ON = false;
