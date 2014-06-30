@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
@@ -21,6 +22,7 @@ import showTracker.ShowTracker;
 //TODO: change marks to be at midnight
 //TODO: draw the episode color legend
 //TODO: highlighted selection doesn't move during a window resize redrawing
+//TODO: wrap the episode title just like the description
 public class TimelinePanel extends JPanel implements MouseListener
 {
 	private static final long serialVersionUID = 1L;
@@ -154,6 +156,9 @@ public class TimelinePanel extends JPanel implements MouseListener
 				//get the preloaded episode information
 				String[] text = episode.getText().split(" ");
 				
+				//set the font size as a function of the width of the episode panel
+				g.setFont(new Font("TimesRoman", Font.PLAIN, getWidth()*3/100));
+				
 				//wrap the text by word
 				ArrayList<String> texts = new ArrayList<String>();
 				for(int j=0; j<text.length; ++j)
@@ -165,7 +170,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 						texts.add(text[j]);
 					else
 						texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
-				}
+				} 
 				
 				//highlight the circle
 				g.setColor(Color.BLACK);
@@ -184,6 +189,7 @@ public class TimelinePanel extends JPanel implements MouseListener
 				g.drawString(episode.show+" - "+episode+':', getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight());
 				
 				//draw wrapped episode information
+				g.setColor(Color.LIGHT_GRAY);
 				for(int j=0; j<texts.size(); ++j)
 					g.drawString(texts.get(j), getWidth()*1/10, getHeight()*1/10+g.getFontMetrics().getHeight()*2+(g.getFontMetrics().getHeight()*j));
 			}
