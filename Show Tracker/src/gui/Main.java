@@ -53,6 +53,8 @@ import showTracker.ShowTracker;
 //TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
 //		point is, if an operation is occurring, the user should not be able to do anything
 //TODO: make image and information gathering more reliable(maybe scrape another source?)
+//TODO: figure out why downloading is slow after adding a show, but slow after closing and reopening
+//		this happens after adding any show, regardless of what would be downloaded(all show downloading becomes slow)
 public class Main
 {
 	public static boolean DL_ON = false;
