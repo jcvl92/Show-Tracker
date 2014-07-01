@@ -145,8 +145,25 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*(j+titles.size())));
 				
 				//draw the episode image
-				//TODO: resize the image to fit either the width or the height(whichever would be reached first)
-				g.drawImage(Main.getScaledInstance(episode.getImage(), getWidth()*3/10, getHeight()*5/10), getWidth()*6/10, getHeight()/10, this);
+				double panelWidth = getWidth()*3/10,
+						panelHeight = getHeight()*5/10,
+						sourceWidth = episode.getImage().getIconWidth(),
+						sourceHeight = episode.getImage().getIconHeight(),
+						width, height, xOffset=0, yOffset=0;
+				if(sourceHeight/sourceWidth < panelHeight/panelWidth)
+				{
+					width = panelWidth;
+					height = (sourceHeight*panelWidth)/sourceWidth;
+					yOffset = ((panelHeight-height)/2) + 1;
+				}
+				else
+				{
+					width = (sourceWidth*panelHeight)/sourceHeight;
+					height = panelHeight;
+					xOffset = ((panelWidth-width)/2) + 1;
+				}
+				g.drawImage(Main.getScaledInstance(episode.getImage(), (int)width, (int)height), (int)(((getWidth()*6)/10)+xOffset), (int)((getHeight()/10)+yOffset), this);
+				g.drawRect((int)(((getWidth()*6)/10)+xOffset), (int)((getHeight()/10)+yOffset), (int)width, (int)height);
 			}
 		}
 		else
