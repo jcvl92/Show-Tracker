@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
+//TODO: if the text is bigger than can fit, shrink the font(check lineSize*lines < panelHeight, if no, reduce the font size and retry)
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;

@@ -51,6 +51,7 @@ import showTracker.Show;
 import showTracker.ShowTracker;
 
 //TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
+//		point is, if an operation is occurring, the user should not be able to do anything
 //TODO: make image and information gathering more reliable(maybe scrape another source?)
 public class Main
 {
@@ -1058,7 +1059,6 @@ public class Main
 			int targetWidth,
 			int targetHeight)
 	{
-		//TODO: prevent this from entering an infinite loop when either targetwidth or targetheight are greater than their respective source counterpart
 		BufferedImage img = new BufferedImage(
 				image.getIconWidth(),
 				image.getIconHeight(),
