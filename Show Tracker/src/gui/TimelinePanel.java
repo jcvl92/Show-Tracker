@@ -21,7 +21,6 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
-//TODO: if the text is bigger than can fit, shrink the font(check lineSize*lines < panelHeight, if no, reduce the font size and retry)
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
@@ -99,28 +98,35 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				String[] title = (episode.show+" - "+episode+':').split(" ");
 				
 				//wrap the text by word
-				ArrayList<String> texts = new ArrayList<String>();
-				for(int j=0; j<text.length; ++j)
+				ArrayList<String> texts, titles;
+				Font oldFont = g.getFont();
+				do
 				{
-					if(texts.size()==0 || 
-							g.getFontMetrics().stringWidth(
-									texts.get(texts.size()-1) + text[j] + (texts.get(texts.size()-1).length()==0 ? "" : " ")
-									) > getWidth()*5/10-5)
-						texts.add(text[j]);
-					else
-						texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
-				}
-				ArrayList<String> titles = new ArrayList<String>();
-				for(int j=0; j<title.length; ++j)
-				{
-					if(titles.size()==0 || 
-							g.getFontMetrics().stringWidth(
-									titles.get(titles.size()-1) + title[j] + (titles.get(titles.size()-1).length()==0 ? "" : " ")
-									) > getWidth()*5/10-5)
-						titles.add(title[j]);
-					else
-						titles.set(titles.size()-1, titles.get(titles.size()-1)+' '+title[j]);
-				}
+					texts = new ArrayList<String>();
+					titles = new ArrayList<String>();
+					for(int j=0; j<text.length; ++j)
+					{
+						if(texts.size()==0 || 
+								g.getFontMetrics().stringWidth(
+										texts.get(texts.size()-1) + text[j] + (texts.get(texts.size()-1).length()==0 ? "" : " ")
+										) > getWidth()*5/10-5)
+							texts.add(text[j]);
+						else
+							texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
+					}
+					for(int j=0; j<title.length; ++j)
+					{
+						if(titles.size()==0 || 
+								g.getFontMetrics().stringWidth(
+										titles.get(titles.size()-1) + title[j] + (titles.get(titles.size()-1).length()==0 ? "" : " ")
+										) > getWidth()*5/10-5)
+							titles.add(title[j]);
+						else
+							titles.set(titles.size()-1, titles.get(titles.size()-1)+' '+title[j]);
+					}
+					//if the text is bigger than can fit, shrink the font and rewrap
+					g.setFont(new Font("TimesRoman", Font.PLAIN, g.getFont().getSize()-1));
+				}while((texts.size()+titles.size()) * g.getFontMetrics().getHeight() > getHeight()*9/20);
 				
 				//draw a box to hold the episode information
 				g.setColor(Color.BLACK);
@@ -128,6 +134,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				g.setColor(Color.GREEN);
 				g.drawRoundRect(getWidth()/20, getHeight()/20, getWidth()*9/10, getHeight()*6/10, 10, 10);
 				
+				g.setFont(new Font("TimesRoman", Font.PLAIN, g.getFont().getSize()+1));
 				//draw wrapped episode title
 				g.setColor(Color.WHITE);
 				for(int j=0; j<titles.size(); ++j)
@@ -137,6 +144,9 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				g.setColor(Color.LIGHT_GRAY);
 				for(int j=0; j<texts.size(); ++j)
 					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*(j+titles.size())));
+				
+				//reset the old font
+				g.setFont(oldFont);
 				
 				//draw the episode image
 				double panelWidth = getWidth()*3/10,
