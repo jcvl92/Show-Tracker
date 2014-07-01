@@ -1058,6 +1058,7 @@ public class Main
 			int targetWidth,
 			int targetHeight)
 	{
+		//TODO: prevent this from entering an infinite loop when either targetwidth or targetheight are greater than their respective source counterpart
 		BufferedImage img = new BufferedImage(
 				image.getIconWidth(),
 				image.getIconHeight(),
@@ -1065,34 +1066,38 @@ public class Main
 		Graphics g1 = img.createGraphics();
 		image.paintIcon(null, g1, 0,0);
 		g1.dispose();
-
+		
 		BufferedImage ret = img;
-		int w = img.getWidth(),
-				h = img.getHeight();
-
-		do {
-			if (w > targetWidth) {
+		int w = img.getWidth(), h = img.getHeight();
+		
+		do
+		{
+			if(w != targetWidth)
+			{
 				w /= 2;
-				if (w < targetWidth) {
+				if (w < targetWidth)
+				{
 					w = targetWidth;
 				}
 			}
-
-			if (h > targetHeight) {
+			
+			if(h != targetHeight)
+			{
 				h /= 2;
-				if (h < targetHeight) {
+				if (h < targetHeight)
+				{
 					h = targetHeight;
 				}
 			}
-
+			
 			BufferedImage tmp = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 			Graphics2D g2 = tmp.createGraphics();
 			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 			g2.drawImage(ret, 0, 0, w, h, null);
 			g2.dispose();
-
+			
 			ret = tmp;
-		} while (w != targetWidth || h != targetHeight);
+		} while(w != targetWidth || h != targetHeight);
 
 		return ret;
 	}

@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
-//TODO: add an image to the information box
+//TODO: fix the highlighted ball drawing that when the window is maximized, the ball relocates properly
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
@@ -73,7 +73,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				lineThickness = getHeight()*1/30,
 				dotThickness = lineThickness*3/4,
 				markHeight = lineThickness*2,
-				markThickness = getWidth()/400;
+				markThickness = getWidth()/400 > 0 ? getWidth()/400 : 1;
 		
 		//set the font size as a function of the width of the episode panel
 		g.setFont(new Font("TimesRoman", Font.PLAIN, getWidth()*3/100));
@@ -105,7 +105,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 					if(texts.size()==0 || 
 							g.getFontMetrics().stringWidth(
 									texts.get(texts.size()-1) + text[j] + (texts.get(texts.size()-1).length()==0 ? "" : " ")
-									) > getWidth()*8/10)
+									) > getWidth()*5/10-5)
 						texts.add(text[j]);
 					else
 						texts.set(texts.size()-1, texts.get(texts.size()-1)+' '+text[j]);
@@ -116,7 +116,7 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 					if(titles.size()==0 || 
 							g.getFontMetrics().stringWidth(
 									titles.get(titles.size()-1) + title[j] + (titles.get(titles.size()-1).length()==0 ? "" : " ")
-									) > getWidth()*8/10)
+									) > getWidth()*5/10-5)
 						titles.add(title[j]);
 					else
 						titles.set(titles.size()-1, titles.get(titles.size()-1)+' '+title[j]);
@@ -137,12 +137,16 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 				//draw wrapped episode title
 				g.setColor(Color.WHITE);
 				for(int j=0; j<titles.size(); ++j)
-					g.drawString(titles.get(j), getWidth()*1/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*j));
+					g.drawString(titles.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*j));
 				
 				//draw wrapped episode information
 				g.setColor(Color.LIGHT_GRAY);
 				for(int j=0; j<texts.size(); ++j)
 					g.drawString(texts.get(j), getWidth()/10, getHeight()/10+g.getFontMetrics().getAscent()+(g.getFontMetrics().getHeight()*(j+titles.size())));
+				
+				//draw the episode image
+				//TODO: resize the image to fit either the width or the height(whichever would be reached first)
+				g.drawImage(Main.getScaledInstance(episode.getImage(), getWidth()*3/10, getHeight()*5/10), getWidth()*6/10, getHeight()/10, this);
 			}
 		}
 		else
