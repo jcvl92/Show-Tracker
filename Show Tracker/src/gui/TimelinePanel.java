@@ -21,7 +21,6 @@ import javax.swing.JPanel;
 import showTracker.Episode;
 import showTracker.ShowTracker;
 
-//TODO: fix the highlighted ball drawing that when the window is maximized, the ball relocates properly
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
@@ -82,18 +81,18 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 		if(selected >= 0)
 		{
 			Episode episode = episodes[selected];
-			Ellipse2D selectedCircle = null;
-			for(Entry<Ellipse2D, Integer> entry : circles.entrySet())
-				if(entry.getValue().equals(selected))
-				{
-					selectedCircle = entry.getKey();
-					break;
-				}
+			Ellipse2D selectedCircle = (Ellipse2D)circles.keySet().toArray()[selected];
 			
 			if(waiting)
 				spinner.paintIcon(this, g, getWidth()/2-spinner.getIconWidth()/2, lineY/2-spinner.getIconHeight()/2);
 			else
 			{
+				//highlight the circle
+				g.setColor(Color.BLACK);
+				((Graphics2D)g).fill(selectedCircle);
+				g.setColor(Color.WHITE);
+				((Graphics2D)g).draw(selectedCircle);
+				
 				//get the preloaded episode information
 				String[] text = episode.getText().split(" ");
 				String[] title = (episode.show+" - "+episode+':').split(" ");
@@ -121,12 +120,6 @@ public class TimelinePanel extends JPanel implements MouseListener, MouseMotionL
 					else
 						titles.set(titles.size()-1, titles.get(titles.size()-1)+' '+title[j]);
 				}
-				
-				//highlight the circle
-				g.setColor(Color.BLACK);
-				((Graphics2D)g).fill(selectedCircle);
-				g.setColor(Color.WHITE);
-				((Graphics2D)g).draw(selectedCircle);
 				
 				//draw a box to hold the episode information
 				g.setColor(Color.BLACK);
