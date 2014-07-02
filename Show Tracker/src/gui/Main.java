@@ -19,7 +19,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.Box;
@@ -54,7 +53,6 @@ import showTracker.ShowTracker;
 //		this happens after adding any show, regardless of what would be downloaded(all show downloading becomes slow)
 //TODO: thetvdb.com to grab episode images if tvrage fails(this is will take longer because you need to search for it)
 //		actually, thetvdb.com database api is open, and provides image banners in the returns, perhaps convert episodes to scrape that source
-//TODO: episodes do not update in the expected order during "update all"
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -414,16 +412,17 @@ public class Main
 						btnUpdateAll.setText("Updating All");
 						synchronized(m)
 						{
-							for(Entry<Show, JButton> entry : uData.entrySet())
+							for(int i=0; i<ShowTracker.shows.size(); ++i)
 							{
-								JButton button = entry.getValue();
+								Show show = ShowTracker.shows.get(i);
+								JButton button = uData.get(show);
 								button.setEnabled(false);
 								try
 								{
 									synchronized(m)
 									{
 										button.setText("Updating");
-										entry.getKey().update();
+										show.update();
 										button.setText("Updated");
 									}
 								}
