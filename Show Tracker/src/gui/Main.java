@@ -55,8 +55,7 @@ import showTracker.ShowTracker;
 //TODO: make image and information gathering more reliable(maybe scrape another source?)
 //TODO: figure out why downloading is slow after adding a show, but slow after closing and reopening
 //		this happens after adding any show, regardless of what would be downloaded(all show downloading becomes slow)
-//TODO: use thetvdb.com xml api to grab episode images and text?
-//		(just abandon tvrage grabbing in getText()?, one page load will get everything with text in a more reliable spot)
+//TODO: thetvdb.com to grab episode images if tvrage fails(this is will take longer because you need to search for it)
 public class Main
 {
 	public static boolean DL_ON = false;
