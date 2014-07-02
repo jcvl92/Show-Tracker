@@ -50,13 +50,11 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
-//		point is, if an operation is occurring, the user should not be able to do anything
-//		for this, maybe just disable the 4 left buttons so navigation cannot occur
 //TODO: figure out why downloading is slow after adding a show, but slow after closing and reopening
 //		this happens after adding any show, regardless of what would be downloaded(all show downloading becomes slow)
 //TODO: thetvdb.com to grab episode images if tvrage fails(this is will take longer because you need to search for it)
 //		actually, thetvdb.com database api is open, and provides image banners in the returns, perhaps convert episodes to scrape that source
+//TODO: episodes do not update in the expected order during "update all"
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -64,12 +62,26 @@ public class Main
 	Thread paneler = null;
 	JPanel panel;
 	JFrame frame;
+	static JButton[] navButtons;
 	ShowTracker m = new ShowTracker();
 
 	public Main(JPanel p, JFrame f)
 	{
 		panel = p;
 		frame = f;
+	}
+	
+	public void setButtons(JButton ... buttons)
+	{
+		navButtons = buttons;
+	}
+	
+	private static void enableButtons(boolean b)
+	{
+		for(JButton button: navButtons)
+		{
+			button.setEnabled(b);
+		}
 	}
 
 	public void splash()
@@ -301,7 +313,7 @@ public class Main
 		fl.setHgap(0);fl.setVgap(0);
 		buttonPanel.setLayout(fl);
 
-		//add the download button
+		//add the download all button
 		final JButton btnDownload = new JButton("Download Selected");
 		final JButton btnSelect = new JButton("Select/Deselect All");
 		btnDownload.addActionListener(new ActionListener()
@@ -312,6 +324,7 @@ public class Main
 				{
 					public void run()
 					{
+						Main.enableButtons(false);
 						jt.clearSelection();
 						btnDownload.setText("Downloading Selected");
 						btnDownload.setEnabled(false);
@@ -339,6 +352,7 @@ public class Main
 						btnDownload.setText("Download Selected");
 						btnDownload.setEnabled(true);
 						btnSelect.setEnabled(true);
+						Main.enableButtons(true);
 					}
 				}.start();
 			}
@@ -381,7 +395,7 @@ public class Main
 		//map of shows to update buttons for the update all button to manipulate
 		final HashMap<Show, JButton> uData = new HashMap<Show, JButton>();
 
-		//create the header with update button
+		//create the header with the update all button
 		JPanel header = new JPanel(new BorderLayout());
 		JTextArea headerText = new JTextArea("Your Shows:");
 		headerText.setFont(new Font("Times New Roman", Font.BOLD, 20));
@@ -395,6 +409,7 @@ public class Main
 				{
 					public void run()
 					{
+						Main.enableButtons(false);
 						btnUpdateAll.setEnabled(false);
 						btnUpdateAll.setText("Updating All");
 						synchronized(m)
@@ -420,6 +435,7 @@ public class Main
 							ShowTracker.writeShowsToFile();
 							btnUpdateAll.setText("Updated All");
 						}
+						Main.enableButtons(true);
 					}
 				}.start();
 			}
@@ -605,7 +621,7 @@ public class Main
 			public void actionPerformed(ActionEvent e)
 			{
 				addName.setEnabled(false);
-				btnAdd.setText("Adding");
+				btnAdd.setText("Searching");
 				btnAdd.setEnabled(false);
 				new Thread()
 				{

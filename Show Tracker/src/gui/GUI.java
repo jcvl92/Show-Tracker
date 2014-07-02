@@ -169,6 +169,7 @@ public class GUI {
 		gbc_btnEpisodeTimeline.gridx = 0;
 		gbc_btnEpisodeTimeline.gridy = 3;
 		buttonPanel.add(btnEpisodeTimeline, gbc_btnEpisodeTimeline);
+		
+		main.setButtons(btnUnseenEpisodes, btnManageShows, btnBrowseShows, btnEpisodeTimeline);
 	}
-
 }
