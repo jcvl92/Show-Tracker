@@ -19,7 +19,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Vector;
+
 import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -392,6 +394,7 @@ public class Main
 
 		//map of shows to update buttons for the update all button to manipulate
 		final HashMap<Show, JButton> uData = new HashMap<Show, JButton>();
+		final ArrayList<JButton> deleteButtons = new ArrayList<JButton>();
 
 		//create the header with the update all button
 		JPanel header = new JPanel(new BorderLayout());
@@ -412,17 +415,29 @@ public class Main
 						btnUpdateAll.setText("Updating All");
 						synchronized(m)
 						{
+							//disable the delete buttons
+							for(JButton delete: deleteButtons)
+							{
+								delete.setEnabled(false);
+							}
+							//disable the update buttons
+							for(Entry<Show, JButton> update: uData.entrySet())
+							{
+								update.getValue().setEnabled(false);
+							}
 							for(int i=0; i<ShowTracker.shows.size(); ++i)
 							{
 								Show show = ShowTracker.shows.get(i);
 								JButton button = uData.get(show);
-								button.setEnabled(false);
 								try
 								{
 									synchronized(m)
 									{
+										Color c = button.getBackground();
+										button.setBackground(Color.LIGHT_GRAY);
 										button.setText("Updating");
 										show.update();
+										button.setBackground(c);
 										button.setText("Updated");
 									}
 								}
@@ -432,6 +447,11 @@ public class Main
 								}
 							}
 							ShowTracker.writeShowsToFile();
+							//reenable the delete buttons
+							for(JButton delete: deleteButtons)
+							{
+								delete.setEnabled(true);
+							}
 							btnUpdateAll.setText("Updated All");
 						}
 						Main.enableButtons(true);
@@ -504,6 +524,7 @@ public class Main
 
 			//delete button
 			final JButton btnDelete = new JButton("Delete");
+			deleteButtons.add(btnDelete);
 			final int showNum = i;
 			btnDelete.addActionListener(new ActionListener()
 			{
@@ -540,9 +561,12 @@ public class Main
 							{
 								synchronized(m)
 								{
+									Color c = btnUpdate.getBackground();
+									btnUpdate.setBackground(Color.LIGHT_GRAY);
 									btnUpdate.setText("Updating");
 									show.update();
 									ShowTracker.writeShowsToFile();
+									btnUpdate.setBackground(c);
 									btnUpdate.setText("Updated");
 								}
 							}
