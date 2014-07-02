@@ -52,10 +52,11 @@ import showTracker.ShowTracker;
 
 //TODO: lock down panels where appropiate(like downloading and adding)(also, lock down buttons? when updating)
 //		point is, if an operation is occurring, the user should not be able to do anything
-//TODO: make image and information gathering more reliable(maybe scrape another source?)
+//		for this, maybe just disable the 4 left buttons so navigation cannot occur
 //TODO: figure out why downloading is slow after adding a show, but slow after closing and reopening
 //		this happens after adding any show, regardless of what would be downloaded(all show downloading becomes slow)
 //TODO: thetvdb.com to grab episode images if tvrage fails(this is will take longer because you need to search for it)
+//		actually, thetvdb.com database api is open, and provides image banners in the returns, perhaps convert episodes to scrape that source
 public class Main
 {
 	public static boolean DL_ON = false;
