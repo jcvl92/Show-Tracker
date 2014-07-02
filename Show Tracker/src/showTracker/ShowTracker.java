@@ -100,6 +100,7 @@ public class ShowTracker
 
 	public static void writeShowsToFile()
 	{
+		//TODO: writing new shows to file is slow for some reason
 		synchronized(shows)
 		{
 			try
