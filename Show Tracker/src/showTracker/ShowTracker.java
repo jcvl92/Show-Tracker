@@ -1,5 +1,6 @@
 package showTracker;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -65,7 +66,7 @@ public class ShowTracker
 		}
 	}
 
-	private ArrayList<Show> readShowsFromFile()
+	private static ArrayList<Show> readShowsFromFile()
 	{
 		try
 		{
@@ -106,7 +107,7 @@ public class ShowTracker
 			try
 			{
 				writing.lock();
-				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("show_data")));
+				ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File("show_data"))));
 				oos.writeObject(shows);
 				oos.close();
 			}

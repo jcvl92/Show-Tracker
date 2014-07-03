@@ -223,10 +223,11 @@ public class Main
 									{
 										public void run()
 										{
+
+											((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 											btnLastWatched.setEnabled(false);
 											episode.setWatchedAndSave(!episode.isWatched());
 											ShowTracker.writeShowsToFile();
-											((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 										}
 									}.start();
 								}
@@ -249,9 +250,10 @@ public class Main
 											btnDownload.setEnabled(false);
 											if(episode.download())
 											{
+												((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 												episode.setWatchedAndSave(!episode.isWatched());
 												ShowTracker.writeShowsToFile();
-												((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
+												episodes.remove(jt.getSelectedRow());
 											}
 											else
 											{
@@ -337,9 +339,9 @@ public class Main
 							{
 								if(episodes.get(i).download())
 								{
+									((DefaultTableModel)jt.getModel()).removeRow(i);
 									episodes.get(i).setWatchedAndSave(true);
 									episodes.remove(i);
-									((DefaultTableModel)jt.getModel()).removeRow(i);
 								}
 								else
 								{
