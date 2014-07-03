@@ -16,6 +16,7 @@ public class ShowTracker
 {
 	public static ArrayList<Show> shows;
 	public static ReentrantLock writing = new ReentrantLock();
+	static ObjectOutputStream oos = null;
 
 	public ShowTracker()
 	{
@@ -66,7 +67,7 @@ public class ShowTracker
 		}
 	}
 
-	private static ArrayList<Show> readShowsFromFile()
+	private ArrayList<Show> readShowsFromFile()
 	{
 		try
 		{
@@ -101,15 +102,15 @@ public class ShowTracker
 
 	public static void writeShowsToFile()
 	{
-		//TODO: writing new shows to file is slow for some reason
 		synchronized(shows)
 		{
 			try
 			{
 				writing.lock();
-				ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File("show_data"))));
+				if(oos == null)
+					oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File("show_data"))));
 				oos.writeObject(shows);
-				oos.close();
+				oos.flush();
 			}
 			catch(Exception e)
 			{
