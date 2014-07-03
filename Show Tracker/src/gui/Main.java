@@ -51,12 +51,11 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: figure out why downloading is slow after adding a show, but slow after closing and reopening
-//		this happens after adding any show, regardless of what would be downloaded(all show downloading becomes slow)
 //TODO: thetvdb.com to grab episode images if tvrage fails(this is will take longer because you need to search for it)
 //		actually, thetvdb.com database api is open, and provides image banners in the returns, perhaps convert episodes to scrape that source
 //		if one source times out, perhaps scrape the other?
 //TODO: disable table editing(of the checkbox) while downloading
+//TODO: de-thread or synchronized the unseen table with episode downloading
 public class Main
 {
 	public static boolean DL_ON = false;
