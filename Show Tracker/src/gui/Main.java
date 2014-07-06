@@ -52,9 +52,6 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: thetvdb.com to grab episode images if tvrage fails(this is will take longer because you need to search for it)
-//		actually, thetvdb.com database api is open, and provides image banners in the returns, perhaps convert episodes to scrape that source
-//		if one source times out, perhaps scrape the other?
 public class Main
 {
 	public static boolean DL_ON = false;

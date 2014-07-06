@@ -113,13 +113,21 @@ public class Episode implements Serializable
 				if(image == null)
 					try
 					{
-						image = new ImageIcon();
-						image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
-						save = true;
+						try
+						{
+							image = new ImageIcon();
+							image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
+							save = true;
+						}
+						catch(Exception e)
+						{
+							image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
+							save = true;
+						}
 					}
 					catch(Exception e)
 					{
-						image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
+						image = getImageFromTVDB();
 						save = true;
 					}
 			}
@@ -130,7 +138,20 @@ public class Episode implements Serializable
 
 		return description;
 	}
-
+	
+	private ImageIcon getImageFromTVDB() throws IOException
+	{
+		//get the episode link
+		Document link = Jsoup.connect("http://thetvdb.com/?tab=seasonall&id="+show.TVDBId).timeout(60*1000).get();
+		String episodeLink = link.getElementsMatchingOwnText(information.get("title")).get(0).attr("href");
+		
+		//get the episode ID
+		String TVDBEpisodeId = episodeLink.substring(episodeLink.indexOf("&id")+4, episodeLink.indexOf("&lid"));
+		
+		//get the image
+		return new ImageIcon(new URL("http://thetvdb.com/banners/episodes/"+show.TVDBId+"/"+TVDBEpisodeId+".jpg"));
+	}
+	
 	private void save()
 	{
 		ShowTracker.writeShowsToFile();

@@ -22,7 +22,7 @@ public class Show implements Serializable
 {
 	String showName, seasonCount, runTime, airTime, status, search, link;
 	ImageIcon image;
-	int showID;
+	int showID, TVDBId;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
 
 	public static ArrayList<HashMap<String, String>> search(String searchText) throws IOException
@@ -122,7 +122,11 @@ public class Show implements Serializable
 		{
 			show.image = null;
 		}
-
+		
+		//get the TVDB id for the show for image grabbing
+		Document link = Jsoup.connect("http://thetvdb.com/api/GetSeries.php?seriesname="+show.showName).timeout(60*1000).get();
+		show.TVDBId = Integer.parseInt(((TextNode)link.child(0).child(1).child(0).child(0).child(0).childNode(0)).text());
+		
 		return show;
 	}
 
@@ -138,8 +142,9 @@ public class Show implements Serializable
 
 	public void update() throws IOException, InterruptedException
 	{
-		//TODO: this is not robust, it relies on the fact that the new episodes will have nothing removed. find a better way to update while keeping the seen value
-		//TODO: maybe we could use the TVRage update api call?
+		//this is not robust, it relies on the fact that the new episodes will have nothing removed
+		//it works though, so it stays
+		
 		//store the current episode contents
 		@SuppressWarnings("unchecked")
 		ArrayList<Season> oldSeasons = (ArrayList<Season>)seasons.clone();
