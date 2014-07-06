@@ -55,7 +55,6 @@ import showTracker.ShowTracker;
 //TODO: thetvdb.com to grab episode images if tvrage fails(this is will take longer because you need to search for it)
 //		actually, thetvdb.com database api is open, and provides image banners in the returns, perhaps convert episodes to scrape that source
 //		if one source times out, perhaps scrape the other?
-//TODO: disable table editing(of the checkbox) while downloading
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -160,20 +159,13 @@ public class Main
 			}
 			public boolean isCellEditable(int row, int column)
 			{
-				try
-				{
-					if(!rl.tryLock())
-						return false;
-					//only allow editing of the checkbox cells
-					if(((Vector<?>)dataVector.get(row)).get(column).getClass().equals(Boolean.class))
-						return true;
+				if(rl.isLocked())
 					return false;
-				}
-				finally
-				{
-					if(rl.isHeldByCurrentThread())
-						rl.unlock();
-				}
+				
+				//only allow editing of the checkbox cells
+				if(((Vector<?>)dataVector.get(row)).get(column).getClass().equals(Boolean.class))
+					return true;
+				return false;
 			}
 		});
 		//disable reordering
