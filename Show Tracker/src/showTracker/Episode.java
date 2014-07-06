@@ -18,6 +18,7 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 @SuppressWarnings("serial")
 public class Episode implements Serializable
@@ -143,7 +144,15 @@ public class Episode implements Serializable
 	{
 		//get the episode link
 		Document link = Jsoup.connect("http://thetvdb.com/?tab=seasonall&id="+show.TVDBId).timeout(60*1000).get();
-		String episodeLink = link.getElementsMatchingOwnText(information.get("title")).get(0).attr("href");
+		
+		//search word by word until you get only one result(helps find episodes with appended titles)
+		String[] words = information.get("title").split(" ");
+		String searcher = words[0];
+		Elements results = link.getAllElements();
+		for(int i=0; i<words.length && results.size()>1; searcher=words[++i])
+			results = link.getElementsContainingOwnText(searcher);
+		
+		String episodeLink = results.get(0).attr("href");
 		
 		//get the episode ID
 		String TVDBEpisodeId = episodeLink.substring(episodeLink.indexOf("&id")+4, episodeLink.indexOf("&lid"));
