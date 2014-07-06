@@ -54,7 +54,7 @@ import showTracker.ShowTracker;
 
 public class Main
 {
-	public static boolean DL_ON = false;
+	public static boolean DL_ON = true;
 	boolean unseenVal = true;
 	Thread paneler = null;
 	JPanel panel;
