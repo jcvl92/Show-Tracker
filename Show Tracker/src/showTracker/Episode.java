@@ -80,7 +80,7 @@ public class Episode implements Serializable
 
 	public String toString()
 	{
-		return getEpisodeNumber()+" - "+information.get("title")+(isWatched() || !airDate.isBeforeNow() ? "" : "*");
+		return getSENumber()+" - "+information.get("title")+(isWatched() || !airDate.isBeforeNow() ? "" : "*");
 	}
 
 	public String title()
@@ -186,22 +186,27 @@ public class Episode implements Serializable
 			return "Unaired";
 	}
 
-	public String getEpisodeNumber()
+	public String getSENumber()
 	{
-		String seasonNum = information.get("inseason"),
-				episodeNum = information.get("seasonnum");
+		String seasonNum = information.get("inseason");
 		if(seasonNum == null)
 			seasonNum = "0";
-		if(episodeNum == null)
-			episodeNum = "0";
 		if(seasonNum.length()<2)
 			seasonNum = '0'+seasonNum;
-		if(episodeNum.length()<2)
-			episodeNum = '0'+episodeNum;
-		return 'S'+seasonNum+'E'+episodeNum;
+		return 'S'+seasonNum+'E'+getEpisodeNumber();
 	}
-
-	public String timeDifference()
+	
+	public String getEpisodeNumber()
+	{
+		String episodeNum = information.get("seasonnum");
+		if(episodeNum == null)
+			return "00";
+		if(episodeNum.length()<2)
+			return '0'+episodeNum;
+		return episodeNum;
+	}
+	
+ 	public String timeDifference()
 	{
 		StringBuilder sb = new StringBuilder();
 
@@ -257,7 +262,7 @@ public class Episode implements Serializable
 			if(Main.DL_ON)
 			{
 				//get the link from TPB
-				Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getEpisodeNumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+				Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getSENumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
 
 				//open the link
 				new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();

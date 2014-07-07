@@ -122,7 +122,7 @@ public class Main
 		final ArrayList<Episode> episodes = m.getUnseenEpisodes();
 		final Object[][] data = new Object[episodes.size()][5];
 		for(int i=0; i<episodes.size(); ++i)
-			data[i] = new Object[]{episodes.get(i).show.toString(), episodes.get(i).getEpisodeNumber(), episodes.get(i).title(), episodes.get(i).getDate(), true};
+			data[i] = new Object[]{episodes.get(i).show.toString(), episodes.get(i).getSENumber(), episodes.get(i).title(), episodes.get(i).getDate(), true};
 
 		//make a table from the data(overloading the table model to make checkboxes work)
 		final JTable jt = new JTable(new DefaultTableModel(data, new String[]{"Show Name", "Episode Number", "Episode Title", "Date Aired", "Download"})
@@ -988,7 +988,7 @@ public class Main
 						final ArrayList<Episode> episodes = show.getAiredEpisodes();
 						final Object[][] data = new Object[episodes.size()][5];
 						for(int i=0; i<episodes.size(); ++i)
-							data[i] = new Object[]{episodes.get(i).getEpisodeNumber(), episodes.get(i).title(), episodes.get(i).getDate()};
+							data[i] = new Object[]{episodes.get(i).getSENumber(), episodes.get(i).title(), episodes.get(i).getDate()};
 
 						//make a table from the data
 						final JTable jt = new JTable(data, new String[]{"Episode Number", "Episode Title", "Date Aired"})

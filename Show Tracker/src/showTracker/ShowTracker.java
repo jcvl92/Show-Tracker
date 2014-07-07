@@ -24,7 +24,7 @@ public class ShowTracker
 			if(arg1.getAirDate() == null) return 1;
 			if(arg0.getAirDate() == null) return -1;
 			int result = arg0.getAirDate().compareTo(arg1.getAirDate());
-			return result!=0 ?  result : Integer.parseInt(arg0.information.get("seasonnum")) - Integer.parseInt(arg1.information.get("seasonnum"));
+			return result!=0 ?  result : Integer.parseInt(arg0.getEpisodeNumber()) - Integer.parseInt(arg1.getEpisodeNumber());
 		}
 	};
 
