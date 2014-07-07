@@ -52,7 +52,6 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: fix checkboxes
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -132,7 +131,7 @@ public class Main
 			public Class<?> getColumnClass(int columnIndex)
 			{
 				if(columnIndex == 4)
-					return boolean.class;
+					return Boolean.class;
 				else
 					return String.class;
 			}
@@ -161,7 +160,7 @@ public class Main
 					return false;
 				
 				//only allow editing of the checkbox cells
-				if(((Vector<?>)dataVector.get(row)).get(column).getClass().equals(Boolean.class))
+				if(column == 4)//((Vector<?>)dataVector.get(row)).get(column).getClass().equals(Boolean.class))
 					return true;
 				return false;
 			}
