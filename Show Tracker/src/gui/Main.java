@@ -1077,16 +1077,16 @@ public class Main
 						{
 							public void actionPerformed(ActionEvent e)
 							{
+								for(int i=jt.getSelectedRow(); i<episodes.size(); ++i)
+									episodes.get(i).setWatched(true);
 								new Thread()
 								{
 									public void run()
 									{
-										for(int i=jt.getSelectedRow(); i<episodes.size(); ++i)
-											episodes.get(i).setWatched(true);
 										ShowTracker.addShowToFile(show);
-										manageShows();
 									}
 								}.start();
+								manageShows();
 							}
 						});
 
