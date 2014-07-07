@@ -52,6 +52,7 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
+//TODO: after setting as watched or downloading, the panel doesn't update properly(it acts as if the remove didnt happen on the underlying array)
 public class Main
 {
 	public static boolean DL_ON = false;
