@@ -52,7 +52,6 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: after setting as watched or downloading, the panel doesn't update properly(it acts as if the remove didnt happen on the underlying array)
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -115,10 +114,10 @@ public class Main
 		//create the JPanel for the pop-in
 		final JPanel popIn = new JPanel(new BorderLayout());
 		popIn.setVisible(false);
-
+		
 		//reset the unseenVal so that select/deselect is consistent
 		unseenVal = true;
-
+		
 		//get the table data
 		final ArrayList<Episode> episodes = m.getUnseenEpisodes();
 		final Object[][] data = new Object[episodes.size()][5];
@@ -230,7 +229,7 @@ public class Main
 										{
 											public void run()
 											{
-	
+												episodes.remove(jt.getSelectedRow());
 												((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 												btnLastWatched.setEnabled(false);
 												episode.setWatchedAndSave(!episode.isWatched());
@@ -260,10 +259,10 @@ public class Main
 													btnDownload.setEnabled(false);
 													if(episode.download())
 													{
+														episodes.remove(jt.getSelectedRow());
 														((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
 														episode.setWatchedAndSave(!episode.isWatched());
 														ShowTracker.writeShowsToFile();
-														episodes.remove(jt.getSelectedRow());
 													}
 													else
 													{
@@ -362,9 +361,9 @@ public class Main
 								{
 									if(episodes.get(i).download())
 									{
+										episodes.remove(i);
 										((DefaultTableModel)jt.getModel()).removeRow(i);
 										episodes.get(i).setWatchedAndSave(true);
-										episodes.remove(i);
 									}
 									else
 									{
