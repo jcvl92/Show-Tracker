@@ -16,7 +16,17 @@ public class ShowTracker
 {
 	public static ArrayList<Show> shows;
 	public static ReentrantLock writing = new ReentrantLock();
-	static ObjectOutputStream oos = null;
+	public static Comparator<Episode> episodeComparator = new Comparator<Episode>()
+	{
+		public int compare(Episode arg0, Episode arg1)
+		{
+			if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
+			if(arg1.getAirDate() == null) return 1;
+			if(arg0.getAirDate() == null) return -1;
+			int result = arg0.getAirDate().compareTo(arg1.getAirDate());
+			return result!=0 ?  result : Integer.parseInt(arg0.information.get("seasonnum")) - Integer.parseInt(arg1.information.get("seasonnum"));
+		}
+	};
 
 	public ShowTracker()
 	{
@@ -53,16 +63,8 @@ public class ShowTracker
 				}
 			}
 
-			Collections.sort(episodes, new Comparator<Episode>()
-			{
-				public int compare(Episode arg0, Episode arg1)
-				{
-					if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
-					if(arg1.getAirDate() == null) return 1;
-					if(arg0.getAirDate() == null) return -1;
-					return arg0.getAirDate().compareTo(arg1.getAirDate());
-				}
-			});
+			Collections.sort(episodes, episodeComparator);
+			
 			return episodes;
 		}
 	}
@@ -107,10 +109,9 @@ public class ShowTracker
 			try
 			{
 				writing.lock();
-				if(oos == null)
-					oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File("show_data"))));
+				ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File("show_data"), false)));
 				oos.writeObject(shows);
-				oos.flush();
+				oos.close();
 			}
 			catch(Exception e)
 			{
@@ -154,16 +155,7 @@ public class ShowTracker
 			}
 		}
 		
-		Collections.sort(times, new Comparator<Episode>()
-		{
-			public int compare(Episode arg0, Episode arg1)
-			{
-				if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
-				if(arg1.getAirDate() == null) return 1;
-				if(arg0.getAirDate() == null) return -1;
-				return arg0.getAirDate().compareTo(arg1.getAirDate());
-			}
-		});
+		Collections.sort(times, episodeComparator);
 		
 		return times.toArray(new Episode[times.size()]);
 	}

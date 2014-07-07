@@ -52,9 +52,10 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
+//TODO: fix checkboxes
 public class Main
 {
-	public static boolean DL_ON = true;
+	public static boolean DL_ON = false;
 	boolean unseenVal = true;
 	Thread paneler = null;
 	JPanel panel;

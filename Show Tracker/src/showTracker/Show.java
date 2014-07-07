@@ -210,17 +210,10 @@ public class Show implements Serializable
 			for(int j=0; j<seasons.get(i).episodes.size(); ++j)
 				if(seasons.get(i).episodes.get(j).getAirDate() != null && seasons.get(i).episodes.get(j).getAirDate().isBeforeNow())
 					airedEpisodes.add(seasons.get(i).episodes.get(j));
+		
 
-		Collections.sort(airedEpisodes, new Comparator<Episode>()
-				{
-			public int compare(Episode arg0, Episode arg1)
-			{
-				if(arg0.getAirDate() == null && arg1.getAirDate() == null) return 0;
-				if(arg1.getAirDate() == null) return -1;
-				if(arg0.getAirDate() == null) return 1;
-				return arg1.getAirDate().compareTo(arg0.getAirDate());
-			}
-				});
+		Collections.sort(airedEpisodes, ShowTracker.episodeComparator);
+		Collections.reverse(airedEpisodes);
 
 		return airedEpisodes;
 	}
