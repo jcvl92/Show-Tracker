@@ -16,6 +16,7 @@ public class ShowTracker
 {
 	public static ArrayList<Show> shows;
 	public static ReentrantLock writing = new ReentrantLock();
+	static ObjectOutputStream oos;
 	public static Comparator<Episode> episodeComparator = new Comparator<Episode>()
 	{
 		public int compare(Episode arg0, Episode arg1)
@@ -32,7 +33,14 @@ public class ShowTracker
 	{
 		//load the shows from the data file
 		shows = readShowsFromFile();
-
+		
+		//set up the file writer
+		try
+		{
+			oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("show_data", false)));
+		}
+		catch(Exception e){}
+		
 		//if there are no shows, initialize the array list
 		if(shows == null)
 			shows = new ArrayList<Show>();
@@ -109,9 +117,8 @@ public class ShowTracker
 			try
 			{
 				writing.lock();
-				ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File("show_data"), false)));
+				oos.reset();
 				oos.writeObject(shows);
-				oos.close();
 			}
 			catch(Exception e)
 			{
