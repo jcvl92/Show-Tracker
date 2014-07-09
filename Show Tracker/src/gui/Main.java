@@ -63,6 +63,7 @@ public class Main
 	static JButton[] navButtons;
 	ShowTracker m = new ShowTracker();
 	ReentrantLock rl = new ReentrantLock();
+	static HashMap<String, BufferedImage> imageCache = new HashMap<String, BufferedImage>();
 
 	public Main(JPanel p, JFrame f)
 	{
@@ -1141,6 +1142,9 @@ public class Main
 			int targetWidth,
 			int targetHeight)
 	{
+		if(imageCache.containsKey(image.toString()+'|'+targetWidth+'|'+targetHeight))
+			return imageCache.get(image.toString()+'|'+targetWidth+'|'+targetHeight);
+		
 		BufferedImage img = new BufferedImage(
 				image.getIconWidth(),
 				image.getIconHeight(),
@@ -1180,7 +1184,9 @@ public class Main
 			
 			ret = tmp;
 		} while(w != targetWidth || h != targetHeight);
-
+		
+		imageCache.put(image.toString()+'|'+targetWidth+'|'+targetHeight, ret);
+		
 		return ret;
 	}
 }
