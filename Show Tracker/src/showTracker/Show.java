@@ -141,9 +141,6 @@ public class Show implements Serializable
 
 	public void update() throws IOException, InterruptedException
 	{
-		//this is not robust, it relies on the fact that the new episodes will have nothing removed
-		//it works though, so it stays
-		
 		//store the current episode contents
 		@SuppressWarnings("unchecked")
 		ArrayList<Season> oldSeasons = (ArrayList<Season>)seasons.clone();
