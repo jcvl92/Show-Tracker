@@ -90,8 +90,6 @@ public class Episode implements Serializable
 
 	public String getText()
 	{
-		boolean save = false;
-		
 		if(description == null || image == null)
 		{
 			try
@@ -106,7 +104,6 @@ public class Episode implements Serializable
 						description = link.getElementsByClass("show_synopsis").text();
 						if(description.equals(""))
 							description = link.getElementsByClass("padding_bottom_10").get(1).text();
-						save = true;
 					}
 					catch(Exception e){}
 
@@ -118,24 +115,19 @@ public class Episode implements Serializable
 						{
 							image = new ImageIcon();
 							image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
-							save = true;
 						}
 						catch(Exception e)
 						{
 							image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
-							save = true;
 						}
 					}
 					catch(Exception e)
 					{
 						image = getImageFromTVDB();
-						save = true;
 					}
 			}
 			catch(Exception e){}
 		}
-
-		if(save) save();
 
 		return description;
 	}
@@ -159,11 +151,6 @@ public class Episode implements Serializable
 		
 		//get the image
 		return new ImageIcon(new URL("http://thetvdb.com/banners/episodes/"+show.TVDBId+"/"+TVDBEpisodeId+".jpg"));
-	}
-	
-	private void save()
-	{
-		ShowTracker.writeShowsToFile();
 	}
 
 	public ImageIcon getImage()
@@ -281,12 +268,6 @@ public class Episode implements Serializable
 	public void setWatched(boolean b)
 	{
 		seen = b;
-	}
-
-	public void setWatchedAndSave(boolean b)
-	{
-		seen = b;
-		save();
 	}
 
 	public boolean isWatched()

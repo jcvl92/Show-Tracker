@@ -17,8 +17,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
-import showTracker.ShowTracker;
-
 public class GUI {
 
 	private JFrame frmShowTracker;
@@ -54,7 +52,7 @@ public class GUI {
 		{
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent)
 		    {
-		    	ShowTracker.writing.lock();
+		    	try{main.m.close();}catch(Exception e){}
 		    	System.exit(0);
 		    }
 		});

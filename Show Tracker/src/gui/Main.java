@@ -229,11 +229,10 @@ public class Main
 										{
 											public void run()
 											{
+												btnLastWatched.setEnabled(false);
 												episodes.remove(jt.getSelectedRow());
 												((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
-												btnLastWatched.setEnabled(false);
-												episode.setWatchedAndSave(!episode.isWatched());
-												ShowTracker.writeShowsToFile();
+												episode.setWatched(!episode.isWatched());
 											}
 										}.start();
 									}
@@ -261,8 +260,7 @@ public class Main
 													{
 														episodes.remove(jt.getSelectedRow());
 														((DefaultTableModel)jt.getModel()).removeRow(jt.getSelectedRow());
-														episode.setWatchedAndSave(!episode.isWatched());
-														ShowTracker.writeShowsToFile();
+														episode.setWatched(!episode.isWatched());
 													}
 													else
 													{
@@ -361,9 +359,9 @@ public class Main
 								{
 									if(episodes.get(i).download())
 									{
+										episodes.get(i).setWatched(true);
 										episodes.remove(i);
 										((DefaultTableModel)jt.getModel()).removeRow(i);
-										episodes.get(i).setWatchedAndSave(true);
 									}
 									else
 									{
@@ -451,11 +449,15 @@ public class Main
 							{
 								delete.setEnabled(false);
 							}
+							
 							//disable the update buttons
 							for(Entry<Show, JButton> update: uData.entrySet())
 							{
 								update.getValue().setEnabled(false);
 							}
+							
+							//TODO: diable the add show button and text field
+							
 							for(int i=0; i<ShowTracker.shows.size(); ++i)
 							{
 								Show show = ShowTracker.shows.get(i);
@@ -477,7 +479,7 @@ public class Main
 									button.setText("Update failed");
 								}
 							}
-							ShowTracker.writeShowsToFile();
+							
 							//reenable the delete buttons
 							for(JButton delete: deleteButtons)
 							{
@@ -567,7 +569,7 @@ public class Main
 						{
 							synchronized(m)
 							{
-								ShowTracker.removeShowFromFile(showNum);
+								ShowTracker.removeShow(showNum);
 
 								//return to the manage function
 								manageShows();
@@ -596,7 +598,6 @@ public class Main
 									btnUpdate.setBackground(Color.LIGHT_GRAY);
 									btnUpdate.setText("Updating");
 									show.update();
-									ShowTracker.writeShowsToFile();
 									btnUpdate.setBackground(c);
 									btnUpdate.setText("Updated");
 								}
@@ -786,9 +787,8 @@ public class Main
 									{
 										public void run()
 										{
-											episode.setWatchedAndSave(!episode.isWatched());
+											episode.setWatched(!episode.isWatched());
 											btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
-											ShowTracker.writeShowsToFile();
 										}
 									}.start();
 								}
@@ -811,9 +811,8 @@ public class Main
 											btnDownload.setEnabled(false);
 											if(episode.download())
 											{
-												episode.setWatchedAndSave(!episode.isWatched());
+												episode.setWatched(!episode.isWatched());
 												btnLastWatched.setText("Set as "+(episode.isWatched() ? "unwatched" : "watched"));
-												ShowTracker.writeShowsToFile();
 											}
 											else
 											{
@@ -1083,7 +1082,7 @@ public class Main
 								{
 									public void run()
 									{
-										ShowTracker.addShowToFile(show);
+										ShowTracker.addShow(show);
 									}
 								}.start();
 								manageShows();
@@ -1107,7 +1106,7 @@ public class Main
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				ShowTracker.addShowToFile(show);
+				ShowTracker.addShow(show);
 				manageShows();
 			}
 		});

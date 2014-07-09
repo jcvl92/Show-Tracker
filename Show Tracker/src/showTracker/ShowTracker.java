@@ -1,6 +1,5 @@
 package showTracker;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,13 +9,10 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.locks.ReentrantLock;
 
-public class ShowTracker
+public class ShowTracker implements AutoCloseable
 {
 	public static ArrayList<Show> shows;
-	public static ReentrantLock writing = new ReentrantLock();
-	static ObjectOutputStream oos;
 	public static Comparator<Episode> episodeComparator = new Comparator<Episode>()
 	{
 		public int compare(Episode arg0, Episode arg1)
@@ -33,13 +29,6 @@ public class ShowTracker
 	{
 		//load the shows from the data file
 		shows = readShowsFromFile();
-		
-		//set up the file writer
-		try
-		{
-			oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("show_data", false)));
-		}
-		catch(Exception e){}
 		
 		//if there are no shows, initialize the array list
 		if(shows == null)
@@ -101,42 +90,19 @@ public class ShowTracker
 		}
 	}
 
-	public static void addShowToFile(Show show)
+	public static void addShow(Show show)
 	{
 		synchronized(shows)
 		{
 			shows.add(show);
-			writeShowsToFile();
 		}
 	}
 
-	public static void writeShowsToFile()
-	{
-		synchronized(shows)
-		{
-			try
-			{
-				writing.lock();
-				oos.reset();
-				oos.writeObject(shows);
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			finally
-			{
-				writing.unlock();
-			}
-		}
-	}
-
-	public static void removeShowFromFile(int index)
+	public static void removeShow(int index)
 	{
 		synchronized(shows)
 		{
 			shows.remove(index);
-			writeShowsToFile();
 		}
 	}
 
@@ -165,5 +131,12 @@ public class ShowTracker
 		Collections.sort(times, episodeComparator);
 		
 		return times.toArray(new Episode[times.size()]);
+	}
+	
+	public void close() throws Exception
+	{
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("show_data", false));
+		oos.writeObject(shows);
+		oos.close();
 	}
 }
