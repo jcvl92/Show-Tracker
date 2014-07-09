@@ -53,6 +53,7 @@ import showTracker.Show;
 import showTracker.ShowTracker;
 
 //TODO: when adding, disable all the buttons like in update all(side panel buttons and in panel buttons)
+//TODO: show only loading spinner on close(and disable window buttons?)
 public class Main
 {
 	public static boolean DL_ON = false;
