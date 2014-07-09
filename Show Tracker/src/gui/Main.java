@@ -424,7 +424,11 @@ public class Main
 		//map of shows to update buttons for the update all button to manipulate
 		final HashMap<Show, JButton> uData = new HashMap<Show, JButton>();
 		final ArrayList<JButton> deleteButtons = new ArrayList<JButton>();
-
+		
+		//create the add show components for referencing
+		final JButton btnAdd = new JButton("Add");
+		final JTextPane addName = new JTextPane();
+		
 		//create the header with the update all button
 		JPanel header = new JPanel(new BorderLayout());
 		JTextArea headerText = new JTextArea("Your Shows:");
@@ -456,7 +460,9 @@ public class Main
 								update.getValue().setEnabled(false);
 							}
 							
-							//TODO: diable the add show button and text field
+							//disable the add show button and text field
+							addName.setEnabled(false);
+							btnAdd.setEnabled(false);
 							
 							for(int i=0; i<ShowTracker.shows.size(); ++i)
 							{
@@ -480,11 +486,14 @@ public class Main
 								}
 							}
 							
-							//reenable the delete buttons
+							//reenable the delete buttons and add show components
 							for(JButton delete: deleteButtons)
 							{
 								delete.setEnabled(true);
 							}
+							addName.setEnabled(true);
+							btnAdd.setEnabled(true);
+							
 							btnUpdateAll.setText("Updated All");
 						}
 						Main.enableButtons(true);
@@ -539,6 +548,7 @@ public class Main
 						public void run()
 						{
 							btnSearchTextSave.setEnabled(false);
+							btnSearchTextSave.setText("Saving");
 							synchronized(m)
 							{
 								show.setSearchText(searchTextEdit.getText());
@@ -648,8 +658,6 @@ public class Main
 
 		//create an "add" button at the bottom of the list
 		final Box addBox = Box.createHorizontalBox();
-		final JButton btnAdd = new JButton("Add");
-		final JTextPane addName = new JTextPane();
 		addName.addKeyListener(new KeyListener()
 		{
 			public void keyPressed(KeyEvent ke)
