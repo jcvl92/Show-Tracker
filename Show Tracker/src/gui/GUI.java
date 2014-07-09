@@ -9,13 +9,14 @@ import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.WindowConstants;
 
 public class GUI {
 
@@ -46,14 +47,12 @@ public class GUI {
 		//set the favicon
 		frmShowTracker.setIconImage(ImageIO.read(this.getClass().getResource("favicon.png")));
 		
-		//change the default close operation to prevent data file corruption
-		frmShowTracker.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		frmShowTracker.addWindowListener(new java.awt.event.WindowAdapter()
+		//save the file on close
+		frmShowTracker.addWindowListener(new WindowAdapter()
 		{
-		    public void windowClosing(java.awt.event.WindowEvent windowEvent)
+		    public void windowClosing(WindowEvent windowEvent)
 		    {
 		    	try{main.m.close();}catch(Exception e){}
-		    	System.exit(0);
 		    }
 		});
 	}
