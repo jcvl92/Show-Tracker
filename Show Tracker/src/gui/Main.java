@@ -52,10 +52,10 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: convert the manage shows tab to use a table? that way the user can reorder the shows
+//TODO: fix regular show crashing
 public class Main
 {
-	public static boolean DL_ON = true;
+	public static boolean DL_ON = false;
 	boolean unseenVal = true;
 	Thread paneler = null;
 	JPanel panel;
@@ -783,12 +783,12 @@ public class Main
 						{
 							final Episode episode = (Episode)obj;
 
-							if(!episode.getAirDate().isBeforeNow())
+							/*if(!episode.getAirDate().isBeforeNow())
 							{
 								popIn.removeAll();
 								popIn.setVisible(false);
 								return;
-							}
+							}*/
 
 							//quit another paneling operation if one exists
 							if(paneler != null)

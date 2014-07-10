@@ -2,6 +2,7 @@ package showTracker;
 
 import gui.Main;
 
+import java.awt.MediaTracker;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
@@ -80,7 +81,7 @@ public class Episode implements Serializable
 
 	public String toString()
 	{
-		return getSENumber()+" - "+information.get("title")+(isWatched() || !airDate.isBeforeNow() ? "" : "*");
+		return getSENumber()+" - "+information.get("title")+(isWatched() || (airDate != null ? !airDate.isBeforeNow() : false) ? "" : "*");
 	}
 
 	public String title()
@@ -156,10 +157,10 @@ public class Episode implements Serializable
 	public ImageIcon getImage()
 	{
 		//if the image hasn't been grabbed, and the grab fails, return the show image
-		if(image ==null || image.getImage() == null)
+		if(image == null || image.getImage() == null || image.getImageLoadStatus()==MediaTracker.ERRORED)
 		{
 			getText();
-			if(image==null || image.getImage() == null)
+			if(image == null || image.getImage() == null || image.getImageLoadStatus()==MediaTracker.ERRORED)
 				return show.getImage();
 		}
 		return image;
