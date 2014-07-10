@@ -786,13 +786,6 @@ public class Main
 						{
 							final Episode episode = (Episode)obj;
 
-							/*if(!episode.getAirDate().isBeforeNow())
-							{
-								popIn.removeAll();
-								popIn.setVisible(false);
-								return;
-							}*/
-
 							//quit another paneling operation if one exists
 							if(paneler != null)
 								paneler.stop();
