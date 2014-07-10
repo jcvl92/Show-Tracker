@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -52,7 +53,6 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: fix regular show crashing
 public class Main
 {
 	public static boolean DL_ON = false;
@@ -425,7 +425,7 @@ public class Main
 
 		//map of shows to update buttons for the update all button to manipulate
 		final HashMap<Show, JButton> uData = new HashMap<Show, JButton>();
-		final ArrayList<JButton> deleteButtons = new ArrayList<JButton>();
+		final ArrayList<Component> hideComponents = new ArrayList<Component>();
 		
 		//create the add show components for referencing
 		final JButton btnAdd = new JButton("Add");
@@ -450,10 +450,10 @@ public class Main
 						btnUpdateAll.setText("Updating All");
 						synchronized(m)
 						{
-							//disable the delete buttons
-							for(JButton delete: deleteButtons)
+							//disable the buttons
+							for(Component comp: hideComponents)
 							{
-								delete.setEnabled(false);
+								comp.setEnabled(false);
 							}
 							
 							//disable the update buttons
@@ -489,9 +489,9 @@ public class Main
 							}
 							
 							//reenable the delete buttons and add show components
-							for(JButton delete: deleteButtons)
+							for(Component comp: hideComponents)
 							{
-								delete.setEnabled(true);
+								comp.setEnabled(true);
 							}
 							addName.setEnabled(true);
 							btnAdd.setEnabled(true);
@@ -563,13 +563,16 @@ public class Main
 			JPanel searchTextSaveStretcher = new JPanel(new GridBagLayout());
 			searchTextSaveStretcher.add(btnSearchTextSave);
 			showText.add(searchTextSaveStretcher);
+			
+			hideComponents.add(searchTextEdit);
+			hideComponents.add(btnSearchTextSave);
 
 			//create the box for the buttons
 			Box buttonBox = Box.createVerticalBox();
 
 			//delete button
 			final JButton btnDelete = new JButton("Delete");
-			deleteButtons.add(btnDelete);
+			hideComponents.add(btnDelete);
 			final int showNum = i;
 			btnDelete.addActionListener(new ActionListener()
 			{
@@ -671,9 +674,9 @@ public class Main
 					btnUpdateAll.setEnabled(false);
 					Main.enableButtons(false);
 					//disable the delete buttons
-					for(JButton delete: deleteButtons)
+					for(Component comp: hideComponents)
 					{
-						delete.setEnabled(false);
+						comp.setEnabled(false);
 					}
 					//disable the update buttons
 					for(Entry<Show, JButton> update: uData.entrySet())
@@ -702,9 +705,9 @@ public class Main
 				btnUpdateAll.setEnabled(false);
 				Main.enableButtons(false);
 				//disable the delete buttons
-				for(JButton delete: deleteButtons)
+				for(Component comp: hideComponents)
 				{
-					delete.setEnabled(false);
+					comp.setEnabled(false);
 				}
 				//disable the update buttons
 				for(Entry<Show, JButton> update: uData.entrySet())
