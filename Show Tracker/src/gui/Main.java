@@ -53,6 +53,7 @@ import showTracker.Show;
 import showTracker.ShowTracker;
 
 //TODO: when adding, disable all the buttons like in update all(side panel buttons and in panel buttons)
+//TODO: convert the manage shows tab to use a table? that way the user can reorder the shows
 public class Main
 {
 	public static boolean DL_ON = true;
