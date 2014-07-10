@@ -52,6 +52,7 @@ public class GUI {
 		{
 		    public void windowClosing(WindowEvent windowEvent)
 		    {
+		    	frmShowTracker.setVisible(false);
 		    	try{main.m.close();}catch(Exception e){}
 		    }
 		});
