@@ -52,7 +52,6 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
-//TODO: when adding, disable all the buttons like in update all(side panel buttons and in panel buttons)
 //TODO: convert the manage shows tab to use a table? that way the user can reorder the shows
 public class Main
 {
@@ -668,8 +667,20 @@ public class Main
 				if(ke.getKeyCode() == KeyEvent.VK_ENTER)
 				{
 					addName.setEnabled(false);
-					btnAdd.setText("Searching");
 					btnAdd.setEnabled(false);
+					btnUpdateAll.setEnabled(false);
+					Main.enableButtons(false);
+					//disable the delete buttons
+					for(JButton delete: deleteButtons)
+					{
+						delete.setEnabled(false);
+					}
+					//disable the update buttons
+					for(Entry<Show, JButton> update: uData.entrySet())
+					{
+						update.getValue().setEnabled(false);
+					}
+					btnAdd.setText("Searching");
 					new Thread()
 					{
 						public void run()
@@ -687,8 +698,20 @@ public class Main
 			public void actionPerformed(ActionEvent e)
 			{
 				addName.setEnabled(false);
-				btnAdd.setText("Searching");
 				btnAdd.setEnabled(false);
+				btnUpdateAll.setEnabled(false);
+				Main.enableButtons(false);
+				//disable the delete buttons
+				for(JButton delete: deleteButtons)
+				{
+					delete.setEnabled(false);
+				}
+				//disable the update buttons
+				for(Entry<Show, JButton> update: uData.entrySet())
+				{
+					update.getValue().setEnabled(false);
+				}
+				btnAdd.setText("Searching");
 				new Thread()
 				{
 					public void run()
@@ -968,6 +991,9 @@ public class Main
 		pane.removeAll();
 		pane.add(contents);
 		pane.revalidate();
+		
+		//re-enable the buttons to allow canceling of a show add
+		Main.enableButtons(true);
 	}
 
 	private void selectSeen(final JPanel pane, final Show show)
