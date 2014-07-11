@@ -22,7 +22,6 @@ public class MagnetLink
 		return name+" - "+link;
 	}
 
-
 	public void open() throws IOException, URISyntaxException
 	{
 		Desktop.getDesktop().browse(new URI(link));
