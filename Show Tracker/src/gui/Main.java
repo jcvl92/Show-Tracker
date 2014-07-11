@@ -523,6 +523,8 @@ public class Main
 			JTextArea showName = new JTextArea(show.toString());
 			showName.setFont(new Font("Times New Roman", Font.PLAIN, 20));
 			showName.setEditable(false);
+			showName.setWrapStyleWord(true);
+			showName.setLineWrap(true);
 
 			//create a box containing the show name and search text editor
 			Box showText = Box.createVerticalBox();
