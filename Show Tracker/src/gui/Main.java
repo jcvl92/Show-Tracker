@@ -53,6 +53,7 @@ import showTracker.Season;
 import showTracker.Show;
 import showTracker.ShowTracker;
 
+//TODO: have a periodic file writer that writes if the file is "dirty"
 public class Main
 {
 	public static boolean DL_ON = false;
