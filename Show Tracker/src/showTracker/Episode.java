@@ -48,7 +48,7 @@ public class Episode implements Serializable
 			airDate = null;
 		}
 	}
-
+	
 	private void setFormatters()
 	{
 		parseFormatter = new DateTimeFormatterBuilder()
@@ -128,6 +128,8 @@ public class Episode implements Serializable
 					}
 			}
 			catch(Exception e){}
+			
+			ShowTracker.ShowArrayList.setDirty(true);
 		}
 
 		return description;
@@ -269,6 +271,7 @@ public class Episode implements Serializable
 	public void setWatched(boolean b)
 	{
 		seen = b;
+		ShowTracker.ShowArrayList.setDirty(true);
 	}
 
 	public boolean isWatched()

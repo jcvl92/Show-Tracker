@@ -12,7 +12,51 @@ import java.util.Comparator;
 
 public class ShowTracker implements AutoCloseable
 {
-	public static ArrayList<Show> shows;
+	@SuppressWarnings("serial")
+	public static class ShowArrayList extends ArrayList<Show>
+	{
+		public static Boolean dirty = false;
+		ShowArrayList()
+		{
+			super();
+			synchronized(dirty)
+			{
+				dirty = true;
+			}
+		}
+		public boolean add(Show s)
+		{
+			synchronized(dirty)
+			{
+				dirty = true;
+				return super.add(s);
+			}
+		}
+		public Show remove(int i)
+		{
+			synchronized(dirty)
+			{
+				dirty = true;
+				return super.remove(i);
+			}
+		}
+		public boolean isDirty()
+		{
+			synchronized(dirty)
+			{
+				boolean b = dirty;
+				dirty = false;
+				return b;
+			}
+		}
+		public static void setDirty(boolean b)
+		{
+			synchronized(dirty)
+			{
+				dirty = b;
+			}
+		}
+	}
 	public static Comparator<Episode> episodeComparator = new Comparator<Episode>()
 	{
 		public int compare(Episode arg0, Episode arg1)
@@ -24,6 +68,7 @@ public class ShowTracker implements AutoCloseable
 			return result!=0 ?  result : Integer.parseInt(arg0.getEpisodeNumber()) - Integer.parseInt(arg1.getEpisodeNumber());
 		}
 	};
+	public static ShowArrayList shows;
 
 	public ShowTracker()
 	{
@@ -32,7 +77,24 @@ public class ShowTracker implements AutoCloseable
 		
 		//if there are no shows, initialize the array list
 		if(shows == null)
-			shows = new ArrayList<Show>();
+			shows = new ShowArrayList();
+		
+		//spawn the file writer
+		new Thread()
+		{
+			public void run()
+			{
+				while(true)
+				{
+					try
+					{
+						sleep(1000);
+						close();
+					}
+					catch(Exception e){}
+				}
+			}
+		}.start();
 	}
 
 	public ArrayList<Episode> getUnseenEpisodes()
@@ -66,13 +128,13 @@ public class ShowTracker implements AutoCloseable
 		}
 	}
 
-	private ArrayList<Show> readShowsFromFile()
+	private ShowArrayList readShowsFromFile()
 	{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("show_data")));
 			@SuppressWarnings("unchecked")
-			ArrayList<Show> shows = (ArrayList<Show>)ois.readObject();
+			ShowArrayList shows = (ShowArrayList)ois.readObject();
 			ois.close();
 
 			return shows;
@@ -135,8 +197,11 @@ public class ShowTracker implements AutoCloseable
 	
 	public void close() throws Exception
 	{
-		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("show_data", false));
-		oos.writeObject(shows);
-		oos.close();
+		if(shows.isDirty())
+		{
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("show_data", false));
+			oos.writeObject(shows);
+			oos.close();
+		}
 	}
 }

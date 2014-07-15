@@ -23,7 +23,7 @@ public class Show implements Serializable
 	ImageIcon image;
 	int showID, TVDBId;
 	public ArrayList<Season> seasons = new ArrayList<Season>();
-
+	
 	public static ArrayList<HashMap<String, String>> search(String searchText) throws IOException
 	{
 		//get the search xml document
@@ -196,6 +196,8 @@ public class Show implements Serializable
 				newSeason.episodes.get(j).setWatched(oldSeason.episodes.get(j).isWatched());
 			}
 		}
+		
+		ShowTracker.ShowArrayList.setDirty(true);
 	}
 
 	public ArrayList<Episode> getAiredEpisodes()

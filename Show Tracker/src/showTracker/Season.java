@@ -14,7 +14,7 @@ public class Season implements Serializable
 		seasonTag = tag;
 		episodes = eps;
 	}
-
+	
 	public String toString()
 	{
 		return seasonTag;
