@@ -197,11 +197,14 @@ public class ShowTracker implements AutoCloseable
 	
 	public void close() throws Exception
 	{
-		if(shows.isDirty())
+		synchronized(shows)
 		{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("show_data", false));
-			oos.writeObject(shows);
-			oos.close();
+			if(shows.isDirty())
+			{
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("show_data", false));
+				oos.writeObject(shows);
+				oos.close();
+			}
 		}
 	}
 }
