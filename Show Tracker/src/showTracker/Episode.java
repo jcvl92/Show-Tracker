@@ -252,7 +252,7 @@ public class Episode implements Serializable
 			if(Main.DL_ON)
 			{
 				//get the link from TPB
-				Element result = Jsoup.connect("http://thepiratebay.se/search/"+show.search+' '+getSENumber()+"/0/7/0").timeout(30*1000).get().getElementsByClass("detName").first();
+				Element result = Jsoup.connect("https://thepiratebay.se/search/"+show.search+' '+getSENumber()+"/0/7/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
 
 				//open the link
 				new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
