@@ -203,6 +203,7 @@ public class ShowTracker implements AutoCloseable
 			{
 				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("show_data", false));
 				oos.writeObject(shows);
+				oos.flush();
 				oos.close();
 			}
 		}
