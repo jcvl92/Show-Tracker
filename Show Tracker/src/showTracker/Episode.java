@@ -152,8 +152,10 @@ public class Episode implements Serializable
 		//get the episode ID
 		String TVDBEpisodeId = episodeLink.substring(episodeLink.indexOf("&id")+4, episodeLink.indexOf("&lid"));
 		
-		//get the image
-		return new ImageIcon(new URL("http://thetvdb.com/banners/episodes/"+show.TVDBId+"/"+TVDBEpisodeId+".jpg"));
+		//get the image(parse the page to check for 404s)
+		URL url = new URL("http://thetvdb.com/banners/episodes/"+show.TVDBId+"/"+TVDBEpisodeId+".jpg");
+		Object obj = url.getContent();
+		return new ImageIcon(url);
 	}
 
 	public ImageIcon getImage()
