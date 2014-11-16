@@ -154,7 +154,7 @@ public class Episode implements Serializable
 		
 		//get the image(parse the page to check for 404s)
 		URL url = new URL("http://thetvdb.com/banners/episodes/"+show.TVDBId+"/"+TVDBEpisodeId+".jpg");
-		Object obj = url.getContent();
+		url.getContent();
 		return new ImageIcon(url);
 	}
 
