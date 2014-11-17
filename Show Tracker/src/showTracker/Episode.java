@@ -144,8 +144,11 @@ public class Episode implements Serializable
 		String[] words = information.get("title").split(" ");
 		String searcher = words[0];
 		Elements results = link.getAllElements();
-		for(int i=0; i<words.length && results.size()>1; searcher=words[++i])
+		for(int i=0; i<words.length && results.size()>1;)
+		{
+			searcher=words[i++];
 			results = link.getElementsContainingOwnText(searcher);
+		}
 		
 		String episodeLink = results.get(0).attr("href");
 		
@@ -255,7 +258,10 @@ public class Episode implements Serializable
 			{
 				//get the link from TPB
 				Element result = Jsoup.connect("https://thepiratebay.se/search/"+show.search+' '+getSENumber()+"/0/7/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
-
+				
+				if(result == null)
+					result = Jsoup.connect("https://thepiratebay.se/search/"+show.search+' '+getSEfromTVDB()+"/0/7/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+				
 				//open the link
 				new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
 			}
@@ -266,8 +272,40 @@ public class Episode implements Serializable
 		catch(Exception e)
 		{
 			//return false if it failed
+			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	private String getSEfromTVDB() throws IOException
+	{
+		//get the episode link
+		Document link = Jsoup.connect("http://thetvdb.com/?tab=seasonall&id="+show.TVDBId).timeout(60*1000).get();
+		
+		//search word by word until you get only one result(helps find episodes with appended titles)
+		String[] words = information.get("title").split(" ");
+		String searcher = words[0];
+		Elements results = link.getAllElements();
+		for(int i=0; i<words.length && results.size()>1;)
+		{
+			searcher=words[i++];
+			results = link.getElementsContainingOwnText(searcher);
+		}
+		
+		String sXe = results.get(0).parent().parent().child(0).text();
+		
+		String seasonNum = sXe.split(" ")[0];
+		if(!Character.isDigit(seasonNum.charAt(0)))
+			seasonNum = "0";
+		if(seasonNum.length()<2)
+			seasonNum = '0'+seasonNum;
+		
+		String episodeNum = sXe.split(" ")[2];
+		if(!Character.isDigit(episodeNum.charAt(0)))
+			episodeNum = "0";
+		if(episodeNum.length()<2)
+			episodeNum = '0'+episodeNum;
+		return 'S'+seasonNum+'E'+episodeNum;
 	}
 
 	public void setWatched(boolean b)
