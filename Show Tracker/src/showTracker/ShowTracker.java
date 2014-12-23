@@ -80,7 +80,7 @@ public class ShowTracker implements AutoCloseable
 			shows = new ShowArrayList();
 		
 		//spawn the file writer
-		new Thread()
+		/*new Thread()
 		{
 			public void run()
 			{
@@ -94,7 +94,7 @@ public class ShowTracker implements AutoCloseable
 					catch(Exception e){}
 				}
 			}
-		}.start();
+		}.start();*/
 	}
 
 	public ArrayList<Episode> getUnseenEpisodes()
@@ -206,6 +206,9 @@ public class ShowTracker implements AutoCloseable
 				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("show_data", false));
 				try {
 					oos.writeObject(shows);
+					//revert the change if it would corrupt the file
+					if(new ObjectInputStream(new FileInputStream(new File("show_data"))).readObject() != null)
+						throw new Exception();
 				} catch(Exception e) {
 					oos.writeObject(temp);
 				} finally {
