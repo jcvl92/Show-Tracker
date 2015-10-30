@@ -25,7 +25,6 @@ import org.jsoup.select.Elements;
 public class Episode implements Serializable
 {
 	HashMap<String, String> information;
-	String airTime, description=null;
 	private DateTime airDate;
 	ImageIcon image = null;
 	public Show show;
@@ -33,20 +32,15 @@ public class Episode implements Serializable
 	transient DateTimeFormatter parseFormatter;
 	transient DateTimeFormatter writeFormatter;
 
-	Episode(HashMap<String, String> info, String time, Show s) throws InterruptedException
+	Episode(HashMap<String, String> info, Show show)
 	{
-		show = s;
-		setFormatters();
+		this.show = show;
 		information = info;
-		airTime = time;
-		try
-		{
-			airDate = DateTime.parse(info.get("airdate")+'-'+airTime.substring(time.lastIndexOf(' ')+1), parseFormatter);
-		}
-		catch(Exception e)
-		{
-			airDate = null;
-		}
+		setFormatters();
+		try {
+			airDate = DateTime.parse(info.get("firstaired")+"-"+show.showData.get("airs_time"), parseFormatter);
+		} catch (Exception e) {}
+		airDate = airDate;
 	}
 	
 	private void setFormatters()
@@ -58,9 +52,11 @@ public class Episode implements Serializable
 		.appendLiteral('-')
 		.appendDayOfMonth(2)
 		.appendLiteral('-')
-		.appendHourOfDay(2)
+		.appendHourOfDay(1)
 		.appendLiteral(':')
 		.appendMinuteOfHour(2)
+		.appendLiteral(' ')
+		.appendHalfdayOfDayText()
 		.toFormatter();
 
 		writeFormatter = new DateTimeFormatterBuilder()
@@ -81,92 +77,28 @@ public class Episode implements Serializable
 
 	public String toString()
 	{
-		return getSENumber()+" - "+information.get("title")+(isWatched() || (airDate != null ? !airDate.isBeforeNow() : false) ? "" : "*");
+		return getSENumber()+" - "+title()+(isWatched() || (airDate != null && !airDate.isBeforeNow()) ? "" : "*");
 	}
 
 	public String title()
 	{
-		return information.get("title");
+		return information.get("episodename");
 	}
 
 	public String getText()
 	{
-		if(description == null || image == null)
-		{
-			try
-			{
-				Document link = Jsoup.connect(information.get("link")).timeout(60*1000).get();
-				
-				//grab the description of the episode
-				if(description == null)
-					try
-					{
-						description = "";
-						description = link.getElementsByClass("show_synopsis").text();
-						if(description.equals(""))
-							description = link.getElementsByClass("padding_bottom_10").get(1).text();
-					}
-					catch(Exception e){}
-
-				//grab the image of the episode
-				if(image == null)
-					try
-					{
-						try
-						{
-							image = new ImageIcon();
-							image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).attr("src")));
-						}
-						catch(Exception e)
-						{
-							image = new ImageIcon(new URL(link.getElementsByClass("padding_bottom_10").get(1).child(0).child(0).attr("src")));
-						}
-					}
-					catch(Exception e)
-					{
-						image = getImageFromTVDB();
-					}
-			}
-			catch(Exception e){}
-			
-			ShowTracker.ShowArrayList.setDirty(true);
-		}
-
-		return description;
-	}
-	
-	private ImageIcon getImageFromTVDB() throws IOException
-	{
-		//get the episode link
-		Document link = Jsoup.connect("http://thetvdb.com/?tab=seasonall&id="+show.TVDBId).timeout(60*1000).get();
-		
-		//search word by word until you get only one result(helps find episodes with appended titles)
-		String[] words = information.get("title").split(" ");
-		String searcher = words[0];
-		Elements results = link.getAllElements();
-		for(int i=0; i<words.length && results.size()>1;)
-		{
-			searcher=words[i++];
-			results = link.getElementsContainingOwnText(searcher);
-		}
-		
-		String episodeLink = results.get(0).attr("href");
-		
-		//get the episode ID
-		String TVDBEpisodeId = episodeLink.substring(episodeLink.indexOf("&id")+4, episodeLink.indexOf("&lid"));
-		
-		//get the image(parse the page to check for 404s)
-		URL url = new URL("http://thetvdb.com/banners/episodes/"+show.TVDBId+"/"+TVDBEpisodeId+".jpg");
-		url.getContent();
-		return new ImageIcon(url);
+		return information.get("overview");
 	}
 
 	public ImageIcon getImage()
 	{
-		//if the image hasn't been grabbed, and the grab fails, return the show image
 		if(image == null || image.getImage() == null || image.getImageLoadStatus()==MediaTracker.ERRORED)
 		{
-			getText();
+			try {
+				URL url = new URL("http://thetvdb.com/banners/" + information.get("filename"));
+				url.getContent();
+				image = new ImageIcon(url);
+			} catch (Exception e) {}
 			if(image == null || image.getImage() == null || image.getImageLoadStatus()==MediaTracker.ERRORED)
 				return show.getImage();
 		}
@@ -183,20 +115,25 @@ public class Episode implements Serializable
 
 	public String getSENumber()
 	{
-		String seasonNum = information.get("inseason");
-		if(seasonNum == null)
-			seasonNum = "0";
-		if(seasonNum.length()<2)
-			seasonNum = '0'+seasonNum;
-		return 'S'+seasonNum+'E'+getEpisodeNumber();
+		return "S"+ getSeasonNumber() +'E'+ getEpisodeNumber();
 	}
-	
+
+	public String getSeasonNumber()
+	{
+		String seasonNum = information.get("combined_season");
+		if(seasonNum == null || seasonNum == "")
+			return "00";
+		if(seasonNum.length()==1)
+			return '0'+seasonNum;
+		return seasonNum;
+	}
+
 	public String getEpisodeNumber()
 	{
-		String episodeNum = information.get("seasonnum");
-		if(episodeNum == null)
+		String episodeNum = information.get("combined_episodenumber");
+		if(episodeNum == null || episodeNum == "")
 			return "00";
-		if(episodeNum.length()<2)
+		if(episodeNum.length()==1)
 			return '0'+episodeNum;
 		return episodeNum;
 	}
@@ -257,10 +194,7 @@ public class Episode implements Serializable
 			if(Main.DL_ON)
 			{
 				//get the link from TPB
-				Element result = Jsoup.connect("https://thepiratebay.se/search/"+show.search+' '+getSENumber()+"/0/7/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
-				
-				if(result == null)
-					result = Jsoup.connect("https://thepiratebay.se/search/"+show.search+' '+getSEfromTVDB()+"/0/7/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+				Element result = Jsoup.connect("https://thepiratebay.se/search/"+show.getSearchText()+' '+getSENumber()+"/0/7/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
 				
 				//open the link
 				new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
@@ -275,37 +209,6 @@ public class Episode implements Serializable
 			e.printStackTrace();
 			return false;
 		}
-	}
-	
-	private String getSEfromTVDB() throws IOException
-	{
-		//get the episode link
-		Document link = Jsoup.connect("http://thetvdb.com/?tab=seasonall&id="+show.TVDBId).timeout(60*1000).get();
-		
-		//search word by word until you get only one result(helps find episodes with appended titles)
-		String[] words = information.get("title").split(" ");
-		String searcher = words[0];
-		Elements results = link.getAllElements();
-		for(int i=0; i<words.length && results.size()>1;)
-		{
-			searcher=words[i++];
-			results = link.getElementsContainingOwnText(searcher);
-		}
-		
-		String sXe = results.get(0).parent().parent().child(0).text();
-		
-		String seasonNum = sXe.split(" ")[0];
-		if(!Character.isDigit(seasonNum.charAt(0)))
-			seasonNum = "0";
-		if(seasonNum.length()<2)
-			seasonNum = '0'+seasonNum;
-		
-		String episodeNum = sXe.split(" ")[2];
-		if(!Character.isDigit(episodeNum.charAt(0)))
-			episodeNum = "0";
-		if(episodeNum.length()<2)
-			episodeNum = '0'+episodeNum;
-		return 'S'+seasonNum+'E'+episodeNum;
 	}
 
 	public void setWatched(boolean b)

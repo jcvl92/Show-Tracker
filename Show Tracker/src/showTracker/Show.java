@@ -6,7 +6,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import javax.swing.ImageIcon;
 
@@ -15,118 +16,88 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 
 @SuppressWarnings("serial")
 public class Show implements Serializable
 {
-	String showName, seasonCount, runTime, airTime, status, search, link;
 	ImageIcon image;
-	int showID, TVDBId;
-	public ArrayList<Season> seasons = new ArrayList<Season>();
+	HashMap<String, String> showData;
+	public LinkedHashMap<String, Season> seasons = new LinkedHashMap<String, Season>();
+
+	Show(HashMap<String, String> showDetails, LinkedHashMap<String, ArrayList<HashMap<String, String>>> episodes) throws IOException
+	{
+		showData = showDetails;
+
+		//set the seasons
+		for(Entry<String, ArrayList<HashMap<String, String>>> season : episodes.entrySet())
+			seasons.put(season.getKey(), new Season(season.getValue(), this));
+
+		//fetch the image
+		URL url = new URL("http://thetvdb.com/banners/"+showData.get("poster"));
+		url.getContent();
+		image = new ImageIcon(url);
+	}
 	
 	public static ArrayList<HashMap<String, String>> search(String searchText) throws IOException
 	{
 		//get the search xml document
-		Document search = Jsoup.connect("http://services.tvrage.com/feeds/full_search.php?show="+searchText).timeout(60*1000).get();
+		Document search = Jsoup.connect("http://thetvdb.com/api/GetSeries.php?seriesname="+searchText).timeout(60*1000).get();
 
 		//get the possible entries
-		Node nodes = search.childNode(1).childNode(1).childNode(0);
+		Elements nodes = search.getElementsByTag("series");
 		ArrayList<HashMap<String, String>> entries = new ArrayList<HashMap<String, String>>();
-		for(int i=0; i<nodes.childNodeSize(); ++i)
-			if(nodes.childNode(i).getClass().equals(Element.class))
-			{
-				List<Node> showDescription = nodes.childNode(i).childNodes();
-				HashMap<String, String> showInfo = new HashMap<String, String>();
 
-				//get the fields
-				for(int j=0; j<showDescription.size(); ++j)
-				{
-					if(showDescription.get(j).getClass() == Element.class)
-						showInfo.put(((Element)showDescription.get(j)).tagName(),
-								((Element)showDescription.get(j)).text());
-					else if(((TextNode)showDescription.get(j)).text().contains("http"))
-						showInfo.put("link", ((TextNode)showDescription.get(j)).text());
-				}
+		for(int i=0; i<nodes.size(); ++i)
+		{
+			Node series = nodes.get(i);
 
-				showInfo.put("search", searchText);
+			HashMap<String, String> showInfo = new HashMap<String, String>();
+			for(Node field : series.childNodes())
+				if(field.getClass().equals(Element.class))
+					showInfo.put(((Element)field).tag().getName(), ((TextNode)field.childNode(0)).text());
+			showInfo.put("search", searchText);
 
-				entries.add(showInfo);
-			}
+			entries.add(showInfo);
+		}
 
-		//return the entries
 		return entries;
 	}
 
-	public static Show getShow(HashMap<String, String> showEntry) throws InterruptedException, IOException
+	public static Show getShow(String showID) throws InterruptedException, IOException
 	{
-		Show show = new Show();
+		//TODO: fix search text not being included
+		//get the series details xml document
+		Document list = Jsoup.connect("http://thetvdb.com/api/"+ShowTracker.apiKey+"/series/"+showID+"/all").timeout(60 * 1000).get();
+		Node series = list.getElementsByTag("series").get(0);
 
-		show.showID = Integer.parseInt(showEntry.get("showid"));
-		show.showName = showEntry.get("name");
-		show.seasonCount = showEntry.get("seasons");
-		show.runTime = showEntry.get("runtime");
-		show.airTime = showEntry.get("airtime");
-		if(showEntry.containsKey("airday"))
-			show.airTime = showEntry.get("airday")+" at "+show.airTime;
-		show.status = showEntry.get("status");
-		show.link = showEntry.get("link");
-		show.search = showEntry.get("search");
+		//get the show details
+		HashMap<String, String> showDetails = new HashMap<String, String>();
+		for(Node field : series.childNodes())
+			if(field.getClass().equals(Element.class))
+				showDetails.put(((Element) field).tag().getName(), ((Element) field).text());
 
-		//get the season details xml document
-		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+show.showID).timeout(60*1000).get();
-
-		//pick the episode list
-		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);
-
-		for(int i=0; i<episodeList.childNodeSize(); ++i)
+		//get the episodes
+		LinkedHashMap<String, ArrayList<HashMap<String, String>>> episodes = new LinkedHashMap<String, ArrayList<HashMap<String, String>>>();
+		for(Element episodeElement : list.getElementsByTag("episode"))
 		{
-			if(episodeList.childNode(i).getClass() == Element.class)
+			//get the episode details
+			HashMap<String, String> episode = new HashMap<String, String>();
+			for(Node field : episodeElement.childNodes())
+				if(field.getClass().equals(Element.class))
+					episode.put(((Element)field).tag().getName(), ((Element)field).text());
+
+			//put the episode into the corresponding season
+			ArrayList<HashMap<String, String>> season = episodes.get(episode.get("seasonid"));
+			if(season == null)
 			{
-				ArrayList<Episode> episodes = new ArrayList<Episode>();
-				Node aSeason = episodeList.childNode(i);
-				for(int j=0; j<aSeason.childNodeSize(); ++j)
-				{
-					if(aSeason.childNode(j).getClass() == Element.class)
-					{
-						HashMap<String, String> ep = new HashMap<String, String>();
-						Node episode = aSeason.childNode(j);
-
-						for(int k=0; k<episode.childNodeSize(); ++k)
-						{
-							if(episode.childNode(k).getClass() != Element.class)
-								ep.put("link", ((TextNode)episode.childNode(k)).text());
-							else
-								ep.put(((Element)episode.childNode(k)).tagName(),
-										((Element)episode.childNode(k)).text());
-						}
-						ep.put("inseason", aSeason.attr("no"));
-
-						episodes.add(new Episode(ep, show.airTime, show));
-					}
-				}
-
-				show.seasons.add(new Season(
-						(aSeason.attr("no")!="" ? "season "+aSeason.attr("no") : ((Element)aSeason).tagName())
-						, episodes));
+				season = new ArrayList<HashMap<String, String>>();
+				episodes.put(episode.get("seasonid"), season);
 			}
-		}
-
-		//get the image for the show
-		try
-		{
-			Document page = Jsoup.connect(show.link).timeout(60*1000).get();
-			show.image = new ImageIcon(new URL(page.getElementsByClass("padding_bottom_10").get(0).child(0).attr("src")));
-		}
-		catch(Exception e)
-		{
-			show.image = null;
+			season.add(episode);
 		}
 		
-		//get the TVDB id for the show for image grabbing
-		Document link = Jsoup.connect("http://thetvdb.com/api/GetSeries.php?seriesname="+show.showName).timeout(60*1000).get();
-		show.TVDBId = Integer.parseInt(((TextNode)link.child(0).child(1).child(0).child(0).child(0).childNode(0)).text());
-		
-		return show;
+		return new Show(showDetails, episodes);
 	}
 
 	public ImageIcon getImage()
@@ -136,7 +107,7 @@ public class Show implements Serializable
 
 	public String toString()
 	{
-		return showName;
+		return showName();
 	}
 
 	public void update() throws IOException, InterruptedException
@@ -144,47 +115,11 @@ public class Show implements Serializable
 		//store the current episode contents
 		@SuppressWarnings("unchecked")
 		ArrayList<Season> oldSeasons = (ArrayList<Season>)seasons.clone();
-		//clear the current episode contents
-		seasons = new ArrayList<Season>();
-
-		//get the season details xml document
-		Document list = Jsoup.connect("http://services.tvrage.com/feeds/episode_list.php?sid="+showID).timeout(60*1000).get();
-
-		//pick the episode list
-		Element episodeList = (Element) list.childNode(1).childNode(1).childNode(0).childNode(5);
-
-		for(int i=0; i<episodeList.childNodeSize(); ++i)
-		{
-			if(episodeList.childNode(i).getClass() == Element.class)
-			{
-				ArrayList<Episode> episodes = new ArrayList<Episode>();
-				Node aSeason = episodeList.childNode(i);
-				for(int j=0; j<aSeason.childNodeSize(); ++j)
-				{
-					if(aSeason.childNode(j).getClass() == Element.class)
-					{
-						HashMap<String, String> ep = new HashMap<String, String>();
-						Node episode = aSeason.childNode(j);
-
-						for(int k=0; k<episode.childNodeSize(); ++k)
-						{
-							if(episode.childNode(k).getClass() != Element.class)
-								ep.put("link", ((TextNode)episode.childNode(k)).text());
-							else
-								ep.put(((Element)episode.childNode(k)).tagName(),
-										((Element)episode.childNode(k)).text());
-						}
-						ep.put("inseason", aSeason.attr("no"));
-
-						episodes.add(new Episode(ep, airTime, this));
-					}
-				}
-
-				seasons.add(new Season(
-						(aSeason.attr("no")!="" ? "season "+aSeason.attr("no") : ((Element)aSeason).tagName())
-						, episodes));
-			}
-		}
+		//refresh the show contents
+		Show newShow = getShow(showData.get("id"));
+		seasons = newShow.seasons;
+		showData = newShow.showData;
+		image = newShow.image;
 
 		//iterate through the episodes and set the correct seen values
 		for(int i=0; i<oldSeasons.size(); ++i)
@@ -204,10 +139,10 @@ public class Show implements Serializable
 	{
 		ArrayList<Episode> airedEpisodes = new ArrayList<Episode>();
 		//iterate through the seasons and episodes and add each episode if it has aired
-		for(int i=0; i<seasons.size(); ++i)
-			for(int j=0; j<seasons.get(i).episodes.size(); ++j)
-				if(seasons.get(i).episodes.get(j).getAirDate() != null && seasons.get(i).episodes.get(j).getAirDate().isBeforeNow())
-					airedEpisodes.add(seasons.get(i).episodes.get(j));
+		for(Season season : seasons.values())
+			for(Episode episode : season.episodes)
+				if(episode.getAirDate() != null && episode.getAirDate().isBeforeNow())
+					airedEpisodes.add(episode);
 		
 
 		Collections.sort(airedEpisodes, ShowTracker.episodeComparator);
@@ -218,16 +153,16 @@ public class Show implements Serializable
 
 	public String showName()
 	{
-		return showName;
+		return showData.get("seriesname");
 	}
 
 	public String getSearchText()
 	{
-		return search;
+		return showData.get("search");
 	}
 
 	public void setSearchText(String str)
 	{
-		search = str;
+		showData.put("search", str);
 	}
 }

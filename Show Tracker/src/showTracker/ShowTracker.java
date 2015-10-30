@@ -12,6 +12,7 @@ import java.util.Comparator;
 
 public class ShowTracker implements AutoCloseable
 {
+	public static String apiKey = "2E1B82E95982EB80";
 	@SuppressWarnings("serial")
 	public static class ShowArrayList extends ArrayList<Show>
 	{
@@ -103,24 +104,11 @@ public class ShowTracker implements AutoCloseable
 		{
 			ArrayList<Episode> episodes = new ArrayList<Episode>();
 
-			for(int i=0;i<shows.size();++i)
-			{
-				Show show = shows.get(i);
-
-				//iterate through all seasons
-				for(int j=0;j<show.seasons.size();++j)
-				{
-					Season season = show.seasons.get(j);
-
-					//iterate through all episodes
-					for(int k=0;k<season.episodes.size();++k)
-					{
-						Episode episode = season.episodes.get(k);
+			for(Show show : shows)
+				for(Season season : show.seasons.values())
+					for(Episode episode : season.episodes)
 						if(!episode.isWatched() && (episode.getAirDate()!=null && episode.getAirDate().isBeforeNow()))
 							episodes.add(episode);
-					}
-				}
-			}
 
 			Collections.sort(episodes, episodeComparator);
 			
@@ -172,23 +160,15 @@ public class ShowTracker implements AutoCloseable
 	{
 		ArrayList<Episode> times = new ArrayList<Episode>();
 
-		for(int i=0; i<shows.size(); ++i)
-		{
-			Show show = shows.get(i);
-			for(int j=0; j<shows.get(i).seasons.size(); ++j)
-			{
-				Season season = show.seasons.get(j);
-				for(int k=0; k<shows.get(i).seasons.get(j).episodes.size(); ++k)
-				{
-					Episode episode = season.episodes.get(k);
-					if(episode.getAirDate() == null)
+		for(Show show : shows)
+			for(Season season : show.seasons.values())
+				for(Episode episode : season.episodes) {
+					if (episode.getAirDate() == null)
 						continue;
 					long episodeTime = episode.getAirDate().toDate().getTime();
-					if(episodeTime > timelineBegin && episodeTime < timelineEnd)
+					if (episodeTime > timelineBegin && episodeTime < timelineEnd)
 						times.add(episode);
 				}
-			}
-		}
 		
 		Collections.sort(times, episodeComparator);
 		

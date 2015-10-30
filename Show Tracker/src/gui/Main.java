@@ -357,7 +357,7 @@ public class Main
 							btnSelect.setEnabled(false);
 							for(int i=0; i<jt.getRowCount();)
 							{
-								if((boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
+								if((Boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
 								{
 									if(episodes.get(i).download())
 									{
@@ -746,20 +746,18 @@ public class Main
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("My Shows");
 
 		//add each show to the root node
-		for(int i=0; i<ShowTracker.shows.size(); ++i)
+		for(Show se : ShowTracker.shows)
 		{
-			Show se = ShowTracker.shows.get(i);
 			DefaultMutableTreeNode show = new DefaultMutableTreeNode(se);
 
 			//add each season to the show nodes
-			for(int j=0; j<se.seasons.size(); ++j)
+			for(Season s : se.seasons.values())
 			{
-				Season s = se.seasons.get(j);
 				DefaultMutableTreeNode season = new DefaultMutableTreeNode(s);
 
 				//add each episode to the season nodes
-				for(int k=0; k<s.episodes.size(); ++k)
-					season.add(new DefaultMutableTreeNode(s.episodes.get(k)));
+				for(Episode episode : s.episodes)
+					season.add(new DefaultMutableTreeNode(episode));
 
 				show.add(season);
 			}
@@ -939,7 +937,7 @@ public class Main
 				entryBox.setBorder(new LineBorder(Color.BLACK));
 
 				//show name
-				JTextArea showText = new JTextArea(showEntry.get("name"));
+				JTextArea showText = new JTextArea(showEntry.get("seriesname"));
 				showText.setEditable(false);
 				showText.setLineWrap(true);
 				showText.setWrapStyleWord(true);
@@ -962,7 +960,7 @@ public class Main
 							{
 								try
 								{
-									Show show = Show.getShow(showEntry);
+									Show show = Show.getShow(showEntry.get("id"));
 									selectSeen(pane, show);
 								}
 								catch(Exception e)
