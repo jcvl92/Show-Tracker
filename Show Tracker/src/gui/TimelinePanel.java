@@ -1,10 +1,10 @@
 package gui;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import showTracker.Episode;
+import showTracker.ShowTracker;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -14,12 +14,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TimeZone;
-
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-
-import showTracker.Episode;
-import showTracker.ShowTracker;
 
 public class TimelinePanel extends JPanel implements MouseListener, MouseMotionListener
 {

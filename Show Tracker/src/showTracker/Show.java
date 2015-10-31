@@ -1,5 +1,13 @@
 package showTracker;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
@@ -8,15 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
-
-import javax.swing.ImageIcon;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 
 @SuppressWarnings("serial")
 public class Show implements Serializable
@@ -64,9 +63,8 @@ public class Show implements Serializable
 		return entries;
 	}
 
-	public static Show getShow(String showID) throws InterruptedException, IOException
+	public static Show getShow(String showID, String search) throws InterruptedException, IOException
 	{
-		//TODO: fix search text not being included
 		//get the series details xml document
 		Document list = Jsoup.connect("http://thetvdb.com/api/"+ShowTracker.apiKey+"/series/"+showID+"/all").timeout(60 * 1000).get();
 		Node series = list.getElementsByTag("series").get(0);
@@ -76,6 +74,7 @@ public class Show implements Serializable
 		for(Node field : series.childNodes())
 			if(field.getClass().equals(Element.class))
 				showDetails.put(((Element) field).tag().getName(), ((Element) field).text());
+		showDetails.put("search", search);
 
 		//get the episodes
 		LinkedHashMap<String, ArrayList<HashMap<String, String>>> episodes = new LinkedHashMap<String, ArrayList<HashMap<String, String>>>();
@@ -116,7 +115,7 @@ public class Show implements Serializable
 		@SuppressWarnings("unchecked")
 		ArrayList<Season> oldSeasons = (ArrayList<Season>)seasons.clone();
 		//refresh the show contents
-		Show newShow = getShow(showData.get("id"));
+		Show newShow = getShow(showData.get("id"), showData.get("search"));
 		seasons = newShow.seasons;
 		showData = newShow.showData;
 		image = newShow.image;

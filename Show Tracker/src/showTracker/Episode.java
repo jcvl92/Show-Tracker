@@ -1,15 +1,6 @@
 package showTracker;
 
 import gui.Main;
-
-import java.awt.MediaTracker;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.HashMap;
-
-import javax.swing.ImageIcon;
-
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -17,9 +8,14 @@ import org.joda.time.ReadableInstant;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.HashMap;
 
 @SuppressWarnings("serial")
 public class Episode implements Serializable
@@ -131,6 +127,7 @@ public class Episode implements Serializable
 	public String getEpisodeNumber()
 	{
 		String episodeNum = information.get("combined_episodenumber");
+		if(episodeNum.contains(".")) episodeNum = episodeNum.substring(0, episodeNum.indexOf('.'));
 		if(episodeNum == null || episodeNum == "")
 			return "00";
 		if(episodeNum.length()==1)

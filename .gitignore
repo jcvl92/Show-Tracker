@@ -2,3 +2,5 @@ Show Tracker/.idea/
 Show Tracker/bin/
 *.iml
 Show Tracker/show_data
+Show Tracker/classes/
+Show Tracker/src/META-INF/MANIFEST.MF
