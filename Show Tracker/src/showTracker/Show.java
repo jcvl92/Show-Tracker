@@ -113,7 +113,7 @@ public class Show implements Serializable
 	{
 		//store the current episode contents
 		@SuppressWarnings("unchecked")
-		ArrayList<Season> oldSeasons = (ArrayList<Season>)seasons.clone();
+		LinkedHashMap<String, Season> oldSeasons = (LinkedHashMap<String, Season>)seasons.clone();
 		//refresh the show contents
 		Show newShow = getShow(showData.get("id"), showData.get("search"));
 		seasons = newShow.seasons;
@@ -121,14 +121,14 @@ public class Show implements Serializable
 		image = newShow.image;
 
 		//iterate through the episodes and set the correct seen values
-		for(int i=0; i<oldSeasons.size(); ++i)
+		for(Entry<String, Season> oldSeason : oldSeasons.entrySet())
 		{
-			Season oldSeason = oldSeasons.get(i);
-			Season newSeason = seasons.get(i);
-			for(int j=0; j<oldSeason.episodes.size(); ++j)
-			{
-				newSeason.episodes.get(j).setWatched(oldSeason.episodes.get(j).isWatched());
-			}
+			Season newSeason = seasons.get(oldSeason.getKey());
+			if(newSeason != null)
+				for(int j=0; j<oldSeason.getValue().episodes.size(); ++j)
+				{
+					newSeason.episodes.get(j).setWatched(oldSeason.getValue().episodes.get(j).isWatched());
+				}
 		}
 		
 		ShowTracker.ShowArrayList.setDirty(true);
