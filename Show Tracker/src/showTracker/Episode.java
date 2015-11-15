@@ -190,10 +190,15 @@ public class Episode implements Serializable
 		{
 			if(Main.DL_ON)
 			{
-				//get the link from TPB
-				Element result = Jsoup.connect("https://thepiratebay.se/search/"+show.getSearchText()+' '+getSENumber()+"/0/7/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+				//get the magnet link from TPB
+				String link = "https://thepiratebay.se/search/"+show.getSearchText()+' '+getSENumber();
+				//try HD first
+				Element result = Jsoup.connect(link+"/0/99/208").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+				//if no HD, try all categories
+				if(result == null)
+					result = Jsoup.connect(link+"/0/99/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
 				
-				//open the link
+				//open the magnet link
 				new MagnetLink(result.text(), result.siblingElements().get(0).attr("href")).open();
 			}
 
