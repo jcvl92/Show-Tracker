@@ -192,8 +192,15 @@ public class Episode implements Serializable
 			{
 				//get the magnet link from TPB
 				String link = "https://thepiratebay.se/search/"+show.getSearchText()+' '+getSENumber();
-				//try HD first
-				Element result = Jsoup.connect(link+"/0/99/208").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+
+				//try 1080p HD first
+				Element result = Jsoup.connect(link+"1080p/0/99/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+				//try 720p HD
+				if(result == null)
+					result = Jsoup.connect(link+" 720p/0/99/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+				//try all HD
+				if(result == null)
+					result = Jsoup.connect(link+"/0/99/208").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
 				//if no HD, try all categories
 				if(result == null)
 					result = Jsoup.connect(link+"/0/99/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
