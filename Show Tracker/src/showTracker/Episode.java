@@ -194,7 +194,7 @@ public class Episode implements Serializable
 				String link = "https://thepiratebay.se/search/"+show.getSearchText()+' '+getSENumber();
 
 				//try 1080p HD first
-				Element result = Jsoup.connect(link+"1080p/0/99/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
+				Element result = Jsoup.connect(link+" 1080p/0/99/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
 				//try 720p HD
 				if(result == null)
 					result = Jsoup.connect(link+" 720p/0/99/0").userAgent("Mozilla").timeout(30*1000).get().getElementsByClass("detName").first();
@@ -215,7 +215,6 @@ public class Episode implements Serializable
 		catch(Exception e)
 		{
 			//return false if it failed
-			e.printStackTrace();
 			return false;
 		}
 	}
