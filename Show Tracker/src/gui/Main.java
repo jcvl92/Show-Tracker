@@ -331,25 +331,27 @@ public class Main
 							btnDownload.setText("Downloading Selected");
 							btnDownload.setEnabled(false);
 							btnSelect.setEnabled(false);
-							for(int i=0; i<jt.getRowCount();)
+							for(int num=jt.getRowCount()-1; num>=0;--num)
 							{
-								if((Boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
+								final Integer i = num;
+								new Thread()
 								{
-									if(episodes.get(i).download())
+									public void run()
 									{
-										episodes.get(i).setWatched(true);
-										episodes.remove(i);
-										((DefaultTableModel)jt.getModel()).removeRow(i);
+										if((Boolean)jt.getValueAt(i, jt.getColumn("Download").getModelIndex()))
+										{
+											if(episodes.get(i).download())
+											{
+												episodes.get(i).setWatched(true);
+												episodes.remove(i);
+												((DefaultTableModel)jt.getModel()).removeRow(i);
+											}
+											else
+												if(!((String)jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())).contains(" - unavailable"))
+													jt.setValueAt(jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())+" - unavailable", i, jt.getColumn("Date Aired").getModelIndex());
+										}
 									}
-									else
-									{
-										if(!((String)jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())).contains(" - unavailable"))
-											jt.setValueAt(jt.getValueAt(i, jt.getColumn("Date Aired").getModelIndex())+" - unavailable", i, jt.getColumn("Date Aired").getModelIndex());
-										++i;
-									}
-								}
-								else
-									++i;
+								}.start();
 							}
 							btnDownload.setText("Download Selected");
 							btnDownload.setEnabled(true);
